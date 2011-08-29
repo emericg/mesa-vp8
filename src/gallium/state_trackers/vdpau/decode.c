@@ -164,11 +164,11 @@ vlVdpDecoderGetParameters(VdpDecoder decoder,
    vldecoder = (vlVdpDecoder *)vlGetDataHTAB(decoder);
    if (!vldecoder)
       return VDP_STATUS_INVALID_HANDLE;
-      
+
    *profile = PipeToProfile(vldecoder->decoder->profile);
    *width = vldecoder->decoder->width;
    *height = vldecoder->decoder->height;
-   
+
    return VDP_STATUS_OK;
 }
 
@@ -187,7 +187,8 @@ vlVdpDecoderRenderMpeg12(struct pipe_video_decoder *decoder,
 
    i = 0;
 
-   /* if surfaces equals VDP_STATUS_INVALID_HANDLE, they are not used */
+   /* Get back reference pictures
+      If reference surfaces equals VDP_INVALID_HANDLE, they are not used */
    if (picture_info->forward_reference !=  VDP_INVALID_HANDLE) {
       ref_frames[i] = ((vlVdpSurface *)vlGetDataHTAB(picture_info->forward_reference))->video_buffer;
       if (!ref_frames[i])
@@ -204,6 +205,7 @@ vlVdpDecoderRenderMpeg12(struct pipe_video_decoder *decoder,
 
    decoder->set_reference_frames(decoder, ref_frames, i);
 
+   /* Get back picture parameters */
    memset(&picture, 0, sizeof(picture));
    picture.base.profile = decoder->profile;
    picture.picture_coding_type = picture_info->picture_coding_type;
@@ -228,6 +230,123 @@ vlVdpDecoderRenderMpeg12(struct pipe_video_decoder *decoder,
 
    decoder->set_quant_matrix(decoder, &quant.base);
 
+   decoder->begin_frame(decoder);
+
+   for (i = 0; i < bitstream_buffer_count; ++i)
+      decoder->decode_bitstream(decoder, bitstream_buffers[i].bitstream_bytes,
+                                bitstream_buffers[i].bitstream);
+
+   decoder->end_frame(decoder);
+
+   return VDP_STATUS_OK;
+}
+
+static VdpStatus
+vlVdpDecoderRenderVP8(struct pipe_video_decoder *decoder,
+                      VdpPictureInfoVP8 *picture_info,
+                      uint32_t bitstream_buffer_count,
+                      VdpBitstreamBuffer const *bitstream_buffers)
+{
+   struct pipe_vp8_picture_desc picture;
+   struct pipe_video_buffer *ref_frames[3];
+   unsigned i, j, k, l;
+
+   VDPAU_MSG(VDPAU_TRACE, "[VDPAU] Decoding VP8\n");
+
+   /* Get back reference pictures
+      If reference surfaces equals VDP_INVALID_HANDLE, they are not used */
+   ref_frames[0] = NULL;
+   ref_frames[1] = NULL;
+   ref_frames[2] = NULL;
+
+   if (picture_info->golden_frame != VDP_INVALID_HANDLE) {
+      ref_frames[0] = ((vlVdpSurface *)vlGetDataHTAB(picture_info->golden_frame))->video_buffer;
+      if (!ref_frames[0])
+         return VDP_STATUS_INVALID_HANDLE;
+   }
+   if (picture_info->altref_frame != VDP_INVALID_HANDLE) {
+      ref_frames[1] = ((vlVdpSurface *)vlGetDataHTAB(picture_info->altref_frame))->video_buffer;
+      if (!ref_frames[1])
+         return VDP_STATUS_INVALID_HANDLE;
+   }
+   if (picture_info->previous_frame != VDP_INVALID_HANDLE) {
+      ref_frames[2] = ((vlVdpSurface *)vlGetDataHTAB(picture_info->previous_frame))->video_buffer;
+      if (!ref_frames[2])
+         return VDP_STATUS_INVALID_HANDLE;
+   }
+
+   decoder->set_reference_frames(decoder, ref_frames, i);
+
+   /* Get back picture parameters */
+   memset(&picture, 0, sizeof(picture));
+   picture.base.profile = picture_info->version;
+   picture.key_frame = picture_info->key_frame;
+   picture.show_frame = picture_info->show_frame;
+   picture.first_partition_size = picture_info->first_partition_size;
+   picture.horizontal_scale = picture_info->horizontal_scale;
+   picture.width = picture_info->width;
+   picture.vertical_scale = picture_info->vertical_scale;
+   picture.height = picture_info->height;
+   picture.color_space = picture_info->color_space;
+   picture.clamping_type = picture_info->clamping_type;
+   picture.segmentation_enable = picture_info->segmentation_enable;
+   picture.segment_map_update = picture_info->segment_map_update;
+   picture.segment_data_update = picture_info->segment_data_update;
+   picture.segment_data_mode = picture_info->segment_data_mode;
+   for (i = 0; i < 4; i++) {
+      picture.segment_base_quant[i] = picture_info->segment_base_quant[i];
+      picture.segment_filter_level[i] = picture_info->segment_filter_level[i];
+   }
+   for (i = 0; i < 3; i++) {
+      picture.segment_id[i] = picture_info->segment_id[i];
+   }
+   picture.filter_type = picture_info->filter_type;
+   picture.filter_level = picture_info->filter_level;
+   picture.filter_sharpness_level = picture_info->filter_sharpness_level;
+   picture.filter_update = picture_info->filter_update;
+   for (i = 0; i < 4; i++) {
+      picture.filter_update_value[i] = picture_info->filter_update_value[i];
+      picture.filter_update_sign[i] = picture_info->filter_update_sign[i];
+   }
+   picture.num_coeff_partitions = picture_info->num_coeff_partitions;
+   for (i = 0; i < 4; i++) {
+       for (j = 0; j < 2; j++) {
+           picture.dquant[i].luma_qi[j] = picture_info->dquant[i].luma_qi[j];
+           picture.dquant[i].luma_dc_qi[j] = picture_info->dquant[i].luma_dc_qi[j];
+           picture.dquant[i].chroma_qi[j] = picture_info->dquant[i].chroma_qi[j];
+       }
+   }
+   picture.refresh_golden = picture_info->refresh_golden;
+   picture.refresh_altref = picture_info->refresh_altref;
+   picture.sign_bias_flag[0] = picture_info->sign_bias_flag[0];
+   picture.sign_bias_flag[1] = picture_info->sign_bias_flag[1];
+   picture.refresh_probabilities = picture_info->refresh_probabilities;
+   picture.refresh_last = picture_info->refresh_last;
+   for (i = 0; i < 4; i++)
+      for (j = 0; j < 8; j++)
+         for (k = 0; k < 3; k++)
+            for (l = 0; l < 11; l++)
+               picture.token_prob[i][j][k][l] = picture_info->token_prob[i][j][k][l];
+   picture.mb_no_coeff_skip = picture_info->mb_no_coeff_skip;
+   picture.prob_skip_false = picture_info->prob_skip_false;
+   picture.prob_intra = picture_info->prob_intra;
+   picture.prob_last = picture_info->prob_last;
+   picture.prob_golden = picture_info->prob_golden;
+   picture.intra_16x16_prob[4];
+   picture.intra_chroma_prob[3];
+   for (i = 0; i < 2; i++)
+      for (j = 0; j < 19; j++)
+         picture.mv_prob[i][j] = picture_info->mv_prob[i][j];
+
+   decoder->set_picture_parameters(decoder, &picture.base);
+/*
+   memset(&quant, 0, sizeof(quant));
+   quant.base.codec = PIPE_VIDEO_CODEC_VP8;
+   quant.intra_matrix = picture_info->intra_quantizer_matrix;
+   quant.non_intra_matrix = picture_info->non_intra_quantizer_matrix;
+
+   decoder->set_quant_matrix(decoder, &quant.base);
+*/
    decoder->begin_frame(decoder);
 
    for (i = 0; i < bitstream_buffer_count; ++i)
@@ -269,8 +388,8 @@ vlVdpDecoderRender(VdpDecoder decoder,
       // TODO: Recreate decoder with correct chroma
       return VDP_STATUS_INVALID_CHROMA_TYPE;
 
-   // TODO: Right now only mpeg 1 & 2 is supported.
-   switch (vldecoder->decoder->profile)   {
+   // TODO: Support more video formats !
+   switch (vldecoder->decoder->profile) {
    case PIPE_VIDEO_PROFILE_MPEG1:
    case PIPE_VIDEO_PROFILE_MPEG2_SIMPLE:
    case PIPE_VIDEO_PROFILE_MPEG2_MAIN:
@@ -282,6 +401,19 @@ vlVdpDecoderRender(VdpDecoder decoder,
 
       return vlVdpDecoderRenderMpeg12(vldecoder->decoder, (VdpPictureInfoMPEG1Or2 *)picture_info,
                                       bitstream_buffer_count, bitstream_buffers);
+      break;
+   case PIPE_VIDEO_PROFILE_VP8_V0:
+   case PIPE_VIDEO_PROFILE_VP8_V1:
+   case PIPE_VIDEO_PROFILE_VP8_V2:
+   case PIPE_VIDEO_PROFILE_VP8_V3:
+      ++vldecoder->cur_buffer;
+      vldecoder->cur_buffer %= vldecoder->num_buffers;
+
+      vldecoder->decoder->set_decode_buffer(vldecoder->decoder, vldecoder->buffers[vldecoder->cur_buffer]);
+      vldecoder->decoder->set_decode_target(vldecoder->decoder, vlsurf->video_buffer);
+
+      return vlVdpDecoderRenderVP8(vldecoder->decoder, (VdpPictureInfoVP8 *)picture_info,
+                                   bitstream_buffer_count, bitstream_buffers);
       break;
 
    default:
