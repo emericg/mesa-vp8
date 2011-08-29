@@ -139,7 +139,8 @@ vlVdpPresentationQueueGetTime(VdpPresentationQueue presentation_queue,
    if (!current_time)
       return VDP_STATUS_INVALID_POINTER;
 
-   return VDP_STATUS_NO_IMPLEMENTATION;
+   //return VDP_STATUS_NO_IMPLEMENTATION;
+   return VDP_STATUS_OK;
 }
 
 VdpStatus
