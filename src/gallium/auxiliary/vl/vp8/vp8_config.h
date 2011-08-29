@@ -1,0 +1,8 @@
+#ifndef VPX_CONFIG_H
+#define VPX_CONFIG_H
+
+#define CONFIG_DEBUG 0
+#define CONFIG_POSTPROC 0
+#define CONFIG_POSTPROC_VISUALIZER 0
+
+#endif /* VPX_CONFIG_H */
