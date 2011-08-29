@@ -155,6 +155,8 @@ C_SOURCES := \
 	vl/vl_mc.c \
         vl/vl_vertex_buffers.c \
         vl/vl_video_buffer.c \
+    vl/vl_vp8_decoder.c \
+    vl/vl_vp8_bitstream.c \
         vl/vpx/vpx_codec.c \
         vl/vpx/vpx_image.c \
         vl/vp8/vp8_dx_iface.c \

@@ -229,6 +229,7 @@ enum pipe_format {
    PIPE_FORMAT_L32A32_FLOAT            = 161,
    PIPE_FORMAT_I32_FLOAT               = 162,
 
+   /* YCbCr formats */
    PIPE_FORMAT_YV12                    = 163,
    PIPE_FORMAT_YV16                    = 164,
    PIPE_FORMAT_IYUV                    = 165,  /**< aka I420 */
@@ -238,6 +239,9 @@ enum pipe_format {
    PIPE_FORMAT_VUYA                    = PIPE_FORMAT_B8G8R8A8_UNORM,
    PIPE_FORMAT_XYUV                    = PIPE_FORMAT_X8R8G8B8_UNORM,
    PIPE_FORMAT_VUYX                    = PIPE_FORMAT_B8G8R8X8_UNORM,
+   PIPE_FORMAT_YUVA                    = PIPE_FORMAT_R8G8B8A8_UNORM,
+
+   /* DirectX Video Acceleration Video Subtypes */
    PIPE_FORMAT_IA44                    = 168,
    PIPE_FORMAT_AI44                    = 169,
 
@@ -255,4 +259,4 @@ enum pipe_video_chroma_format
 }
 #endif
 
-#endif
+#endif /* PIPE_FORMAT_H */

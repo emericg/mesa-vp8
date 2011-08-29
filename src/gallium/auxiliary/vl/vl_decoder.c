@@ -30,6 +30,7 @@
 #include "util/u_video.h"
 
 #include "vl_decoder.h"
+#include "vl_vp8_decoder.h"
 #include "vl_mpeg12_decoder.h"
 
 bool
@@ -38,6 +39,8 @@ vl_profile_supported(struct pipe_screen *screen, enum pipe_video_profile profile
    assert(screen);
    switch (u_reduce_video_profile(profile)) {
       case PIPE_VIDEO_CODEC_MPEG12:
+         return true;
+      case PIPE_VIDEO_CODEC_VP8:
          return true;
       default:
          return false;
@@ -51,7 +54,8 @@ vl_num_buffers_desired(struct pipe_screen *screen, enum pipe_video_profile profi
    switch (u_reduce_video_profile(profile)) {
       case PIPE_VIDEO_CODEC_MPEG12:
          return 4;
-
+      case PIPE_VIDEO_CODEC_VP8:
+         return 4;
       default:
          return 1;
    }
@@ -83,6 +87,8 @@ vl_create_decoder(struct pipe_context *pipe,
    switch (u_reduce_video_profile(profile)) {
       case PIPE_VIDEO_CODEC_MPEG12:
          return vl_create_mpeg12_decoder(pipe, profile, entrypoint, chroma_format, buffer_width, buffer_height, max_references);
+      case PIPE_VIDEO_CODEC_VP8:
+         return vl_create_vp8_decoder(pipe, profile, entrypoint, chroma_format, buffer_width, buffer_height, max_references);
       default:
          return NULL;
    }
