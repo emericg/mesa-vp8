@@ -69,14 +69,11 @@ vlVdpDecoderCreate(VdpDevice device,
 
    vldecoder->device = dev;
 
-   // TODO: Define max_references. Used mainly for H264
-   vldecoder->decoder = pipe->create_video_decoder
-   (
-      pipe, p_profile,
-      PIPE_VIDEO_ENTRYPOINT_BITSTREAM,
-      PIPE_VIDEO_CHROMA_FORMAT_420,
-      width, height
-   );
+   vldecoder->decoder = pipe->create_video_decoder(pipe, p_profile,
+                                                   PIPE_VIDEO_ENTRYPOINT_BITSTREAM,
+                                                   PIPE_VIDEO_CHROMA_FORMAT_420,
+                                                   width, height, max_references);
+
    if (!vldecoder->decoder) {
       ret = VDP_STATUS_ERROR;
       goto error_decoder;
