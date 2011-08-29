@@ -155,14 +155,14 @@ vl_compositor_set_rgba_layer(struct vl_compositor *compositor,
  * render the layers to the frontbuffer
  */
 void
-vl_compositor_render(struct vl_compositor          *compositor,
-                     struct pipe_surface           *dst_surface,
-                     struct pipe_video_rect        *dst_area,
-                     struct pipe_video_rect        *dst_clip);
+vl_compositor_render(struct vl_compositor   *compositor,
+                     struct pipe_surface    *dst_surface,
+                     struct pipe_video_rect *dst_area,
+                     struct pipe_video_rect *dst_clip);
 
 /**
-* destroy this compositor
-*/
+ * destroy this compositor
+ */
 void
 vl_compositor_cleanup(struct vl_compositor *compositor);
 

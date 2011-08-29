@@ -142,8 +142,8 @@ vlVdpOutputSurfaceGetParameters(VdpOutputSurface surface,
 {
    vlVdpOutputSurface *vlsurface;
 
-   VDPAU_MSG(VDPAU_TRACE, "[VDPAU] getting surface parameters\n");
-        
+   VDPAU_MSG(VDPAU_TRACE, "[VDPAU] Getting surface parameters\n");
+
    vlsurface = vlGetDataHTAB(surface);
    if (!vlsurface)
       return VDP_STATUS_INVALID_HANDLE;
