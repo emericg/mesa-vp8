@@ -14,7 +14,6 @@
 
 void vpx_log(const char *format, ...);
 
-#include "../vp8_config.h"
 #include "mem_align.h"
 #include "yv12utils.h"
 

@@ -389,7 +389,6 @@ decode_mb_row(VP8D_COMP *pbi, VP8_COMMON *pc, int mb_row, MACROBLOCKD *xd)
         ++xd->mode_info_context;  /* next mb */
 
         xd->above_context++;
-
     }
 
     /* adjust to the next row of mbs */

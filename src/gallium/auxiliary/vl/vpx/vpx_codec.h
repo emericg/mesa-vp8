@@ -34,6 +34,8 @@ extern "C" {
 #include <setjmp.h>
 #include <stdarg.h>
 
+#include "vpx_image.h"
+
     /*!\brief Algorithm return codes */
     typedef enum {
         /*!\brief Operation completed without error */
@@ -87,21 +89,6 @@ extern "C" {
          */
         VPX_CODEC_LIST_END
     } vpx_codec_err_t;
-
-
-    /*! \brief Codec capabilities bitfield
-     *
-     *  Each codec advertises the capabilities it supports as part of its
-     *  ::vpx_codec_iface_t interface structure. Capabilities are extra interfaces
-     *  or functionality, and are not required to be supported.
-     *
-     *  The available flags are specified by VPX_CODEC_CAP_* defines.
-     */
-    typedef long vpx_codec_caps_t;
-
-#define VPX_CODEC_CAP_DECODER 0x1 /**< Is a decoder */
-#define VPX_CODEC_CAP_ENCODER 0x2 /**< Is an encoder */
-#define VPX_CODEC_CAP_XMA     0x4 /**< Supports eXternal Memory Allocation */
 
 
     /*! \brief Initialization-time Feature Enabling

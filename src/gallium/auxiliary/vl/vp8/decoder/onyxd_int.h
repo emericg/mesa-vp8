@@ -12,7 +12,6 @@
 #ifndef __INC_VP8D_INT_H
 #define __INC_VP8D_INT_H
 
-#include "../vp8_config.h"
 #include "../common/onyxd.h"
 #include "treereader.h"
 #include "../common/onyxc_int.h"

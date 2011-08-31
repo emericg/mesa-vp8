@@ -23,10 +23,8 @@ extern "C" {
 #include "../vpx/vpx_codec.h"
 #include "../vpx/vpx_image.h"
 
-#include "vp8_config.h"
 #include "common/onyxd.h"
 #include "decoder/onyxd_int.h"
-
 
 /*!\defgroup vp8 VP8
  * \ingroup codecs

@@ -32,10 +32,9 @@ And
 
 typedef enum
 {
-    REG_YUV = 0,    /* Regular yuv */
-    INT_YUV = 1     /* The type of yuv that can be tranfer to and from RGB through integer transform */
-}
-YUV_TYPE;
+    REG_YUV = 0,    /**< Regular yuv */
+    INT_YUV = 1     /**< The type of yuv that can be tranfer to and from RGB through integer transform */
+} YUV_TYPE;
 
 typedef struct
 {
@@ -60,16 +59,11 @@ typedef struct
     int flags;
 } YV12_BUFFER_CONFIG;
 
-// FUNC
-
 int vp8_yv12_alloc_frame_buffer(YV12_BUFFER_CONFIG *ybf, int width, int height, int border);
 int vp8_yv12_de_alloc_frame_buffer(YV12_BUFFER_CONFIG *ybf);
 
-void vp8_yv12_swap_buffer(YV12_BUFFER_CONFIG *new_frame, YV12_BUFFER_CONFIG *last_frame);
-
 void vp8_yv12_extend_frame_borders(YV12_BUFFER_CONFIG *ybf);
 void vp8_yv12_copy_frame(YV12_BUFFER_CONFIG *src_ybc, YV12_BUFFER_CONFIG *dst_ybc);
-
 
 #ifdef __cplusplus
 }

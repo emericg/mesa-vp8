@@ -158,7 +158,6 @@ C_SOURCES := \
     vl/vl_vp8_decoder.c \
     vl/vl_vp8_bitstream.c \
         vl/vpx/vpx_codec.c \
-        vl/vpx/vpx_image.c \
         vl/vp8/vp8_dx_iface.c \
         vl/vp8/vpx_mem/vpx_mem.c \
         vl/vp8/common/alloccommon.c \

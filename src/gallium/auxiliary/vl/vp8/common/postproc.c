@@ -9,7 +9,6 @@
  */
 
 
-#include "../vp8_config.h"
 #include "postproc.h"
 #include "yv12utils.h"
 

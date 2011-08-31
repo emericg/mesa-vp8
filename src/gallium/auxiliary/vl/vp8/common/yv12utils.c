@@ -57,8 +57,7 @@ vp8_yv12_alloc_frame_buffer(YV12_BUFFER_CONFIG *ybf, int width, int height, int 
           *  are multiples of 16, and a border that's a multiple of 32.
           * The border restriction is required to get 16-byte alignment of the
           *  start of the chroma rows without intoducing an arbitrary gap
-          *  between planes, which would break the semantics of things like
-          *  vpx_img_set_rect(). */
+          *  between planes. */
         if ((width & 0xf) | (height & 0xf) | (border & 0x1f))
             return -3;
 
@@ -90,29 +89,6 @@ vp8_yv12_alloc_frame_buffer(YV12_BUFFER_CONFIG *ybf, int width, int height, int 
     }
 
     return 0;
-}
-
-/* ************************************************************************** */
-
-void vp8_yv12_swap_buffer(YV12_BUFFER_CONFIG *new_frame, YV12_BUFFER_CONFIG *last_frame)
-{
-    unsigned char *temp;
-
-    temp = last_frame->buffer_alloc;
-    last_frame->buffer_alloc = new_frame->buffer_alloc;
-    new_frame->buffer_alloc = temp;
-
-    temp = last_frame->y_buffer;
-    last_frame->y_buffer = new_frame->y_buffer;
-    new_frame->y_buffer = temp;
-
-    temp = last_frame->u_buffer;
-    last_frame->u_buffer = new_frame->u_buffer;
-    new_frame->u_buffer = temp;
-
-    temp = last_frame->v_buffer;
-    last_frame->v_buffer = new_frame->v_buffer;
-    new_frame->v_buffer = temp;
 }
 
 /* ************************************************************************** */

@@ -21,6 +21,12 @@
 extern "C" {
 #endif
 
+#define VPX_PLANE_PACKED 0   /**< To be used for all packed formats */
+#define VPX_PLANE_Y      0   /**< Y (Luminance) plane */
+#define VPX_PLANE_U      1   /**< U (Chroma) plane */
+#define VPX_PLANE_V      2   /**< V (Chroma) plane */
+#define VPX_PLANE_ALPHA  3   /**< A (Transparency) plane */
+
 #define VPX_IMG_FMT_PLANAR     0x100  /**< Image is a planar format */
 #define VPX_IMG_FMT_UV_FLIP    0x200  /**< V plane precedes U plane in memory */
 #define VPX_IMG_FMT_HAS_ALPHA  0x400  /**< Image has an alpha channel component */
@@ -45,8 +51,7 @@ extern "C" {
         VPX_IMG_FMT_I420    = VPX_IMG_FMT_PLANAR | 2,
         VPX_IMG_FMT_VPXYV12 = VPX_IMG_FMT_PLANAR | VPX_IMG_FMT_UV_FLIP | 3, /** < planar 4:2:0 format with vpx color space */
         VPX_IMG_FMT_VPXI420 = VPX_IMG_FMT_PLANAR | 4   /** < planar 4:2:0 format with vpx color space */
-    }
-    vpx_img_fmt_t; /**< alias for enum vpx_img_fmt */
+    } vpx_img_fmt_t; /**< alias for enum vpx_img_fmt */
 
     /**\brief Image Descriptor */
     typedef struct vpx_image
@@ -65,16 +70,10 @@ extern "C" {
         unsigned int  x_chroma_shift;   /**< subsampling order, X */
         unsigned int  y_chroma_shift;   /**< subsampling order, Y */
 
-#define VPX_PLANE_PACKED 0   /**< To be used for all packed formats */
-#define VPX_PLANE_Y      0   /**< Y (Luminance) plane */
-#define VPX_PLANE_U      1   /**< U (Chroma) plane */
-#define VPX_PLANE_V      2   /**< V (Chroma) plane */
-#define VPX_PLANE_ALPHA  3   /**< A (Transparency) plane */
-
         /* Image data pointers. */
         unsigned char *planes[4];  /**< pointer to the top left pixel for each plane */
         int            stride[4];  /**< stride between rows for each plane */
-        int            bps; /**< bits per sample (for packed formats) */
+        int            bps;        /**< bits per sample (for packed formats) */
 
         /* The following member may be set by the application to associate data
          * with this image.
@@ -87,100 +86,6 @@ extern "C" {
         int            img_data_owner; /**< private */
         int            self_allocd;    /**< private */
     } vpx_image_t; /**< alias for struct vpx_image */
-
-    /**\brief Representation of a rectangle on a surface */
-    typedef struct vpx_image_rect
-    {
-        unsigned int x; /**< leftmost column */
-        unsigned int y; /**< topmost row */
-        unsigned int w; /**< width */
-        unsigned int h; /**< height */
-    } vpx_image_rect_t; /**< alias for struct vpx_image_rect */
-
-    /*!\brief Open a descriptor, allocating storage for the underlying image
-     *
-     * Returns a descriptor for storing an image of the given format. The
-     * storage for the descriptor is allocated on the heap.
-     *
-     * \param[in]    img       Pointer to storage for descriptor. If this parameter
-     *                         is NULL, the storage for the descriptor will be
-     *                         allocated on the heap.
-     * \param[in]    fmt       Format for the image
-     * \param[in]    d_w       Width of the image
-     * \param[in]    d_h       Height of the image
-     * \param[in]    align     Alignment, in bytes, of each row in the image.
-     *
-     * \return Returns a pointer to the initialized image descriptor. If the img
-     *         parameter is non-null, the value of the img parameter will be
-     *         returned.
-     */
-    vpx_image_t *vpx_img_alloc(vpx_image_t  *img,
-                               vpx_img_fmt_t fmt,
-                               unsigned int  d_w,
-                               unsigned int  d_h,
-                               unsigned int  align);
-
-    /*!\brief Open a descriptor, using existing storage for the underlying image
-     *
-     * Returns a descriptor for storing an image of the given format. The
-     * storage for descriptor has been allocated elsewhere, and a descriptor is
-     * desired to "wrap" that storage.
-     *
-     * \param[in]    img       Pointer to storage for descriptor. If this parameter
-     *                         is NULL, the storage for the descriptor will be
-     *                         allocated on the heap.
-     * \param[in]    fmt       Format for the image
-     * \param[in]    d_w       Width of the image
-     * \param[in]    d_h       Height of the image
-     * \param[in]    align     Alignment, in bytes, of each row in the image.
-     * \param[in]    img_data  Storage to use for the image
-     *
-     * \return Returns a pointer to the initialized image descriptor. If the img
-     *         parameter is non-null, the value of the img parameter will be
-     *         returned.
-     */
-    vpx_image_t *vpx_img_wrap(vpx_image_t   *img,
-                              vpx_img_fmt_t  fmt,
-                              unsigned int   d_w,
-                              unsigned int   d_h,
-                              unsigned int   align,
-                              unsigned char *img_data);
-
-    /*!\brief Set the rectangle identifying the displayed portion of the image
-     *
-     * Updates the displayed rectangle (aka viewport) on the image surface to
-     * match the specified coordinates and size.
-     *
-     * \param[in]    img       Image descriptor
-     * \param[in]    x         leftmost column
-     * \param[in]    y         topmost row
-     * \param[in]    w         width
-     * \param[in]    h         height
-     *
-     * \return 0 if the requested rectangle is valid, nonzero otherwise.
-     */
-    int vpx_img_set_rect(vpx_image_t *img,
-                         unsigned int x,
-                         unsigned int y,
-                         unsigned int w,
-                         unsigned int h);
-
-    /*!\brief Flip the image vertically (top for bottom)
-     *
-     * Adjusts the image descriptor's pointers and strides to make the image
-     * be referenced upside-down.
-     *
-     * \param[in]    img       Image descriptor
-     */
-    void vpx_img_flip(vpx_image_t *img);
-
-    /*!\brief Close an image descriptor
-     *
-     * Frees all allocated storage associated with an image descriptor.
-     *
-     * \param[in]    img       Image descriptor
-     */
-    void vpx_img_free(vpx_image_t *img);
 
 #ifdef __cplusplus
 }
