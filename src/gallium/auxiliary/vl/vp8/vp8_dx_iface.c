@@ -233,18 +233,6 @@ static vpx_codec_err_t vp8_peek_si(const uint8_t     *data,
     return res;
 }
 
-static vpx_codec_err_t vp8_get_si(vpx_codec_alg_priv_t *ctx,
-                                  vp8_stream_info_t    *si)
-{
-    unsigned int sz;
-    sz = sizeof(vp8_stream_info_t);
-
-    memcpy(si, &ctx->si, sz);
-    si->sz = sz;
-
-    return VPX_CODEC_OK;
-}
-
 static vpx_codec_err_t
 update_error_state(vpx_codec_alg_priv_t                 *ctx,
                    const struct vpx_internal_error_info *error)
@@ -266,7 +254,7 @@ static void yuvconfig2image(vpx_image_t              *img,
     /** vpx_img_wrap() doesn't allow specifying independent strides for
       * the Y, U, and V planes, nor other alignment adjustments that
       * might be representable by a YV12_BUFFER_CONFIG, so we just
-      * initialize all the fields.*/
+      * initialize all the fields. */
     img->fmt = yv12->clrtype == REG_YUV ? VPX_IMG_FMT_I420 : VPX_IMG_FMT_VPXI420;
     img->w = yv12->y_stride;
     img->h = (yv12->y_height + 2 * VP8BORDERINPIXELS + 15) & ~15;
@@ -484,85 +472,6 @@ static vpx_codec_err_t vp8_get_reference(vpx_codec_alg_priv_t *ctx,
         image2yuvconfig(&frame->img, &sd);
 
         return vp8dx_get_reference(ctx->pbi, frame->frame_type, &sd);
-    }
-    else
-        return VPX_CODEC_INVALID_PARAM;
-}
-
-static vpx_codec_err_t vp8_set_postproc(vpx_codec_alg_priv_t *ctx,
-                                        int ctr_id,
-                                        va_list args)
-{
-#if CONFIG_POSTPROC
-    vp8_postproc_cfg_t *data = va_arg(args, vp8_postproc_cfg_t *);
-
-    if (data)
-    {
-        ctx->postproc_cfg_set = 1;
-        ctx->postproc_cfg = *((vp8_postproc_cfg_t *)data);
-        return VPX_CODEC_OK;
-    }
-    else
-        return VPX_CODEC_INVALID_PARAM;
-#else
-    return VPX_CODEC_INCAPABLE;
-#endif /* CONFIG_POSTPROC */
-}
-
-static vpx_codec_err_t vp8_set_dbg_options(vpx_codec_alg_priv_t *ctx,
-                                           int ctrl_id,
-                                           va_list args)
-{
-#if CONFIG_POSTPROC_VISUALIZER && CONFIG_POSTPROC
-    int data = va_arg(args, int);
-
-#define MAP(id, var) case id: var = data; break;
-
-    switch (ctrl_id)
-    {
-        MAP (VP8_SET_DBG_COLOR_REF_FRAME,   ctx->dbg_color_ref_frame_flag);
-        MAP (VP8_SET_DBG_COLOR_MB_MODES,    ctx->dbg_color_mb_modes_flag);
-        MAP (VP8_SET_DBG_COLOR_B_MODES,     ctx->dbg_color_b_modes_flag);
-        MAP (VP8_SET_DBG_DISPLAY_MV,        ctx->dbg_display_mv_flag);
-    }
-
-    return VPX_CODEC_OK;
-#else
-    return VPX_CODEC_INCAPABLE;
-#endif /* CONFIG_POSTPROC */
-}
-
-static vpx_codec_err_t vp8_get_last_ref_updates(vpx_codec_alg_priv_t *ctx,
-                                                int ctrl_id,
-                                                va_list args)
-{
-    int *update_info = va_arg(args, int *);
-    VP8D_COMP *pbi = (VP8D_COMP *)ctx->pbi;
-
-    if (update_info)
-    {
-        *update_info = pbi->common.refresh_alt_ref_frame * (int) VP8_ALTR_FRAME
-            + pbi->common.refresh_golden_frame * (int) VP8_GOLD_FRAME
-            + pbi->common.refresh_last_frame * (int) VP8_LAST_FRAME;
-
-        return VPX_CODEC_OK;
-    }
-    else
-        return VPX_CODEC_INVALID_PARAM;
-}
-
-static vpx_codec_err_t vp8_get_frame_corrupted(vpx_codec_alg_priv_t *ctx,
-                                               int ctrl_id,
-                                               va_list args)
-{
-    int *corrupted = va_arg(args, int *);
-
-    if (corrupted)
-    {
-        VP8D_COMP *pbi = (VP8D_COMP *)ctx->pbi;
-        *corrupted = pbi->common.frame_to_show->corrupted;
-
-        return VPX_CODEC_OK;
     }
     else
         return VPX_CODEC_INVALID_PARAM;

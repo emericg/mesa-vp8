@@ -162,7 +162,6 @@ C_SOURCES := \
         vl/vp8/vp8_dx_iface.c \
         vl/vp8/common/alloccommon.c \
         vl/vp8/common/blockd.c \
-        vl/vp8/common/debugmodes.c \
         vl/vp8/common/defaultcoefcounts.c \
         vl/vp8/common/entropy.c \
         vl/vp8/common/entropymode.c \

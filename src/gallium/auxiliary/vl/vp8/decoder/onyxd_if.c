@@ -367,7 +367,7 @@ int vp8dx_receive_compressed_data(VP8D_PTR ptr, unsigned long size, const unsign
         vp8_yv12_extend_frame_borders(cm->frame_to_show);
     }
 
-    /*vp8_print_modes_and_motion_vectors( cm->mi, cm->mb_rows,cm->mb_cols, cm->current_video_frame);*/
+    /* from libvpx : vp8_print_modes_and_motion_vectors(cm->mi, cm->mb_rows, cm->mb_cols, cm->current_video_frame); */
 
     if (cm->show_frame)
         cm->current_video_frame++;
