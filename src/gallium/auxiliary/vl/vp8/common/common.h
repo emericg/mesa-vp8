@@ -16,7 +16,7 @@
 
 /* Interface header for common constant data structures and lookup tables */
 
-#include "../vpx_mem/vpx_mem.h"
+#include "../vpx_mem.h"
 
 /* Only need this for fixed-size arrays, for structs just assign. */
 

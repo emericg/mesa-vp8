@@ -20,8 +20,8 @@ extern "C" {
 #include <stdarg.h>
 #include <stdint.h>
 
-#include "../vpx/vpx_codec.h"
-#include "../vpx/vpx_image.h"
+#include "vpx_codec.h"
+#include "vpx_image.h"
 
 #include "common/onyxd.h"
 #include "decoder/onyxd_int.h"

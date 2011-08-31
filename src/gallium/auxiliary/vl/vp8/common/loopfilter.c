@@ -9,7 +9,7 @@
  */
 
 
-#include "../vpx_mem/vpx_mem.h"
+#include "../vpx_mem.h"
 #include "loopfilter.h"
 #include "onyxc_int.h"
 

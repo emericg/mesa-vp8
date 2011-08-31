@@ -157,9 +157,9 @@ C_SOURCES := \
         vl/vl_video_buffer.c \
     vl/vl_vp8_decoder.c \
     vl/vl_vp8_bitstream.c \
-        vl/vpx/vpx_codec.c \
+        vl/vp8/vpx_codec.c \
+        vl/vp8/vpx_mem.c \
         vl/vp8/vp8_dx_iface.c \
-        vl/vp8/vpx_mem/vpx_mem.c \
         vl/vp8/common/alloccommon.c \
         vl/vp8/common/blockd.c \
         vl/vp8/common/debugmodes.c \

@@ -9,7 +9,7 @@
  */
 
 
-#include "../vpx_mem/vpx_mem.h"
+#include "../vpx_mem.h"
 #include "extend.h"
 
 /* note the extension is only for the last row, for intra prediction purpose */

@@ -13,7 +13,7 @@
 
 #include "../common/blockd.h"
 #include "onyxd_int.h"
-#include "../vpx_mem/vpx_mem.h"
+#include "../vpx_mem.h"
 #include "../common/mem_align.h"
 #include "detokenize.h"
 

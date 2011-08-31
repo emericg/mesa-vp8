@@ -20,7 +20,7 @@ extern "C"
 
 #include <stdint.h>
 
-#include "../../vpx/vpx_codec.h"
+#include "../vpx_codec.h"
 #include "yv12utils.h"
 #include "ppflags.h"
 #include "mem_align.h"

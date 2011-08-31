@@ -25,7 +25,7 @@
 
 #include "decodemv.h"
 #include "../common/extend.h"
-#include "../vpx_mem/vpx_mem.h"
+#include "../vpx_mem.h"
 #include "../common/idct.h"
 #include "dequantize.h"
 #include "dboolhuff.h"

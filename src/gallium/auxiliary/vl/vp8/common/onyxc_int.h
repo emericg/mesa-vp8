@@ -12,7 +12,7 @@
 #ifndef __INC_VP8C_INT_H
 #define __INC_VP8C_INT_H
 
-#include "../../vpx/vpx_codec.h"
+#include "../vpx_codec.h"
 #include "loopfilter.h"
 #include "entropymv.h"
 #include "entropy.h"
@@ -35,12 +35,12 @@ void vp8_initialize_common(void);
 typedef struct frame_contexts
 {
     vp8_prob bmode_prob [VP8_BINTRAMODES-1];
-    vp8_prob ymode_prob [VP8_YMODES-1];  /* interframe intra mode probs */
+    vp8_prob ymode_prob [VP8_YMODES-1];  /**< interframe intra mode probs */
     vp8_prob uv_mode_prob [VP8_UV_MODES-1];
     vp8_prob sub_mv_ref_prob [VP8_SUBMVREFS-1];
     vp8_prob coef_probs [BLOCK_TYPES] [COEF_BANDS] [PREV_COEF_CONTEXTS] [ENTROPY_NODES];
     MV_CONTEXT mvc[2];
-    MV_CONTEXT pre_mvc[2];  /* not to caculate the mvcost for the frame if mvc doesn't change. */
+    MV_CONTEXT pre_mvc[2];  /**< not to caculate the mvcost for the frame if mvc doesn't change. */
 } FRAME_CONTEXT;
 
 typedef enum
@@ -106,7 +106,7 @@ typedef struct VP8Common
     int full_pixel;
 
     int base_qindex;
-    int last_kf_gf_q;  /* Q used on the last GF or KF */
+    int last_kf_gf_q;  /**< Q used on the last GF or KF */
 
     int y1dc_delta_q;
     int y2dc_delta_q;
@@ -120,8 +120,8 @@ typedef struct VP8Common
     /* We allocate a MODE_INFO struct for each macroblock, together with
        an extra row on top and column on the left to simplify prediction. */
 
-    MODE_INFO *mip; /* Base of allocated array */
-    MODE_INFO *mi;  /* Corresponds to upper left visible macroblock */
+    MODE_INFO *mip; /**< Base of allocated array */
+    MODE_INFO *mi;  /**< Corresponds to upper left visible macroblock */
 
     INTERPOLATIONFILTERTYPE mcomp_filter_type;
     LOOPFILTERTYPE filter_type;
@@ -132,31 +132,31 @@ typedef struct VP8Common
     int last_sharpness_level;
     int sharpness_level;
 
-    int refresh_last_frame;    /* Two state 0 = NO, 1 = YES */
-    int refresh_golden_frame;  /* Two state 0 = NO, 1 = YES */
-    int refresh_alt_ref_frame; /* Two state 0 = NO, 1 = YES */
+    int refresh_last_frame;    /**< Two state 0 = NO, 1 = YES */
+    int refresh_golden_frame;  /**< Two state 0 = NO, 1 = YES */
+    int refresh_alt_ref_frame; /**< Two state 0 = NO, 1 = YES */
 
-    int copy_buffer_to_gf;     /* 0 none, 1 Last to GF, 2 ARF to GF */
-    int copy_buffer_to_arf;    /* 0 none, 1 Last to ARF, 2 GF to ARF */
+    int copy_buffer_to_gf;     /**< 0 none, 1 Last to GF, 2 ARF to GF */
+    int copy_buffer_to_arf;    /**< 0 none, 1 Last to ARF, 2 GF to ARF */
 
-    int refresh_entropy_probs; /* Two state 0 = NO, 1 = YES */
+    int refresh_entropy_probs; /**< Two state 0 = NO, 1 = YES */
 
-    int ref_frame_sign_bias[MAX_REF_FRAMES]; /* Two state 0, 1 */
+    int ref_frame_sign_bias[MAX_REF_FRAMES]; /**< Two state 0, 1 */
 
     /* Y,U,V,Y2 */
-    ENTROPY_CONTEXT_PLANES *above_context; /* row of context for each plane */
-    ENTROPY_CONTEXT_PLANES left_context;   /* (up to) 4 contexts "" */
+    ENTROPY_CONTEXT_PLANES *above_context; /**< row of context for each plane */
+    ENTROPY_CONTEXT_PLANES left_context;   /**< (up to) 4 contexts "" */
 
 
     /* keyframe block modes are predicted by their above, left neighbors */
 
     vp8_prob kf_bmode_prob [VP8_BINTRAMODES] [VP8_BINTRAMODES] [VP8_BINTRAMODES-1];
-    vp8_prob kf_ymode_prob [VP8_YMODES-1];  /* keyframe "" */
+    vp8_prob kf_ymode_prob [VP8_YMODES-1];  /**< keyframe "" */
     vp8_prob kf_uv_mode_prob [VP8_UV_MODES-1];
 
 
-    FRAME_CONTEXT lfc; /* last frame entropy */
-    FRAME_CONTEXT fc;  /* this frame entropy */
+    FRAME_CONTEXT lfc; /**< last frame entropy */
+    FRAME_CONTEXT fc;  /**< this frame entropy */
 
     unsigned int current_video_frame;
 

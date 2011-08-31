@@ -9,7 +9,7 @@
  */
 
 
-#include "../vpx_mem/vpx_mem.h"
+#include "../vpx_mem.h"
 #include "blockd.h"
 #include "onyxc_int.h"
 #include "findnearmv.h"

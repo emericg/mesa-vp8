@@ -14,7 +14,7 @@
 #include "../common/postproc.h"
 #endif
 #include "onyxd_int.h"
-#include "../vpx_mem/vpx_mem.h"
+#include "../vpx_mem.h"
 #include "../common/onyxd.h"
 #include "../common/alloccommon.h"
 #include "../common/loopfilter.h"
