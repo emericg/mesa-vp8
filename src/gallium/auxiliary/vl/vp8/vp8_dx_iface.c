@@ -29,13 +29,6 @@ struct vpx_codec_alg_priv
     VP8D_PTR                pbi;
     int                     postproc_cfg_set;
     vp8_postproc_cfg_t      postproc_cfg;
-#if CONFIG_POSTPROC_VISUALIZER
-    unsigned int            dbg_postproc_flag;
-    int                     dbg_color_ref_frame_flag;
-    int                     dbg_color_mb_modes_flag;
-    int                     dbg_color_b_modes_flag;
-    int                     dbg_display_mv_flag;
-#endif
     vpx_image_t             img;
     int                     img_setup;
     int                     img_avail;
@@ -360,23 +353,9 @@ vpx_codec_err_t vp8_decode(vpx_codec_alg_priv_t *ctx,
         vp8_ppflags_t flags = {0};
 
         {
-            flags.post_proc_flag = ctx->postproc_cfg.post_proc_flag
-#if CONFIG_POSTPROC_VISUALIZER
-
-                                | ((ctx->dbg_color_ref_frame_flag != 0) ? VP8D_DEBUG_CLR_FRM_REF_BLKS : 0)
-                                | ((ctx->dbg_color_mb_modes_flag != 0) ? VP8D_DEBUG_CLR_BLK_MODES : 0)
-                                | ((ctx->dbg_color_b_modes_flag != 0) ? VP8D_DEBUG_CLR_BLK_MODES : 0)
-                                | ((ctx->dbg_display_mv_flag != 0) ? VP8D_DEBUG_DRAW_MV : 0)
-#endif
-                                ;
-            flags.deblocking_level      = ctx->postproc_cfg.deblocking_level;
-            flags.noise_level           = ctx->postproc_cfg.noise_level;
-#if CONFIG_POSTPROC_VISUALIZER
-            flags.display_ref_frame_flag= ctx->dbg_color_ref_frame_flag;
-            flags.display_mb_modes_flag = ctx->dbg_color_mb_modes_flag;
-            flags.display_b_modes_flag  = ctx->dbg_color_b_modes_flag;
-            flags.display_mv_flag       = ctx->dbg_display_mv_flag;
-#endif
+            flags.post_proc_flag   = ctx->postproc_cfg.post_proc_flag;
+            flags.deblocking_level = ctx->postproc_cfg.deblocking_level;
+            flags.noise_level      = ctx->postproc_cfg.noise_level;
         }
 
         if (vp8dx_receive_compressed_data(ctx->pbi, data_sz, data, deadline))
