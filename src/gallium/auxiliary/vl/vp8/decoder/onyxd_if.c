@@ -10,9 +10,6 @@
 
 
 #include "../common/onyxc_int.h"
-#if CONFIG_POSTPROC
-#include "../common/postproc.h"
-#endif
 #include "onyxd_int.h"
 #include "../vpx_mem.h"
 #include "../common/onyxd.h"
@@ -383,7 +380,7 @@ int vp8dx_receive_compressed_data(VP8D_PTR ptr, unsigned long size, const unsign
     return retcode;
 }
 
-int vp8dx_get_raw_frame(VP8D_PTR ptr, YV12_BUFFER_CONFIG *sd, int64_t *time_stamp, int64_t *time_end_stamp, vp8_ppflags_t *flags)
+int vp8dx_get_raw_frame(VP8D_PTR ptr, YV12_BUFFER_CONFIG *sd, int64_t *time_stamp, int64_t *time_end_stamp)
 {
     int ret = -1;
     VP8D_COMP *pbi = (VP8D_COMP *) ptr;
@@ -401,9 +398,6 @@ int vp8dx_get_raw_frame(VP8D_PTR ptr, YV12_BUFFER_CONFIG *sd, int64_t *time_stam
 
     sd->clrtype = pbi->common.clr_type;
 
-#if CONFIG_POSTPROC
-    ret = vp8_post_proc_frame(&pbi->common, sd, flags);
-#else
     if (pbi->common.frame_to_show)
     {
         *sd = *pbi->common.frame_to_show;
@@ -416,7 +410,6 @@ int vp8dx_get_raw_frame(VP8D_PTR ptr, YV12_BUFFER_CONFIG *sd, int64_t *time_stam
     {
         ret = -1;
     }
-#endif /*!CONFIG_POSTPROC*/
 
     return ret;
 }

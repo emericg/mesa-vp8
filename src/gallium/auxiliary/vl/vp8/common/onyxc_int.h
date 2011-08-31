@@ -18,7 +18,6 @@
 #include "entropy.h"
 #include "idct.h"
 #include "recon.h"
-#include "postproc.h"
 
 /* Create/destroy static data structures. */
 
@@ -147,7 +146,6 @@ typedef struct VP8Common
     ENTROPY_CONTEXT_PLANES *above_context; /**< row of context for each plane */
     ENTROPY_CONTEXT_PLANES left_context;   /**< (up to) 4 contexts "" */
 
-
     /* keyframe block modes are predicted by their above, left neighbors */
 
     vp8_prob kf_bmode_prob [VP8_BINTRAMODES] [VP8_BINTRAMODES] [VP8_BINTRAMODES-1];
@@ -167,8 +165,6 @@ typedef struct VP8Common
 
     double bitrate;
     double framerate;
-
-    struct postproc_state postproc_state;
 } VP8_COMMON;
 
 #endif /* __INC_VP8C_INT_H */

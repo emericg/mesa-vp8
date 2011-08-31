@@ -175,7 +175,6 @@ C_SOURCES := \
         vl/vp8/common/loopfilter_filters.c \
         vl/vp8/common/mbpitch.c \
         vl/vp8/common/modecontext.c \
-        vl/vp8/common/postproc.c \
         vl/vp8/common/quant_common.c \
         vl/vp8/common/recon.c \
         vl/vp8/common/reconinter.c \

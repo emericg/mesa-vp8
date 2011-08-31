@@ -84,35 +84,6 @@ typedef struct vpx_ref_frame
     vpx_image_t img;        /**< reference frame data in image format */
 } vpx_ref_frame_t;
 
-/*!\brief post process flags
- *
- * The set of macros define VP8 decoder post processing flags
- */
-enum vp8_postproc_level
-{
-    VP8_NOFILTERING             = 0,
-    VP8_DEBLOCK                 = 1<<0,
-    VP8_DEMACROBLOCK            = 1<<1,
-    VP8_ADDNOISE                = 1<<2,
-    VP8_DEBUG_TXT_FRAME_INFO    = 1<<3, /**< print frame information */
-    VP8_DEBUG_TXT_MBLK_MODES    = 1<<4, /**< print macro block modes over each macro block */
-    VP8_DEBUG_TXT_DC_DIFF       = 1<<5, /**< print dc diff for each macro block */
-    VP8_DEBUG_TXT_RATE_INFO     = 1<<6  /**< print video rate info (encoder only) */
-};
-
-/*!\brief post process flags
- *
- * This define a structure that describe the post processing settings. For
- * the best objective measure (using the PSNR metric) set post_proc_flag
- * to VP8_DEBLOCK and deblocking_level to 1.
- */
-typedef struct vp8_postproc_cfg
-{
-    int post_proc_flag;   /**< the types of post processing to be done, should be combination of "vp8_postproc_level" */
-    int deblocking_level; /**< the strength of deblocking, valid range [0, 16] */
-    int noise_level;      /**< the strength of additive noise, valid range [0, 16] */
-} vp8_postproc_cfg_t;
-
 /* ************************************************************************** */
 
 vpx_codec_err_t vp8_init(vpx_codec_ctx_t *ctx);

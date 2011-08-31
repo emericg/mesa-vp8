@@ -27,8 +27,6 @@ struct vpx_codec_alg_priv
     int                     defer_alloc;
     int                     decoder_init;
     VP8D_PTR                pbi;
-    int                     postproc_cfg_set;
-    vp8_postproc_cfg_t      postproc_cfg;
     vpx_image_t             img;
     int                     img_setup;
     int                     img_avail;
@@ -328,14 +326,9 @@ vpx_codec_err_t vp8_decode(vpx_codec_alg_priv_t *ctx,
             oxcf.Width = ctx->si.w;
             oxcf.Height = ctx->si.h;
             oxcf.Version = 9;
-            oxcf.postprocess = 1;
             oxcf.input_partition = 0;
 
             optr = vp8dx_create_decompressor(&oxcf);
-
-            ctx->postproc_cfg.post_proc_flag = VP8_DEBLOCK | VP8_DEMACROBLOCK;
-            ctx->postproc_cfg.deblocking_level = 4;
-            ctx->postproc_cfg.noise_level = 0;
 
             if (!optr)
                 res = VPX_CODEC_ERROR;
@@ -350,13 +343,6 @@ vpx_codec_err_t vp8_decode(vpx_codec_alg_priv_t *ctx,
     {
         YV12_BUFFER_CONFIG sd;
         int64_t time_stamp = 0, time_end_stamp = 0;
-        vp8_ppflags_t flags = {0};
-
-        {
-            flags.post_proc_flag   = ctx->postproc_cfg.post_proc_flag;
-            flags.deblocking_level = ctx->postproc_cfg.deblocking_level;
-            flags.noise_level      = ctx->postproc_cfg.noise_level;
-        }
 
         if (vp8dx_receive_compressed_data(ctx->pbi, data_sz, data, deadline))
         {
@@ -364,7 +350,7 @@ vpx_codec_err_t vp8_decode(vpx_codec_alg_priv_t *ctx,
             res = update_error_state(ctx, &pbi->common.error);
         }
 
-        if (!res && 0 == vp8dx_get_raw_frame(ctx->pbi, &sd, &time_stamp, &time_end_stamp, &flags))
+        if (!res && 0 == vp8dx_get_raw_frame(ctx->pbi, &sd, &time_stamp, &time_end_stamp))
         {
             yuvconfig2image(&ctx->img, &sd, user_priv);
             ctx->img_avail = 1;

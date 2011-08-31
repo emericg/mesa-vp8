@@ -22,7 +22,6 @@ extern "C"
 
 #include "../vpx_codec.h"
 #include "yv12utils.h"
-#include "ppflags.h"
 #include "mem_align.h"
 
     typedef void *VP8D_PTR;
@@ -32,7 +31,6 @@ extern "C"
         int Width;
         int Height;
         int Version;
-        int postprocess;
         int input_partition;
     } VP8D_CONFIG;
 
@@ -54,7 +52,7 @@ extern "C"
     void vp8dx_initialize(void);
 
     int vp8dx_receive_compressed_data(VP8D_PTR comp, unsigned long size, const unsigned char *dest, int64_t time_stamp);
-    int vp8dx_get_raw_frame(VP8D_PTR comp, YV12_BUFFER_CONFIG *sd, int64_t *time_stamp, int64_t *time_end_stamp, vp8_ppflags_t *flags);
+    int vp8dx_get_raw_frame(VP8D_PTR comp, YV12_BUFFER_CONFIG *sd, int64_t *time_stamp, int64_t *time_end_stamp);
 
     vpx_codec_err_t vp8dx_get_reference(VP8D_PTR comp, VP8_REF_FRAME ref_frame_flag, YV12_BUFFER_CONFIG *sd);
     vpx_codec_err_t vp8dx_set_reference(VP8D_PTR comp, VP8_REF_FRAME ref_frame_flag, YV12_BUFFER_CONFIG *sd);
