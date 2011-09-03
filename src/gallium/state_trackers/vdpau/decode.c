@@ -183,11 +183,11 @@ vlVdpDecoderRenderMpeg12(struct pipe_video_decoder *decoder,
    struct pipe_video_buffer *ref_frames[2];
    unsigned i;
 
-   VDPAU_MSG(VDPAU_TRACE, "[VDPAU] Decoding MPEG2\n");
+   VDPAU_MSG(VDPAU_TRACE, "[VDPAU] Decoding MPEG12\n");
 
    i = 0;
 
-   /* Get back reference pictures
+   /* Get back reference pictures.
       If reference surfaces equals VDP_INVALID_HANDLE, they are not used */
    if (picture_info->forward_reference !=  VDP_INVALID_HANDLE) {
       ref_frames[i] = ((vlVdpSurface *)vlGetDataHTAB(picture_info->forward_reference))->video_buffer;
@@ -253,7 +253,7 @@ vlVdpDecoderRenderVP8(struct pipe_video_decoder *decoder,
 
    VDPAU_MSG(VDPAU_TRACE, "[VDPAU] Decoding VP8\n");
 
-   /* Get back reference pictures
+   /* Get back reference pictures.
       If reference surfaces equals VDP_INVALID_HANDLE, they are not used */
    ref_frames[0] = NULL;
    ref_frames[1] = NULL;
@@ -332,8 +332,8 @@ vlVdpDecoderRenderVP8(struct pipe_video_decoder *decoder,
    picture.prob_intra = picture_info->prob_intra;
    picture.prob_last = picture_info->prob_last;
    picture.prob_golden = picture_info->prob_golden;
-   picture.intra_16x16_prob[4];
-   picture.intra_chroma_prob[3];
+   picture.intra_16x16_prob[4]; // ?
+   picture.intra_chroma_prob[3]; // ?
    for (i = 0; i < 2; i++)
       for (j = 0; j < 19; j++)
          picture.mv_prob[i][j] = picture_info->mv_prob[i][j];
@@ -399,7 +399,8 @@ vlVdpDecoderRender(VdpDecoder decoder,
       vldecoder->decoder->set_decode_buffer(vldecoder->decoder, vldecoder->buffers[vldecoder->cur_buffer]);
       vldecoder->decoder->set_decode_target(vldecoder->decoder, vlsurf->video_buffer);
 
-      return vlVdpDecoderRenderMpeg12(vldecoder->decoder, (VdpPictureInfoMPEG1Or2 *)picture_info,
+      return vlVdpDecoderRenderMpeg12(vldecoder->decoder,
+                                      (VdpPictureInfoMPEG1Or2 *)picture_info,
                                       bitstream_buffer_count, bitstream_buffers);
       break;
    case PIPE_VIDEO_PROFILE_VP8_V0:
@@ -412,7 +413,8 @@ vlVdpDecoderRender(VdpDecoder decoder,
       vldecoder->decoder->set_decode_buffer(vldecoder->decoder, vldecoder->buffers[vldecoder->cur_buffer]);
       vldecoder->decoder->set_decode_target(vldecoder->decoder, vlsurf->video_buffer);
 
-      return vlVdpDecoderRenderVP8(vldecoder->decoder, (VdpPictureInfoVP8 *)picture_info,
+      return vlVdpDecoderRenderVP8(vldecoder->decoder,
+                                   (VdpPictureInfoVP8 *)picture_info,
                                    bitstream_buffer_count, bitstream_buffers);
       break;
 
