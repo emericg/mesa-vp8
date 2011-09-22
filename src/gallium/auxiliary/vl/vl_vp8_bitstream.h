@@ -1,6 +1,6 @@
 /**************************************************************************
  *
- * Copyright 2011 Christian König
+ * Copyright 2011 Emeric Grange.
  * All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -25,21 +25,26 @@
  *
  **************************************************************************/
 
-#ifndef vl_defines_h
-#define vl_defines_h
+#ifndef vl_vp8_bitstream_h
+#define vl_vp8_bitstream_h
 
-/* constants usually used with all known codecs */
-#define VL_MACROBLOCK_WIDTH 16
-#define VL_MACROBLOCK_HEIGHT 16
+#include "vl_defines.h"
+#include "vl_vlc.h"
 
-#define VL_BLOCK_WIDTH 8
-#define VL_BLOCK_HEIGHT 8
+struct vl_vp8_bs
+{
+   struct pipe_video_decoder *decoder;
 
-#define VL_MICROBLOCK_WIDTH 4
-#define VL_MICROBLOCK_HEIGHT 4
+   struct pipe_vp8_picture_desc desc;
+};
 
-#define VL_NUM_COMPONENTS 3
-#define VL_MAX_SURFACES (VL_NUM_COMPONENTS * 2)
-#define VL_MAX_REF_FRAMES 3
+void
+vl_vp8_bs_init(struct vl_vp8_bs *bs, struct pipe_video_decoder *decoder);
 
-#endif /* vl_defines_h */
+void
+vl_vp8_bs_set_picture_desc(struct vl_vp8_bs *bs, struct pipe_vp8_picture_desc *picture);
+
+void
+vl_vp8_bs_decode(struct vl_vp8_bs *bs, unsigned num_bytes, const uint8_t *buffer);
+
+#endif /* vl_vp8_bitstream_h */

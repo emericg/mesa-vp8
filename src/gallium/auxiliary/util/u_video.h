@@ -63,6 +63,12 @@ u_reduce_video_profile(enum pipe_video_profile profile)
       case PIPE_VIDEO_PROFILE_MPEG4_AVC_HIGH:
          return PIPE_VIDEO_CODEC_MPEG4_AVC;
 
+      case PIPE_VIDEO_PROFILE_VP8_V0:
+      case PIPE_VIDEO_PROFILE_VP8_V1:
+      case PIPE_VIDEO_PROFILE_VP8_V2:
+      case PIPE_VIDEO_PROFILE_VP8_V3:
+         return PIPE_VIDEO_CODEC_VP8;
+
       default:
          return PIPE_VIDEO_CODEC_UNKNOWN;
    }

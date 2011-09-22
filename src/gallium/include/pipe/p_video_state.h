@@ -285,6 +285,69 @@ struct pipe_h264_picture_desc
    struct pipe_video_buffer *ref[16];
 };
 
+struct pipe_vp8_picture_desc
+{
+   struct pipe_picture_desc base;
+
+   unsigned key_frame;
+   unsigned show_frame;
+   unsigned first_partition_size;
+
+   unsigned horizontal_scale;
+   unsigned width;
+   unsigned vertical_scale;
+   unsigned height;
+
+   unsigned color_space;
+   unsigned clamping_type;
+
+   unsigned segmentation_enable;
+   unsigned segment_map_update;
+   unsigned segment_data_update;
+   unsigned segment_data_mode;
+   signed segment_base_quant[4];
+   unsigned segment_filter_level[4];
+   unsigned segment_id[3];
+
+   unsigned filter_type;
+   unsigned filter_level;
+   unsigned filter_sharpness_level;
+   unsigned filter_update;
+   signed filter_update_value[4];
+   unsigned filter_update_sign[4];
+
+   unsigned num_coeff_partitions;
+
+   struct {
+       signed luma_qi[2];
+       signed luma_dc_qi[2];
+       signed chroma_qi[2];
+   } dquant[4];
+
+   signed refresh_golden;
+   signed refresh_altref;
+   signed sign_bias_flag[2];
+   signed refresh_probabilities;
+   signed refresh_last;
+
+   unsigned token_prob[4][8][3][11];
+
+   unsigned mb_no_coeff_skip;
+   unsigned prob_skip_false;
+   unsigned prob_intra;
+   unsigned prob_last;
+   unsigned prob_golden;
+   unsigned intra_16x16_prob[4];
+   unsigned intra_chroma_prob[3];
+
+   unsigned mv_prob[2][19];
+};
+
+struct pipe_vp8_macroblock
+{
+   struct pipe_macroblock base;
+};
+
 #ifdef __cplusplus
 }
 #endif

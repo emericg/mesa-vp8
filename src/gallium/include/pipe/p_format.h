@@ -328,4 +328,4 @@ enum pipe_video_chroma_format
 }
 #endif
 
-#endif
+#endif /* PIPE_FORMAT_H */

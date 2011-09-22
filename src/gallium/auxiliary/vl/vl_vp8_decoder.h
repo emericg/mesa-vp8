@@ -1,6 +1,6 @@
 /**************************************************************************
  *
- * Copyright 2011 Christian König
+ * Copyright 2011 Emeric Grange.
  * All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -25,21 +25,58 @@
  *
  **************************************************************************/
 
-#ifndef vl_defines_h
-#define vl_defines_h
+#ifndef vl_vp8_decoder_h
+#define vl_vp8_decoder_h
 
-/* constants usually used with all known codecs */
-#define VL_MACROBLOCK_WIDTH 16
-#define VL_MACROBLOCK_HEIGHT 16
+#include <stdio.h>
 
-#define VL_BLOCK_WIDTH 8
-#define VL_BLOCK_HEIGHT 8
+#include "pipe/p_video_decoder.h"
 
-#define VL_MICROBLOCK_WIDTH 4
-#define VL_MICROBLOCK_HEIGHT 4
+#include "vl_vp8_bitstream.h"
+#include "vl_video_buffer.h"
 
-#define VL_NUM_COMPONENTS 3
-#define VL_MAX_SURFACES (VL_NUM_COMPONENTS * 2)
-#define VL_MAX_REF_FRAMES 3
+#include "vp8/vp8_dx_iface.h"
 
-#endif /* vl_defines_h */
+struct pipe_screen;
+struct pipe_context;
+
+struct vl_vp8_decoder
+{
+   struct pipe_video_decoder base;
+
+   unsigned chroma_width, chroma_height;
+
+   unsigned blocks_per_line;
+   unsigned num_blocks;
+   unsigned width_in_macroblocks;
+
+   void *sampler_ycbcr;
+
+   void *dsa;
+
+   struct vl_vp8_buffer *current_buffer;
+   struct pipe_vp8_picture_desc picture_desc;
+   struct pipe_sampler_view *ref_frames[VL_MAX_REF_FRAMES][VL_MAX_PLANES];
+   struct pipe_video_buffer *target;
+   struct pipe_surface *target_surfaces[VL_MAX_PLANES];
+
+   // vp8 decoder context
+   vpx_codec_ctx_t vp8dec_ctx;
+};
+
+struct vl_vp8_buffer
+{
+   struct vl_vp8_bs bs;
+};
+
+/**
+ * Creates a shader based VP8 decoder.
+ */
+struct pipe_video_decoder *
+vl_create_vp8_decoder(struct pipe_context *pipe,
+                      enum pipe_video_profile profile,
+                      enum pipe_video_entrypoint entrypoint,
+                      enum pipe_video_chroma_format chroma_format,
+                      unsigned width, unsigned height, unsigned max_references);
+
+#endif /* vl_vp8_decoder_h */
