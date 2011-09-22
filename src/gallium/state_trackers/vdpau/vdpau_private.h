@@ -235,6 +235,14 @@ ProfileToPipe(VdpDecoderProfile vdpau_profile)
          return PIPE_VIDEO_PROFILE_VC1_MAIN;
       case VDP_DECODER_PROFILE_VC1_ADVANCED:
          return PIPE_VIDEO_PROFILE_VC1_ADVANCED;
+      case VDP_DECODER_PROFILE_VP8_V0:
+         return PIPE_VIDEO_PROFILE_VP8_V0;
+      case VDP_DECODER_PROFILE_VP8_V1:
+         return PIPE_VIDEO_PROFILE_VP8_V1;
+      case VDP_DECODER_PROFILE_VP8_V2:
+         return PIPE_VIDEO_PROFILE_VP8_V2;
+      case VDP_DECODER_PROFILE_VP8_V3:
+         return PIPE_VIDEO_PROFILE_VP8_V3;
       default:
          return PIPE_VIDEO_PROFILE_UNKNOWN;
    }
@@ -266,6 +274,14 @@ PipeToProfile(enum pipe_video_profile p_profile)
          return VDP_DECODER_PROFILE_VC1_MAIN;
       case PIPE_VIDEO_PROFILE_VC1_ADVANCED:
          return VDP_DECODER_PROFILE_VC1_ADVANCED;
+      case PIPE_VIDEO_PROFILE_VP8_V0:
+         return VDP_DECODER_PROFILE_VP8_V0;
+      case PIPE_VIDEO_PROFILE_VP8_V1:
+         return VDP_DECODER_PROFILE_VP8_V1;
+      case PIPE_VIDEO_PROFILE_VP8_V2:
+         return VDP_DECODER_PROFILE_VP8_V2;
+      case PIPE_VIDEO_PROFILE_VP8_V3:
+         return VDP_DECODER_PROFILE_VP8_V3;
       default:
          assert(0);
          return -1;
