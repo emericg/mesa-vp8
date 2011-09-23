@@ -21,7 +21,6 @@
 extern "C" {
 #endif
 
-#define VPX_PLANE_PACKED 0   /**< To be used for all packed formats */
 #define VPX_PLANE_Y      0   /**< Y (Luminance) plane */
 #define VPX_PLANE_U      1   /**< U (Chroma) plane */
 #define VPX_PLANE_V      2   /**< V (Chroma) plane */
@@ -34,19 +33,6 @@ extern "C" {
     /*!\brief List of supported image formats */
     typedef enum vpx_img_fmt {
         VPX_IMG_FMT_NONE,
-        VPX_IMG_FMT_RGB24,     /**< 24 bit per pixel packed RGB */
-        VPX_IMG_FMT_RGB32,     /**< 32 bit per pixel packed 0RGB */
-        VPX_IMG_FMT_RGB565,    /**< 16 bit per pixel, 565 */
-        VPX_IMG_FMT_RGB555,    /**< 16 bit per pixel, 555 */
-        VPX_IMG_FMT_UYVY,      /**< UYVY packed YUV */
-        VPX_IMG_FMT_YUY2,      /**< YUYV packed YUV */
-        VPX_IMG_FMT_YVYU,      /**< YVYU packed YUV */
-        VPX_IMG_FMT_BGR24,     /**< 24 bit per pixel packed BGR */
-        VPX_IMG_FMT_RGB32_LE,  /**< 32 bit packed BGR0 */
-        VPX_IMG_FMT_ARGB,      /**< 32 bit packed ARGB, alpha=255 */
-        VPX_IMG_FMT_ARGB_LE,   /**< 32 bit packed BGRA, alpha=255 */
-        VPX_IMG_FMT_RGB565_LE, /**< 16 bit per pixel, gggbbbbb rrrrrggg */
-        VPX_IMG_FMT_RGB555_LE, /**< 16 bit per pixel, gggbbbbb 0rrrrrgg */
         VPX_IMG_FMT_YV12    = VPX_IMG_FMT_PLANAR | VPX_IMG_FMT_UV_FLIP | 1, /**< planar YVU */
         VPX_IMG_FMT_I420    = VPX_IMG_FMT_PLANAR | 2,
         VPX_IMG_FMT_VPXYV12 = VPX_IMG_FMT_PLANAR | VPX_IMG_FMT_UV_FLIP | 3, /** < planar 4:2:0 format with vpx color space */

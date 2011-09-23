@@ -280,8 +280,7 @@ vl_vp8_end_frame(struct pipe_video_decoder *decoder)
       FILE *outfile = fopen("output_img.yv12", "wb");
       if (outfile)
       {
-         unsigned YV12 = 1; // otherwise output will be I420
-         unsigned y = 0;
+         unsigned y;
          unsigned char *img_plane = img->planes[VPX_PLANE_Y];
 
          for (y = 0; y < img->d_h; y++)
@@ -290,7 +289,7 @@ vl_vp8_end_frame(struct pipe_video_decoder *decoder)
             img_plane += img->stride[VPX_PLANE_Y];
          }
 
-         img_plane = img->planes[YV12?VPX_PLANE_V:VPX_PLANE_U];
+         img_plane = img->planes[VPX_PLANE_V];
 
          for (y = 0; y < (1 + img->d_h) / 2; y++)
          {
@@ -298,7 +297,7 @@ vl_vp8_end_frame(struct pipe_video_decoder *decoder)
             img_plane += img->stride[VPX_PLANE_U];
          }
 
-         img_plane = img->planes[YV12?VPX_PLANE_U:VPX_PLANE_V];
+         img_plane = img->planes[VPX_PLANE_U];
 
          for (y = 0; y < (1 + img->d_h) / 2; y++)
          {
@@ -314,50 +313,45 @@ vl_vp8_end_frame(struct pipe_video_decoder *decoder)
          printf("[G3DVL] Failed to open 'output_img.yv12' for writing the decoded image !\n");
       }
 #endif
-   }
 
-   /* Load YCbCr planes into a texture */
-   pipe = buf->bs.decoder->context;
-   if (!pipe) {
-      printf("[end_frame] no pipe\n");
-      return;
-   }
-
-   sampler_views = dec->target->get_sampler_view_planes(dec->target);
-   if (!sampler_views) {
-      printf("[end_frame] no sampler_views\n");
-      return;
-   }
-
-   for (i = 0; i < 3; ++i) {
-      struct pipe_sampler_view *sv = sampler_views[i ? i ^ 3 : 0];
-      struct pipe_box dst_box = { 0, 0, 0, sv->texture->width0, sv->texture->height0, 1 };
-
-      struct pipe_transfer *transfer;
-      void *map;
-
-      transfer = pipe->get_transfer(pipe, sv->texture, 0, PIPE_TRANSFER_WRITE, &dst_box);
-      if (!transfer) {
-         printf("[end_frame] no transfer\n");
+      /* Load YCbCr planes into a texture */
+      pipe = buf->bs.decoder->context;
+      if (!pipe) {
+         printf("[end_frame] no pipe\n");
          return;
       }
 
-      map = pipe->transfer_map(pipe, transfer);
-      if (map) {
-         int p = 0;
-         if (i == 2)
-            p = 1;
-         else if (i == 1)
-            p = 2;
-
-         util_copy_rect(map, sv->texture->format, transfer->stride, 0, 0,
-                        dst_box.width, dst_box.height,
-                        img->planes[p], img->stride[i], 0, 0);
-
-         pipe->transfer_unmap(pipe, transfer);
+      sampler_views = dec->target->get_sampler_view_planes(dec->target);
+      if (!sampler_views) {
+         printf("[end_frame] no sampler_views\n");
+         return;
       }
 
-      pipe->transfer_destroy(pipe, transfer);
+      for (i = 0; i < 3; ++i) {
+         struct pipe_sampler_view *sv = sampler_views[i ? i ^ 3 : 0];
+         struct pipe_box dst_box = { 0, 0, 0, sv->texture->width0, sv->texture->height0, 1 };
+
+         struct pipe_transfer *transfer;
+         void *map;
+
+         transfer = pipe->get_transfer(pipe, sv->texture, 0, PIPE_TRANSFER_WRITE, &dst_box);
+         if (!transfer) {
+            printf("[end_frame] no transfer\n");
+            return;
+         }
+
+         map = pipe->transfer_map(pipe, transfer);
+         if (map)
+         {
+            util_copy_rect(map, sv->texture->format, transfer->stride, 0, 0,
+                           dst_box.width, dst_box.height,
+                           img->planes[i], img->stride[i], 0, 0);
+
+            pipe->transfer_unmap(pipe, transfer);
+         }
+
+         pipe->transfer_destroy(pipe, transfer);
+      }
    }
 }
 
