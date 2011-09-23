@@ -11,7 +11,7 @@
 
 #include <stdlib.h>
 #include "filter.h"
-#include "mem_align.h"
+#include "../vpx_mem.h"
 
 DECLARE_ALIGNED(16, const short, vp8_bilinear_filters[8][2]) =
 {

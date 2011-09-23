@@ -38,8 +38,7 @@ static unsigned long vp8_priv_sz(const vpx_codec_dec_cfg_t *si,
     /* Although this declaration is constant, we can't use it in the requested
      * segments list because we want to define the requested segments list
      * before defining the private type (so that the number of memory maps is
-     * known)
-     */
+     * known) */
     (void)si;
     return sizeof(vpx_codec_alg_priv_t);
 }

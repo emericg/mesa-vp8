@@ -9,8 +9,8 @@
  */
 
 
-#ifndef __INC_ENTROPYMV_H
-#define __INC_ENTROPYMV_H
+#ifndef ENTROPYMV_H
+#define ENTROPYMV_H
 
 #include "treecoder.h"
 

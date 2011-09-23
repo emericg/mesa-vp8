@@ -12,8 +12,11 @@
 #ifndef __VPX_MEM_H__
 #define __VPX_MEM_H__
 
+#include <string.h>
 #include <stdlib.h>
 #include <stddef.h>
+#include <stdio.h>
+#include <assert.h>
 
 #if defined(__cplusplus)
 extern "C" {
@@ -21,24 +24,17 @@ extern "C" {
 
 /* ************************************************************************** */
 
-#define ADDRESS_STORAGE_SIZE      sizeof(size_t)
-#define DEFAULT_ALIGNMENT         32                // must be >= 1 !
+#define ADDRESS_STORAGE_SIZE sizeof(size_t)
+#define DEFAULT_ALIGNMENT    32 // must be >= 1 !
 
 /* returns an addr aligned to the byte boundary specified by align */
 #define align_addr(addr,align) (void*)(((size_t)(addr) + ((align) - 1)) & (size_t)-(align))
 
-#define VPX_MALLOC_L  malloc
-#define VPX_REALLOC_L realloc
-#define VPX_FREE_L    free
-#define VPX_MEMCPY_L  memcpy
-#define VPX_MEMSET_L  memset
-#define VPX_MEMMOVE_L memmove
-
-#ifndef __VPX_MEM_C__
-# include <string.h>
-# define vpx_memcpy  memcpy
-# define vpx_memset  memset
-# define vpx_memmove memmove
+#if defined(__GNUC__) && __GNUC__
+#define DECLARE_ALIGNED(n,typ,val)  typ val __attribute__ ((aligned (n)))
+#else
+#warning No alignment directives known for this compiler.
+#define DECLARE_ALIGNED(n,typ,val)  typ val
 #endif
 
 /* ************************************************************************** */
@@ -48,10 +44,6 @@ void *vpx_malloc(size_t size);
 void *vpx_calloc(size_t num, size_t size);
 void *vpx_realloc(void *memblk, size_t size);
 void vpx_free(void *memblk);
-
-void *vpx_memcpy(void *dest, const void *src, size_t length);
-void *vpx_memset(void *dest, int val, size_t length);
-void *vpx_memmove(void *dest, const void *src, size_t count);
 
 /* ************************************************************************** */
 

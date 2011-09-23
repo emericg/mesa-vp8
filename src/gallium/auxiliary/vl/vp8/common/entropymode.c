@@ -208,7 +208,7 @@ void vp8_init_mbmode_probs(VP8_COMMON *x)
         x->kf_uv_mode_prob, bct, kf_uv_mode_cts,
         256, 1
     );
-    vpx_memcpy(x->fc.sub_mv_ref_prob, sub_mv_ref_prob, sizeof(sub_mv_ref_prob));
+    memcpy(x->fc.sub_mv_ref_prob, sub_mv_ref_prob, sizeof(sub_mv_ref_prob));
 }
 
 

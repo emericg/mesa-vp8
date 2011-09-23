@@ -9,8 +9,8 @@
  */
 
 
-#ifndef __INC_VP8D_INT_H
-#define __INC_VP8D_INT_H
+#ifndef VP8D_INT_H
+#define VP8D_INT_H
 
 #include "../common/onyxd.h"
 #include "treereader.h"
@@ -111,4 +111,4 @@ int vp8_decode_frame(VP8D_COMP *cpi);
     } while(0)
 #endif /* CONFIG_DEBUG */
 
-#endif /* __INC_VP8D_INT_H */
+#endif /* VP8D_INT_H */

@@ -50,7 +50,7 @@ VP8D_PTR vp8dx_create_decompressor(VP8D_CONFIG *oxcf)
     if (!pbi)
         return NULL;
 
-    vpx_memset(pbi, 0, sizeof(VP8D_COMP));
+    memset(pbi, 0, sizeof(VP8D_COMP));
 
     if (setjmp(pbi->common.error.jmp))
     {
@@ -67,9 +67,9 @@ VP8D_PTR vp8dx_create_decompressor(VP8D_CONFIG *oxcf)
     pbi->common.current_video_frame = 0;
     pbi->ready_for_new_data = 1;
 
-    /* vp8cx_init_de_quantizer() is first called here. Add check in frame_init_dequantizer() to avoid
-     *  unnecessary calling of vp8cx_init_de_quantizer() for every frame.
-     */
+    /* vp8cx_init_de_quantizer() is first called here. Add check in
+     * frame_init_dequantizer() to avoid unnecessary calling of
+     * vp8cx_init_de_quantizer() for every frame. */
     vp8cx_init_de_quantizer(pbi);
 
     vp8_loop_filter_init(&pbi->common);

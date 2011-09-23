@@ -9,21 +9,15 @@
  */
 
 
-#ifndef __INC_BLOCKD_H
-#define __INC_BLOCKD_H
+#ifndef BLOCKD_H
+#define BLOCKD_H
 
-void vpx_log(const char *format, ...);
-
-#include "mem_align.h"
+#include "../vpx_mem.h"
 #include "yv12utils.h"
 
 #include "mv.h"
 #include "treecoder.h"
 #include "subpixel.h"
-
-/*#define DCPRED 1*/
-#define DCPREDSIMTHRESH 0
-#define DCPREDCNTTHRESH 3
 
 #define MB_FEATURE_TREE_PROBS   3
 #define MAX_MB_SEGMENTS         4
@@ -69,11 +63,11 @@ typedef enum
 
 typedef enum
 {
-    DC_PRED,            /* average of above and left pixels */
-    V_PRED,             /* vertical prediction */
-    H_PRED,             /* horizontal prediction */
-    TM_PRED,            /* Truemotion prediction */
-    B_PRED,             /* block based prediction, each block has its own prediction mode */
+    DC_PRED,        /* average of above and left pixels */
+    V_PRED,         /* vertical prediction */
+    H_PRED,         /* horizontal prediction */
+    TM_PRED,        /* Truemotion prediction */
+    B_PRED,         /* block based prediction, each block has its own prediction mode */
 
     NEARESTMV,
     NEARMV,
@@ -87,10 +81,9 @@ typedef enum
 /* Macroblock level features */
 typedef enum
 {
-    MB_LVL_ALT_Q = 0,               /* Use alternate Quantizer .... */
-    MB_LVL_ALT_LF = 1,              /* Use alternate loop filter value... */
-    MB_LVL_MAX = 2                  /* Number of MB level features supported */
-
+    MB_LVL_ALT_Q = 0,  /* Use alternate Quantizer .... */
+    MB_LVL_ALT_LF,     /* Use alternate loop filter value... */
+    MB_LVL_MAX         /* Number of MB level features supported */
 } MB_LVL_FEATURES;
 
 /* Segment Feature Masks */
@@ -289,4 +282,4 @@ static void update_blockd_bmi(MACROBLOCKD *xd)
     }
 }
 
-#endif /* __INC_BLOCKD_H */
+#endif /* BLOCKD_H */

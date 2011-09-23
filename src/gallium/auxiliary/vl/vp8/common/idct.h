@@ -9,8 +9,8 @@
  */
 
 
-#ifndef __INC_IDCT_H
-#define __INC_IDCT_H
+#ifndef IDCT_H
+#define IDCT_H
 
 #define prototype_second_order(sym) \
     void sym(short *input, short *output)
@@ -65,4 +65,4 @@ typedef struct
 
 #define IDCT_INVOKE(ctx,fn) vp8_idct_##fn
 
-#endif /* __INC_IDCT_H */
+#endif /* IDCT_H */

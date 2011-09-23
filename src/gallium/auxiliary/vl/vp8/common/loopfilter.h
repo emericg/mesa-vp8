@@ -12,7 +12,7 @@
 #ifndef loopfilter_h
 #define loopfilter_h
 
-#include "mem_align.h"
+#include "../vpx_mem.h"
 
 #define MAX_LOOP_FILTER   63
 #define SIMD_WIDTH        16

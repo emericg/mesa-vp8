@@ -9,8 +9,8 @@
  */
 
 
-#ifndef __INC_FINDNEARMV_H
-#define __INC_FINDNEARMV_H
+#ifndef FINDNEARMV_H
+#define FINDNEARMV_H
 
 #include "mv.h"
 #include "blockd.h"
@@ -170,4 +170,4 @@ static B_PREDICTION_MODE above_block_mode(const MODE_INFO *cur_mb, int b, int mi
     return (cur_mb->bmi + b - 4)->as_mode;
 }
 
-#endif /* __INC_FINDNEARMV_H */
+#endif /* FINDNEARMV_H */

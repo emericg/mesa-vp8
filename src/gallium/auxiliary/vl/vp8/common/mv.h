@@ -9,8 +9,8 @@
  */
 
 
-#ifndef __INC_MV_H
-#define __INC_MV_H
+#ifndef MV_H
+#define MV_H
 
 #include <stdint.h>
 
@@ -26,4 +26,4 @@ typedef union
     MV        as_mv;
 } int_mv; /* facilitates faster equality tests and copies */
 
-#endif /* __INC_MV_H */
+#endif /* MV_H */

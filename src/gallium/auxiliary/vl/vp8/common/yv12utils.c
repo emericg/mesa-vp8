@@ -24,7 +24,7 @@ vp8_yv12_de_alloc_frame_buffer(YV12_BUFFER_CONFIG *ybf)
         /* buffer_alloc isn't accessed by most functions.  Rather y_buffer,
           u_buffer and v_buffer point to buffer_alloc and are used.  Clear out
           all of this so that a freed pointer isn't inadvertently used */
-        vpx_memset (ybf, 0, sizeof (YV12_BUFFER_CONFIG));
+        memset (ybf, 0, sizeof (YV12_BUFFER_CONFIG));
     }
     else
     {
@@ -38,8 +38,6 @@ vp8_yv12_de_alloc_frame_buffer(YV12_BUFFER_CONFIG *ybf)
 int
 vp8_yv12_alloc_frame_buffer(YV12_BUFFER_CONFIG *ybf, int width, int height, int border)
 {
-/*NOTE:*/
-
     if (ybf)
     {
         int y_stride = ((width + 2 * border) + 31) & ~31;
@@ -108,6 +106,7 @@ vp8_yv12_extend_frame_borders(YV12_BUFFER_CONFIG *ybf)
     /***********/
     /* Y Plane */
     /***********/
+
     Border = ybf->border;
     plane_stride = ybf->y_stride;
     plane_height = ybf->y_height;
@@ -121,8 +120,8 @@ vp8_yv12_extend_frame_borders(YV12_BUFFER_CONFIG *ybf)
 
     for (i = 0; i < plane_height; i++)
     {
-        vpx_memset(dest_ptr1, src_ptr1[0], Border);
-        vpx_memset(dest_ptr2, src_ptr2[0], Border);
+        memset(dest_ptr1, src_ptr1[0], Border);
+        memset(dest_ptr2, src_ptr2[0], Border);
         src_ptr1  += plane_stride;
         src_ptr2  += plane_stride;
         dest_ptr1 += plane_stride;
@@ -137,8 +136,8 @@ vp8_yv12_extend_frame_borders(YV12_BUFFER_CONFIG *ybf)
 
     for (i = 0; i < (int)Border; i++)
     {
-        vpx_memcpy(dest_ptr1, src_ptr1, plane_stride);
-        vpx_memcpy(dest_ptr2, src_ptr2, plane_stride);
+        memcpy(dest_ptr1, src_ptr1, plane_stride);
+        memcpy(dest_ptr2, src_ptr2, plane_stride);
         dest_ptr1 += plane_stride;
         dest_ptr2 += plane_stride;
     }
@@ -147,6 +146,7 @@ vp8_yv12_extend_frame_borders(YV12_BUFFER_CONFIG *ybf)
     /***********/
     /* U Plane */
     /***********/
+
     plane_stride = ybf->uv_stride;
     plane_height = ybf->uv_height;
     plane_width = ybf->uv_width;
@@ -160,8 +160,8 @@ vp8_yv12_extend_frame_borders(YV12_BUFFER_CONFIG *ybf)
 
     for (i = 0; i < plane_height; i++)
     {
-        vpx_memset(dest_ptr1, src_ptr1[0], Border);
-        vpx_memset(dest_ptr2, src_ptr2[0], Border);
+        memset(dest_ptr1, src_ptr1[0], Border);
+        memset(dest_ptr2, src_ptr2[0], Border);
         src_ptr1  += plane_stride;
         src_ptr2  += plane_stride;
         dest_ptr1 += plane_stride;
@@ -176,8 +176,8 @@ vp8_yv12_extend_frame_borders(YV12_BUFFER_CONFIG *ybf)
 
     for (i = 0; i < (int)(Border); i++)
     {
-        vpx_memcpy(dest_ptr1, src_ptr1, plane_stride);
-        vpx_memcpy(dest_ptr2, src_ptr2, plane_stride);
+        memcpy(dest_ptr1, src_ptr1, plane_stride);
+        memcpy(dest_ptr2, src_ptr2, plane_stride);
         dest_ptr1 += plane_stride;
         dest_ptr2 += plane_stride;
     }
@@ -194,8 +194,8 @@ vp8_yv12_extend_frame_borders(YV12_BUFFER_CONFIG *ybf)
 
     for (i = 0; i < plane_height; i++)
     {
-        vpx_memset(dest_ptr1, src_ptr1[0], Border);
-        vpx_memset(dest_ptr2, src_ptr2[0], Border);
+        memset(dest_ptr1, src_ptr1[0], Border);
+        memset(dest_ptr2, src_ptr2[0], Border);
         src_ptr1  += plane_stride;
         src_ptr2  += plane_stride;
         dest_ptr1 += plane_stride;
@@ -210,8 +210,8 @@ vp8_yv12_extend_frame_borders(YV12_BUFFER_CONFIG *ybf)
 
     for (i = 0; i < (int)(Border); i++)
     {
-        vpx_memcpy(dest_ptr1, src_ptr1, plane_stride);
-        vpx_memcpy(dest_ptr2, src_ptr2, plane_stride);
+        memcpy(dest_ptr1, src_ptr1, plane_stride);
+        memcpy(dest_ptr2, src_ptr2, plane_stride);
         dest_ptr1 += plane_stride;
         dest_ptr2 += plane_stride;
     }
@@ -233,7 +233,7 @@ vp8_yv12_copy_frame(YV12_BUFFER_CONFIG *src_ybc, YV12_BUFFER_CONFIG *dst_ybc)
 
     for (row = 0; row < src_ybc->y_height; row++)
     {
-        vpx_memcpy(dest, source, src_ybc->y_width);
+        memcpy(dest, source, src_ybc->y_width);
         source += src_ybc->y_stride;
         dest   += dst_ybc->y_stride;
     }
@@ -243,7 +243,7 @@ vp8_yv12_copy_frame(YV12_BUFFER_CONFIG *src_ybc, YV12_BUFFER_CONFIG *dst_ybc)
 
     for (row = 0; row < src_ybc->uv_height; row++)
     {
-        vpx_memcpy(dest, source, src_ybc->uv_width);
+        memcpy(dest, source, src_ybc->uv_width);
         source += src_ybc->uv_stride;
         dest   += dst_ybc->uv_stride;
     }
@@ -253,7 +253,7 @@ vp8_yv12_copy_frame(YV12_BUFFER_CONFIG *src_ybc, YV12_BUFFER_CONFIG *dst_ybc)
 
     for (row = 0; row < src_ybc->uv_height; row++)
     {
-        vpx_memcpy(dest, source, src_ybc->uv_width);
+        memcpy(dest, source, src_ybc->uv_width);
         source += src_ybc->uv_stride;
         dest   += dst_ybc->uv_stride;
     }

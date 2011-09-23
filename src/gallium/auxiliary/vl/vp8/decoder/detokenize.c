@@ -11,11 +11,10 @@
 
 #include <stdint.h>
 
-#include "../common/blockd.h"
-#include "onyxd_int.h"
 #include "../vpx_mem.h"
-#include "../common/mem_align.h"
+#include "onyxd_int.h"
 #include "detokenize.h"
+#include "../common/blockd.h"
 
 #define OCB_X PREV_COEF_CONTEXTS * ENTROPY_NODES
 
@@ -62,13 +61,13 @@ void vp8_reset_mb_tokens_context(MACROBLOCKD *x)
     /* Clear entropy contexts for Y2 blocks */
     if (x->mode_info_context->mbmi.mode != B_PRED && x->mode_info_context->mbmi.mode != SPLITMV)
     {
-        vpx_memset(x->above_context, 0, sizeof(ENTROPY_CONTEXT_PLANES));
-        vpx_memset(x->left_context, 0, sizeof(ENTROPY_CONTEXT_PLANES));
+        memset(x->above_context, 0, sizeof(ENTROPY_CONTEXT_PLANES));
+        memset(x->left_context, 0, sizeof(ENTROPY_CONTEXT_PLANES));
     }
     else
     {
-        vpx_memset(x->above_context, 0, sizeof(ENTROPY_CONTEXT_PLANES)-1);
-        vpx_memset(x->left_context, 0, sizeof(ENTROPY_CONTEXT_PLANES)-1);
+        memset(x->above_context, 0, sizeof(ENTROPY_CONTEXT_PLANES)-1);
+        memset(x->left_context, 0, sizeof(ENTROPY_CONTEXT_PLANES)-1);
     }
 }
 
@@ -325,6 +324,7 @@ ONE_CONTEXT_NODE_0_:
     }
 
     qcoeff_ptr [ scan[15] ] = (int16_t) v;
+
 BLOCK_FINISHED:
     *a = *l = ((eobs[i] = c) != !type);   /* any nonzero data? */
     eobtotal += c;
@@ -358,6 +358,6 @@ BLOCK_FINISHED:
     bc->value = value;
     bc->count = count;
     bc->range = range;
-    return eobtotal;
 
+    return eobtotal;
 }

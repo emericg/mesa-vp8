@@ -20,14 +20,14 @@ extern  void vp8_init_scan_order_mask();
 static void update_mode_info_border(MODE_INFO *mi, int rows, int cols)
 {
     int i;
-    vpx_memset(mi - cols - 2, 0, sizeof(MODE_INFO) * (cols + 1));
+    memset(mi - cols - 2, 0, sizeof(MODE_INFO) * (cols + 1));
 
     for (i = 0; i < rows; i++)
     {
         /* TODO(holmer): Bug? This updates the last element of each row
          * rather than the border element!
          */
-        vpx_memset(&mi[i*cols-1], 0, sizeof(MODE_INFO));
+        memset(&mi[i*cols-1], 0, sizeof(MODE_INFO));
     }
 }
 
@@ -176,7 +176,7 @@ void vp8_create_common(VP8_COMMON *oci)
     oci->clamp_type = RECON_CLAMP_REQUIRED;
 
     /* Initialise reference frame sign bias structure to defaults */
-    vpx_memset(oci->ref_frame_sign_bias, 0, sizeof(oci->ref_frame_sign_bias));
+    memset(oci->ref_frame_sign_bias, 0, sizeof(oci->ref_frame_sign_bias));
 
     /* Default disable buffer to buffer copying */
     oci->copy_buffer_to_gf = 0;

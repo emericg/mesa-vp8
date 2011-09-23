@@ -8,11 +8,11 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#ifndef __INC_SETUPINTRARECON_H
-#define __INC_SETUPINTRARECON_H
+#ifndef SETUPINTRARECON_H
+#define SETUPINTRARECON_H
 
 #include "yv12utils.h"
 
 extern void vp8_setup_intra_recon(YV12_BUFFER_CONFIG *ybf);
 
-#endif /* __INC_SETUPINTRARECON_H */
+#endif /* SETUPINTRARECON_H */

@@ -9,8 +9,8 @@
  */
 
 
-#ifndef __INC_TREECODER_H
-#define __INC_TREECODER_H
+#ifndef TREECODER_H
+#define TREECODER_H
 
 #define vp8_prob_half ( (vp8_prob) 128)
 #define vp8_complement( x) (255 - x)
@@ -79,4 +79,4 @@ void vp8bc_tree_probs_from_distribution(int n, /* n = size of alphabet */
                                         const unsigned int num_events[ /* n */ ],
                                         c_bool_coder_spec *s);
 
-#endif /* __INC_TREECODER_H */
+#endif /* TREECODER_H */

@@ -46,7 +46,7 @@ void vp8_dequant_idct_add_c(short *input, short *dq, unsigned char *pred,
     /* the idct halves ( >> 1) the pitch */
     vp8_short_idct4x4llm_c(input, output, 4 << 1);
 
-    vpx_memset(input, 0, 32);
+    memset(input, 0, 32);
 
     for (r = 0; r < 4; r++)
     {
@@ -88,7 +88,7 @@ void vp8_dequant_dc_idct_add_c(short *input, short *dq, unsigned char *pred,
     /* the idct halves ( >> 1) the pitch */
     vp8_short_idct4x4llm_c(input, output, 4 << 1);
 
-    vpx_memset(input, 0, 32);
+    memset(input, 0, 32);
 
     for (r = 0; r < 4; r++)
     {

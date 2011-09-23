@@ -9,8 +9,8 @@
  */
 
 
-#ifndef __INC_RECON_H
-#define __INC_RECON_H
+#ifndef RECON_H
+#define RECON_H
 
 #include "blockd.h"
 

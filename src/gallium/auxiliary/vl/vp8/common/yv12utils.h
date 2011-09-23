@@ -38,13 +38,13 @@ typedef enum
 
 typedef struct
 {
-    int   y_width;
-    int   y_height;
-    int   y_stride;
+    int y_width;
+    int y_height;
+    int y_stride;
 
-    int   uv_width;
-    int   uv_height;
-    int   uv_stride;
+    int uv_width;
+    int uv_height;
+    int uv_stride;
 
     unsigned char *y_buffer;
     unsigned char *u_buffer;

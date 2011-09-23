@@ -9,8 +9,8 @@
  */
 
 
-#ifndef __INC_ENTROPY_H
-#define __INC_ENTROPY_H
+#ifndef ENTROPY_H
+#define ENTROPY_H
 
 #include "treecoder.h"
 #include "blockd.h"
@@ -99,4 +99,4 @@ extern const int vp8_mb_feature_data_bits[MB_LVL_MAX];
 
 void vp8_coef_tree_initialize(void);
 
-#endif /* __INC_ENTROPY_H */
+#endif /* ENTROPY_H */

@@ -9,8 +9,8 @@
  */
 
 
-#ifndef __INC_VP8D_H
-#define __INC_VP8D_H
+#ifndef VP8D_H
+#define VP8D_H
 
 /* Create/destroy static data structures. */
 #ifdef __cplusplus
@@ -21,48 +21,48 @@ extern "C"
 #include <stdint.h>
 
 #include "../vpx_codec.h"
+#include "../vpx_mem.h"
 #include "yv12utils.h"
-#include "mem_align.h"
 
-    typedef void *VP8D_PTR;
+typedef void *VP8D_PTR;
 
-    typedef struct
-    {
-        int Width;
-        int Height;
-        int Version;
-        int input_partition;
-    } VP8D_CONFIG;
+typedef struct
+{
+    int Width;
+    int Height;
+    int Version;
+    int input_partition;
+} VP8D_CONFIG;
 
-    /*!\brief reference frame type
-     * The set of macros define the type of VP8 reference frames
-     */
-    typedef enum
-    {
-        VP8_LAST_FRAME = 1,
-        VP8_GOLD_FRAME = 2,
-        VP8_ALTR_FRAME = 4
-    } VP8_REF_FRAME;
+/*!\brief reference frame type
+ * The set of macros define the type of VP8 reference frames
+ */
+typedef enum
+{
+    VP8_LAST_FRAME = 1,
+    VP8_GOLD_FRAME = 2,
+    VP8_ALTR_FRAME = 4
+} VP8_REF_FRAME;
 
-    typedef enum
-    {
-        VP8D_OK = 0
-    } VP8D_SETTING;
+typedef enum
+{
+    VP8D_OK = 0
+} VP8D_SETTING;
 
-    void vp8dx_initialize(void);
+void vp8dx_initialize(void);
 
-    int vp8dx_receive_compressed_data(VP8D_PTR comp, unsigned long size, const unsigned char *dest, int64_t time_stamp);
-    int vp8dx_get_raw_frame(VP8D_PTR comp, YV12_BUFFER_CONFIG *sd, int64_t *time_stamp, int64_t *time_end_stamp);
+int vp8dx_receive_compressed_data(VP8D_PTR comp, unsigned long size, const unsigned char *dest, int64_t time_stamp);
+int vp8dx_get_raw_frame(VP8D_PTR comp, YV12_BUFFER_CONFIG *sd, int64_t *time_stamp, int64_t *time_end_stamp);
 
-    vpx_codec_err_t vp8dx_get_reference(VP8D_PTR comp, VP8_REF_FRAME ref_frame_flag, YV12_BUFFER_CONFIG *sd);
-    vpx_codec_err_t vp8dx_set_reference(VP8D_PTR comp, VP8_REF_FRAME ref_frame_flag, YV12_BUFFER_CONFIG *sd);
+vpx_codec_err_t vp8dx_get_reference(VP8D_PTR comp, VP8_REF_FRAME ref_frame_flag, YV12_BUFFER_CONFIG *sd);
+vpx_codec_err_t vp8dx_set_reference(VP8D_PTR comp, VP8_REF_FRAME ref_frame_flag, YV12_BUFFER_CONFIG *sd);
 
-    VP8D_PTR vp8dx_create_decompressor(VP8D_CONFIG *oxcf);
+VP8D_PTR vp8dx_create_decompressor(VP8D_CONFIG *oxcf);
 
-    void vp8dx_remove_decompressor(VP8D_PTR comp);
+void vp8dx_remove_decompressor(VP8D_PTR comp);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* __INC_VP8D_H */
+#endif /* VP8D_H */

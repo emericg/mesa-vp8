@@ -8,13 +8,6 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-
-#define __VPX_MEM_C__
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 #include "vpx_mem.h"
 
 void *vpx_memalign(size_t align, size_t size)
@@ -22,7 +15,7 @@ void *vpx_memalign(size_t align, size_t size)
     void *addr,
          * x = NULL;
 
-    addr = VPX_MALLOC_L(size + align - 1 + ADDRESS_STORAGE_SIZE);
+    addr = malloc(size + align - 1 + ADDRESS_STORAGE_SIZE);
 
     if (addr)
     {
@@ -46,15 +39,14 @@ void *vpx_calloc(size_t num, size_t size)
     x = vpx_memalign(DEFAULT_ALIGNMENT, num * size);
 
     if (x)
-        VPX_MEMSET_L(x, 0, num * size);
+        memset(x, 0, num * size);
 
     return x;
 }
 
 void *vpx_realloc(void *memblk, size_t size)
 {
-    void *addr,
-         * new_addr = NULL;
+    void *addr, *new_addr = NULL;
     int align = DEFAULT_ALIGNMENT;
 
     /*
@@ -74,7 +66,7 @@ void *vpx_realloc(void *memblk, size_t size)
         addr   = (void *)(((size_t *)memblk)[-1]);
         memblk = NULL;
 
-        new_addr = VPX_REALLOC_L(addr, size + align + ADDRESS_STORAGE_SIZE);
+        new_addr = realloc(addr, size + align + ADDRESS_STORAGE_SIZE);
 
         if (new_addr)
         {
@@ -95,21 +87,6 @@ void vpx_free(void *memblk)
     if (memblk)
     {
         void *addr = (void *)(((size_t *)memblk)[-1]);
-        VPX_FREE_L(addr);
+        free(addr);
     }
-}
-
-void *vpx_memcpy(void *dest, const void *source, size_t length)
-{
-    return VPX_MEMCPY_L(dest, source, length);
-}
-
-void *vpx_memset(void *dest, int val, size_t length)
-{
-    return VPX_MEMSET_L(dest, val, length);
-}
-
-void *vpx_memmove(void *dest, const void *src, size_t count)
-{
-    return VPX_MEMMOVE_L(dest, src, count);
 }

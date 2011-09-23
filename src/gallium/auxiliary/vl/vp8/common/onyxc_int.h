@@ -9,8 +9,8 @@
  */
 
 
-#ifndef __INC_VP8C_INT_H
-#define __INC_VP8C_INT_H
+#ifndef VP8C_INT_H
+#define VP8C_INT_H
 
 #include "../vpx_codec.h"
 #include "loopfilter.h"
@@ -167,4 +167,4 @@ typedef struct VP8Common
     double framerate;
 } VP8_COMMON;
 
-#endif /* __INC_VP8C_INT_H */
+#endif /* VP8C_INT_H */
