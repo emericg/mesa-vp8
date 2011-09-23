@@ -166,8 +166,6 @@ C_SOURCES := \
 	vl/vp8/common/findnearmv.c \
 	vl/vp8/common/idctllm.c \
 	vl/vp8/common/invtrans.c \
-	vl/vp8/common/loopfilter.c \
-	vl/vp8/common/loopfilter_filters.c \
 	vl/vp8/common/mbpitch.c \
 	vl/vp8/common/modecontext.c \
 	vl/vp8/common/quant_common.c \

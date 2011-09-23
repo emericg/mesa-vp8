@@ -72,7 +72,7 @@ VP8D_PTR vp8dx_create_decompressor(VP8D_CONFIG *oxcf)
      * vp8cx_init_de_quantizer() for every frame. */
     vp8cx_init_de_quantizer(pbi);
 
-    vp8_loop_filter_init(&pbi->common);
+    // vp8_loop_filter_init(&pbi->common);
 
     pbi->common.error.setjmp = 0;
     pbi->input_partition = oxcf->input_partition;
@@ -358,7 +358,7 @@ int vp8dx_receive_compressed_data(VP8D_PTR ptr, unsigned long size, const unsign
         if (cm->filter_level)
         {
             /* Apply the loop filter if appropriate. */
-            vp8_loop_filter_frame(cm, &pbi->mb);
+            // vp8_loop_filter_frame(cm, &pbi->mb);
         }
 
         vp8_yv12_extend_frame_borders(cm->frame_to_show);
