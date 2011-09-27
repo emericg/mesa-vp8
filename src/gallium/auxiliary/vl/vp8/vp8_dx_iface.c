@@ -10,19 +10,16 @@
 
 #include "vp8_dx_iface.h"
 
-static unsigned long vp8_priv_sz(const vpx_codec_dec_cfg_t *si, vpx_codec_flags_t);
-
 static const mem_req_t vp8_mem_req_segs[] =
 {
-    {VP8_SEG_ALG_PRIV, 0, 8, VPX_CODEC_MEM_ZERO, vp8_priv_sz},
-    {VP8_SEG_MAX, 0, 0, 0, NULL}
+    {VP8_SEG_ALG_PRIV, 0, 8, 1},
+    {VP8_SEG_MAX, 0, 0, 0}
 };
 
 struct vpx_codec_alg_priv
 {
     vpx_codec_priv_t        base;
     vpx_codec_mmap_t        mmaps[NELEMENTS(vp8_mem_req_segs)-1];
-    vpx_codec_dec_cfg_t     cfg;
     vp8_stream_info_t       si;
     int                     defer_alloc;
     int                     decoder_init;
@@ -31,17 +28,6 @@ struct vpx_codec_alg_priv
     int                     img_setup;
     int                     img_avail;
 };
-
-static unsigned long vp8_priv_sz(const vpx_codec_dec_cfg_t *si,
-                                 vpx_codec_flags_t          flags)
-{
-    /* Although this declaration is constant, we can't use it in the requested
-     * segments list because we want to define the requested segments list
-     * before defining the private type (so that the number of memory maps is
-     * known) */
-    (void)si;
-    return sizeof(vpx_codec_alg_priv_t);
-}
 
 static void vp8_mmap_dtor(vpx_codec_mmap_t *mmap)
 {
@@ -55,7 +41,7 @@ static vpx_codec_err_t vp8_mmap_alloc(vpx_codec_mmap_t *mmap)
 
     align = mmap->align ? mmap->align - 1 : 0;
 
-    if (mmap->flags & VPX_CODEC_MEM_ZERO)
+    if (mmap->flags == 1)
         mmap->priv = calloc(1, mmap->sz + align);
     else
         mmap->priv = malloc(mmap->sz + align);
@@ -84,14 +70,13 @@ static vpx_codec_err_t vp8_validate_mmaps(const vp8_stream_info_t *si,
         }
 
         /* Verify variable size segment is big enough for the current si. */
-        if (vp8_mem_req_segs[i].calc_sz)
         {
             vpx_codec_dec_cfg_t cfg;
 
             cfg.w = si->w;
             cfg.h = si->h;
 
-            if (mmaps[i].sz < vp8_mem_req_segs[i].calc_sz(&cfg, init_flags))
+            if (mmaps[i].sz < sizeof(si))
             {
                 res = VPX_CODEC_MEM_ERROR;
                 break;
@@ -100,31 +85,6 @@ static vpx_codec_err_t vp8_validate_mmaps(const vp8_stream_info_t *si,
     }
 
     return res;
-}
-
-static void vp8_init_ctx(vpx_codec_ctx_t *ctx, const vpx_codec_mmap_t *mmap)
-{
-    int i;
-
-    printf("[VP8] vp8_init_ctx()\n");
-
-    ctx->priv = mmap->base;
-    ctx->priv->sz = sizeof(*ctx->priv);
-    ctx->priv->alg_priv = mmap->base;
-
-    for (i = 0; i < NELEMENTS(ctx->priv->alg_priv->mmaps); i++)
-        ctx->priv->alg_priv->mmaps[i].id = vp8_mem_req_segs[i].id;
-
-    ctx->priv->alg_priv->mmaps[0] = *mmap;
-    ctx->priv->alg_priv->si.sz = sizeof(ctx->priv->alg_priv->si);
-    ctx->priv->init_flags = ctx->init_flags;
-
-    if (ctx->config.dec)
-    {
-        /* Update the reference to the config structure to an internal copy. */
-        ctx->priv->alg_priv->cfg = *ctx->config.dec;
-        ctx->config.dec = &ctx->priv->alg_priv->cfg;
-    }
 }
 
 vpx_codec_err_t vp8_init(vpx_codec_ctx_t *ctx)
@@ -150,10 +110,18 @@ vpx_codec_err_t vp8_init(vpx_codec_ctx_t *ctx)
 
         if (!res)
         {
-            vp8_init_ctx(ctx, &mmap);
+            int i;
 
+            ctx->priv = mmap.base;
+            ctx->priv->sz = sizeof(*ctx->priv);
+            ctx->priv->alg_priv = mmap.base;
+
+            for (i = 0; i < NELEMENTS(ctx->priv->alg_priv->mmaps); i++)
+                ctx->priv->alg_priv->mmaps[i].id = vp8_mem_req_segs[i].id;
+
+            ctx->priv->alg_priv->mmaps[0] = mmap;
+            ctx->priv->alg_priv->si.sz = sizeof(ctx->priv->alg_priv->si);
             ctx->priv->alg_priv->defer_alloc = 1;
-            /*post processing level initialized to do nothing */
         }
     }
 
@@ -237,36 +205,6 @@ update_error_state(vpx_codec_alg_priv_t                 *ctx,
     return res;
 }
 
-static void yuvconfig2image(vpx_image_t              *img,
-                            const YV12_BUFFER_CONFIG *yv12,
-                            void                     *user_priv)
-{
-    /** vpx_img_wrap() doesn't allow specifying independent strides for
-      * the Y, U, and V planes, nor other alignment adjustments that
-      * might be representable by a YV12_BUFFER_CONFIG, so we just
-      * initialize all the fields. */
-    img->fmt = yv12->clrtype == REG_YUV ? VPX_IMG_FMT_I420 : VPX_IMG_FMT_VPXI420;
-    img->w = yv12->y_stride;
-    img->h = (yv12->y_height + 2 * VP8BORDERINPIXELS + 15) & ~15;
-    img->d_w = yv12->y_width;
-    img->d_h = yv12->y_height;
-    img->x_chroma_shift = 1;
-    img->y_chroma_shift = 1;
-    img->planes[VPX_PLANE_Y] = yv12->y_buffer;
-    img->planes[VPX_PLANE_U] = yv12->v_buffer;
-    img->planes[VPX_PLANE_V] = yv12->u_buffer;
-    img->planes[VPX_PLANE_ALPHA] = NULL;
-    img->stride[VPX_PLANE_Y] = yv12->y_stride;
-    img->stride[VPX_PLANE_U] = yv12->uv_stride;
-    img->stride[VPX_PLANE_V] = yv12->uv_stride;
-    img->stride[VPX_PLANE_ALPHA] = yv12->y_stride;
-    img->bps = 12;
-    img->user_priv = user_priv;
-    img->img_data = yv12->buffer_alloc;
-    img->img_data_owner = 0;
-    img->self_allocd = 0;
-}
-
 vpx_codec_err_t vp8_decode(vpx_codec_alg_priv_t *ctx,
                            const uint8_t        *data,
                            unsigned int          data_sz,
@@ -302,7 +240,10 @@ vpx_codec_err_t vp8_decode(vpx_codec_alg_priv_t *ctx,
             ctx->mmaps[i].flags = vp8_mem_req_segs[i].flags;
 
             if (!ctx->mmaps[i].sz)
-                ctx->mmaps[i].sz = vp8_mem_req_segs[i].calc_sz(&cfg, ctx->base.init_flags);
+            {
+                (void)&cfg;
+                ctx->mmaps[i].sz = sizeof(vpx_codec_alg_priv_t);
+            }
 
             res = vp8_mmap_alloc(&ctx->mmaps[i]);
         }
@@ -324,7 +265,6 @@ vpx_codec_err_t vp8_decode(vpx_codec_alg_priv_t *ctx,
 
             oxcf.Width = ctx->si.w;
             oxcf.Height = ctx->si.h;
-            oxcf.Version = 9;
             oxcf.input_partition = 0;
 
             optr = vp8dx_create_decompressor(&oxcf);
@@ -379,64 +319,4 @@ vpx_image_t *vp8_get_frame(vpx_codec_alg_priv_t *ctx,
     }
 
     return img;
-}
-
-static vpx_codec_err_t image2yuvconfig(const vpx_image_t  *img,
-                                       YV12_BUFFER_CONFIG *yv12)
-{
-    vpx_codec_err_t res = VPX_CODEC_OK;
-    yv12->y_buffer  = img->planes[VPX_PLANE_Y];
-    yv12->u_buffer  = img->planes[VPX_PLANE_U];
-    yv12->v_buffer  = img->planes[VPX_PLANE_V];
-
-    yv12->y_width   = img->d_w;
-    yv12->y_height  = img->d_h;
-    yv12->uv_width  = yv12->y_width / 2;
-    yv12->uv_height = yv12->y_height / 2;
-
-    yv12->y_stride  = img->stride[VPX_PLANE_Y];
-    yv12->uv_stride = img->stride[VPX_PLANE_U];
-
-    yv12->border    = (img->stride[VPX_PLANE_Y] - img->d_w) / 2;
-    yv12->clrtype   = (img->fmt == VPX_IMG_FMT_VPXI420 || img->fmt == VPX_IMG_FMT_VPXYV12);
-
-    return res;
-}
-
-static vpx_codec_err_t vp8_set_reference(vpx_codec_alg_priv_t *ctx,
-                                         int ctr_id,
-                                         va_list args)
-{
-    vpx_ref_frame_t *data = va_arg(args, vpx_ref_frame_t *);
-
-    if (data)
-    {
-        vpx_ref_frame_t *frame = (vpx_ref_frame_t *)data;
-        YV12_BUFFER_CONFIG sd;
-
-        image2yuvconfig(&frame->img, &sd);
-
-        return vp8dx_set_reference(ctx->pbi, frame->frame_type, &sd);
-    }
-    else
-        return VPX_CODEC_INVALID_PARAM;
-}
-
-static vpx_codec_err_t vp8_get_reference(vpx_codec_alg_priv_t *ctx,
-                                         int ctr_id,
-                                         va_list args)
-{
-    vpx_ref_frame_t *data = va_arg(args, vpx_ref_frame_t *);
-
-    if (data)
-    {
-        vpx_ref_frame_t *frame = (vpx_ref_frame_t *)data;
-        YV12_BUFFER_CONFIG sd;
-
-        image2yuvconfig(&frame->img, &sd);
-
-        return vp8dx_get_reference(ctx->pbi, frame->frame_type, &sd);
-    }
-    else
-        return VPX_CODEC_INVALID_PARAM;
 }

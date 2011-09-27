@@ -30,7 +30,6 @@ typedef struct
 {
     int Width;
     int Height;
-    int Version;
     int input_partition;
 } VP8D_CONFIG;
 

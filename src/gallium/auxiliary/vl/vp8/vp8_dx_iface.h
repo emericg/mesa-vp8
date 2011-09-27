@@ -24,6 +24,7 @@ extern "C" {
 #include "vpx_image.h"
 
 #include "common/onyxd.h"
+#include "common/yv12utils.h"
 #include "decoder/onyxd_int.h"
 
 /*!\defgroup vp8 VP8
@@ -72,17 +73,7 @@ typedef struct
     unsigned long sz;
     unsigned int  align;
     unsigned int  flags;
-    unsigned long(*calc_sz)(const vpx_codec_dec_cfg_t *, vpx_codec_flags_t);
 } mem_req_t;
-
-/*!\brief reference frame data struct
- * define the data struct to access vp8 reference frames
- */
-typedef struct vpx_ref_frame
-{
-    int         frame_type; /**< which reference frame */
-    vpx_image_t img;        /**< reference frame data in image format */
-} vpx_ref_frame_t;
 
 /* ************************************************************************** */
 

@@ -36,59 +36,41 @@ extern "C" {
 
 #include "vpx_image.h"
 
-    /*!\brief Algorithm return codes */
-    typedef enum {
-        /*!\brief Operation completed without error */
-        VPX_CODEC_OK,
 
-        /*!\brief Unspecified error */
-        VPX_CODEC_ERROR,
+/*!\brief Algorithm return codes */
+typedef enum {
+    /*!\brief Operation completed without error */
+    VPX_CODEC_OK,
 
-        /*!\brief Memory operation failed */
-        VPX_CODEC_MEM_ERROR,
+    /*!\brief Unspecified error */
+    VPX_CODEC_ERROR,
 
-        /*!\brief ABI version mismatch */
-        VPX_CODEC_ABI_MISMATCH,
+    /*!\brief Memory operation failed */
+    VPX_CODEC_MEM_ERROR,
 
-        /*!\brief Algorithm does not have required capability */
-        VPX_CODEC_INCAPABLE,
+    /*!\brief The given bitstream is not supported.
+     *
+     * The bitstream was unable to be parsed at the highest level. The decoder
+     * is unable to proceed. This error \ref SHOULD be treated as fatal to the
+     * stream. */
+    VPX_CODEC_UNSUP_BITSTREAM,
 
-        /*!\brief The given bitstream is not supported.
-         *
-         * The bitstream was unable to be parsed at the highest level. The decoder
-         * is unable to proceed. This error \ref SHOULD be treated as fatal to the
-         * stream. */
-        VPX_CODEC_UNSUP_BITSTREAM,
+    /*!\brief The coded data for this stream is corrupt or incomplete
+     *
+     * There was a problem decoding the current frame.  This return code
+     * should only be used for failures that prevent future pictures from
+     * being properly decoded. This error \ref MAY be treated as fatal to the
+     * stream or \ref MAY be treated as fatal to the current GOP. If decoding
+     * is continued for the current GOP, artifacts may be present.
+     */
+    VPX_CODEC_CORRUPT_FRAME,
 
-        /*!\brief Encoded bitstream uses an unsupported feature
-         *
-         * The decoder does not implement a feature required by the encoder. This
-         * return code should only be used for features that prevent future
-         * pictures from being properly decoded. This error \ref MAY be treated as
-         * fatal to the stream or \ref MAY be treated as fatal to the current GOP.
-         */
-        VPX_CODEC_UNSUP_FEATURE,
+    /*!\brief An application-supplied parameter is not valid.
+     *
+     */
+    VPX_CODEC_INVALID_PARAM
 
-        /*!\brief The coded data for this stream is corrupt or incomplete
-         *
-         * There was a problem decoding the current frame.  This return code
-         * should only be used for failures that prevent future pictures from
-         * being properly decoded. This error \ref MAY be treated as fatal to the
-         * stream or \ref MAY be treated as fatal to the current GOP. If decoding
-         * is continued for the current GOP, artifacts may be present.
-         */
-        VPX_CODEC_CORRUPT_FRAME,
-
-        /*!\brief An application-supplied parameter is not valid.
-         *
-         */
-        VPX_CODEC_INVALID_PARAM,
-
-        /*!\brief An iterator reached the end of list.
-         *
-         */
-        VPX_CODEC_LIST_END
-    } vpx_codec_err_t;
+} vpx_codec_err_t;
 
 
     /*! \brief Initialization-time Feature Enabling
@@ -140,12 +122,6 @@ extern "C" {
         const char                   *name;        /**< Printable interface name */
         vpx_codec_err_t               err;         /**< Last returned error */
         const char                   *err_detail;  /**< Detailed info, if available */
-        vpx_codec_flags_t             init_flags;  /**< Flags passed at init time */
-        union
-        {
-            struct vpx_codec_dec_cfg *dec;         /**< Decoder Configuration Pointer */
-            void                     *raw;
-        } config;                                  /**< Configuration pointer aliasing union */
         vpx_codec_priv_t             *priv;        /**< Algorithm private storage */
     } vpx_codec_ctx_t;
 
@@ -164,10 +140,6 @@ extern "C" {
        unsigned long sz;     /**< size of the segment, in bytes */
        unsigned int  align;  /**< required alignment of the segment, in bytes */
        unsigned int  flags;  /**< bitfield containing segment properties */
-
-   #define VPX_CODEC_MEM_ZERO     0x1  /**< Segment must be zeroed by allocation */
-   #define VPX_CODEC_MEM_WRONLY   0x2  /**< Segment need not be readable */
-   #define VPX_CODEC_MEM_FAST     0x4  /**< Place in fast memory, if available */
 
        /* The following members are to be filled in by the allocation function */
        void *base;   /**< pointer to the allocated segment */
@@ -211,33 +183,6 @@ extern "C" {
      *
      */
     const char *vpx_codec_err_to_string(vpx_codec_err_t err);
-
-
-    /*!\brief Retrieve error synopsis for codec context
-     *
-     * Returns a human readable string for the last error returned by the
-     * algorithm. The returned error will be one line and will not contain
-     * any newline characters.
-     *
-     *
-     * \param[in]    ctx     Pointer to this instance's context.
-     *
-     */
-    const char *vpx_codec_error(vpx_codec_ctx_t *ctx);
-
-
-    /*!\brief Retrieve detailed error information for codec context
-     *
-     * Returns a human readable string providing detailed information about
-     * the last error.
-     *
-     * \param[in]    ctx     Pointer to this instance's context.
-     *
-     * \retval NULL
-     *     No detailed information is available.
-     */
-    const char *vpx_codec_error_detail(vpx_codec_ctx_t *ctx);
-
 
     /*!\brief Internal error
      */

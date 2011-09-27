@@ -177,6 +177,11 @@ vl_vp8_set_reference_frames(struct pipe_video_decoder *decoder,
    for (; i < VL_MAX_REF_FRAMES; ++i)
       for (j = 0; j < VL_MAX_PLANES; ++j)
          pipe_sampler_view_reference(&dec->ref_frames[i][j], NULL);
+/*
+   vpx_codec_err_t vp8dx_set_reference(VP8D_PTR ptr,
+                                       VP8_REF_FRAME ref_frame_flag,
+                                       YV12_BUFFER_CONFIG *sd)
+*/
 }
 
 static void
@@ -478,8 +483,6 @@ vl_create_vp8_decoder(struct pipe_context *context,
        memset(&dec->vp8dec_ctx, 0, sizeof(&dec->vp8dec_ctx));
        dec->vp8dec_ctx.name = NULL;
        dec->vp8dec_ctx.priv = NULL;
-       dec->vp8dec_ctx.init_flags = 0;
-       dec->vp8dec_ctx.config.dec = NULL;
 
        if (vp8_init(&dec->vp8dec_ctx) != VPX_CODEC_OK)
           goto error_vp8_dec;

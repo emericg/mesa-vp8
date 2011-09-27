@@ -11,6 +11,7 @@
 
 #include "../vpx_mem.h"
 #include "blockd.h"
+#include "alloccommon.h"
 #include "onyxc_int.h"
 #include "findnearmv.h"
 #include "entropymode.h"

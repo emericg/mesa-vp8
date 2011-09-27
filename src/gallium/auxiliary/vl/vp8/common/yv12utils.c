@@ -262,3 +262,53 @@ vp8_yv12_copy_frame(YV12_BUFFER_CONFIG *src_ybc, YV12_BUFFER_CONFIG *dst_ybc)
 }
 
 /* ************************************************************************** */
+
+void yuvconfig2image(vpx_image_t              *img,
+                     const YV12_BUFFER_CONFIG *yv12,
+                     void                     *user_priv)
+{
+    /** vpx_img_wrap() doesn't allow specifying independent strides for
+      * the Y, U, and V planes, nor other alignment adjustments that
+      * might be representable by a YV12_BUFFER_CONFIG, so we just
+      * initialize all the fields. */
+    img->fmt = yv12->clrtype == REG_YUV ? VPX_IMG_FMT_I420 : VPX_IMG_FMT_VPXI420;
+    img->w = yv12->y_stride;
+    img->h = (yv12->y_height + 2 * VP8BORDERINPIXELS + 15) & ~15;
+    img->d_w = yv12->y_width;
+    img->d_h = yv12->y_height;
+    img->x_chroma_shift = 1;
+    img->y_chroma_shift = 1;
+    img->planes[VPX_PLANE_Y] = yv12->y_buffer;
+    img->planes[VPX_PLANE_U] = yv12->v_buffer;
+    img->planes[VPX_PLANE_V] = yv12->u_buffer;
+    img->planes[VPX_PLANE_ALPHA] = NULL;
+    img->stride[VPX_PLANE_Y] = yv12->y_stride;
+    img->stride[VPX_PLANE_U] = yv12->uv_stride;
+    img->stride[VPX_PLANE_V] = yv12->uv_stride;
+    img->stride[VPX_PLANE_ALPHA] = yv12->y_stride;
+    img->bps = 12;
+    img->user_priv = user_priv;
+    img->img_data = yv12->buffer_alloc;
+    img->img_data_owner = 0;
+    img->self_allocd = 0;
+}
+
+void image2yuvconfig(const vpx_image_t  *img, YV12_BUFFER_CONFIG *yv12)
+{
+    yv12->y_buffer  = img->planes[VPX_PLANE_Y];
+    yv12->u_buffer  = img->planes[VPX_PLANE_U];
+    yv12->v_buffer  = img->planes[VPX_PLANE_V];
+
+    yv12->y_width   = img->d_w;
+    yv12->y_height  = img->d_h;
+    yv12->uv_width  = yv12->y_width / 2;
+    yv12->uv_height = yv12->y_height / 2;
+
+    yv12->y_stride  = img->stride[VPX_PLANE_Y];
+    yv12->uv_stride = img->stride[VPX_PLANE_U];
+
+    yv12->border    = (img->stride[VPX_PLANE_Y] - img->d_w) / 2;
+    yv12->clrtype   = (img->fmt == VPX_IMG_FMT_VPXI420 || img->fmt == VPX_IMG_FMT_VPXYV12);
+}
+
+/* ************************************************************************** */

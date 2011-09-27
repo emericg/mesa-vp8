@@ -16,7 +16,9 @@ extern "C"
 {
 #endif
 
-#define VP8BORDERINPIXELS       32
+#define VP8BORDERINPIXELS 32
+
+#include "../vpx_image.h"
 
 /*************************************
  For INT_YUV:
@@ -64,6 +66,9 @@ int vp8_yv12_de_alloc_frame_buffer(YV12_BUFFER_CONFIG *ybf);
 
 void vp8_yv12_extend_frame_borders(YV12_BUFFER_CONFIG *ybf);
 void vp8_yv12_copy_frame(YV12_BUFFER_CONFIG *src_ybc, YV12_BUFFER_CONFIG *dst_ybc);
+
+void yuvconfig2image(vpx_image_t *img, const YV12_BUFFER_CONFIG *yv12, void *user_priv);
+void image2yuvconfig(const vpx_image_t *img, YV12_BUFFER_CONFIG *yv12);
 
 #ifdef __cplusplus
 }
