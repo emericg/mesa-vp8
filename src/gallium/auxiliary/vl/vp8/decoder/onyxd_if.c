@@ -14,7 +14,6 @@
 #include "../vp8_mem.h"
 #include "../common/onyxd.h"
 #include "../common/alloccommon.h"
-#include "../common/loopfilter.h"
 #include "../common/yv12utils.h"
 
 #include <stdio.h>

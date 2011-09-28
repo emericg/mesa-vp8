@@ -8,26 +8,12 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
+#include <stdlib.h>
+#include <string.h>
+#include <stdarg.h>
+#include <stdint.h>
+
 #include "vp8_decoder.h"
-
-static const mem_req_t vp8_mem_req_segs[] =
-{
-    {VP8_SEG_ALG_PRIV, 0, 8, 1},
-    {VP8_SEG_MAX, 0, 0, 0}
-};
-
-struct vpx_codec_alg_priv
-{
-    vpx_codec_priv_t        base;
-    vpx_codec_mmap_t        mmaps[NELEMENTS(vp8_mem_req_segs)-1];
-    vp8_stream_info_t       si;
-    int                     defer_alloc;
-    int                     decoder_init;
-    VP8D_PTR                pbi;
-    vpx_image_t             img;
-    int                     img_setup;
-    int                     img_avail;
-};
 
 static void vp8_mmap_dtor(vpx_codec_mmap_t *mmap)
 {
@@ -54,8 +40,7 @@ static vpx_codec_err_t vp8_mmap_alloc(vpx_codec_mmap_t *mmap)
 }
 
 static vpx_codec_err_t vp8_validate_mmaps(const vp8_stream_info_t *si,
-                                          const vpx_codec_mmap_t  *mmaps,
-                                          vpx_codec_flags_t        init_flags)
+                                          const vpx_codec_mmap_t  *mmaps)
 {
     int i;
     vpx_codec_err_t res = VPX_CODEC_OK;
@@ -70,17 +55,10 @@ static vpx_codec_err_t vp8_validate_mmaps(const vp8_stream_info_t *si,
         }
 
         /* Verify variable size segment is big enough for the current si. */
+        if (mmaps[i].sz < sizeof(si))
         {
-            vpx_codec_dec_cfg_t cfg;
-
-            cfg.w = si->w;
-            cfg.h = si->h;
-
-            if (mmaps[i].sz < sizeof(si))
-            {
-                res = VPX_CODEC_MEM_ERROR;
-                break;
-            }
+            res = VPX_CODEC_MEM_ERROR;
+            break;
         }
     }
 
@@ -230,10 +208,6 @@ vpx_codec_err_t vp8_decode(vpx_codec_alg_priv_t *ctx,
 
         for (i = 1; !res && i < NELEMENTS(ctx->mmaps); i++)
         {
-            vpx_codec_dec_cfg_t cfg;
-
-            cfg.w = ctx->si.w;
-            cfg.h = ctx->si.h;
             ctx->mmaps[i].id = vp8_mem_req_segs[i].id;
             ctx->mmaps[i].sz = vp8_mem_req_segs[i].sz;
             ctx->mmaps[i].align = vp8_mem_req_segs[i].align;
@@ -241,7 +215,6 @@ vpx_codec_err_t vp8_decode(vpx_codec_alg_priv_t *ctx,
 
             if (!ctx->mmaps[i].sz)
             {
-                (void)&cfg;
                 ctx->mmaps[i].sz = sizeof(vpx_codec_alg_priv_t);
             }
 
@@ -254,7 +227,7 @@ vpx_codec_err_t vp8_decode(vpx_codec_alg_priv_t *ctx,
     /* Initialize the decoder instance on the first frame*/
     if (!res && !ctx->decoder_init)
     {
-        res = vp8_validate_mmaps(&ctx->si, ctx->mmaps, ctx->base.init_flags);
+        res = vp8_validate_mmaps(&ctx->si, ctx->mmaps);
 
         if (!res)
         {
@@ -280,7 +253,7 @@ vpx_codec_err_t vp8_decode(vpx_codec_alg_priv_t *ctx,
 
     if (!res && ctx->pbi)
     {
-        YV12_BUFFER_CONFIG sd;
+        //YV12_BUFFER_CONFIG sd;
         int64_t time_stamp = 0, time_end_stamp = 0;
 
         if (vp8dx_receive_compressed_data(ctx->pbi, data_sz, data, deadline))
@@ -289,9 +262,8 @@ vpx_codec_err_t vp8_decode(vpx_codec_alg_priv_t *ctx,
             res = update_error_state(ctx, &pbi->common.error);
         }
 
-        if (!res && 0 == vp8dx_get_raw_frame(ctx->pbi, &sd, &time_stamp, &time_end_stamp))
+        if (!res && 0 == vp8dx_get_raw_frame(ctx->pbi, &ctx->img_yv12, &time_stamp, &time_end_stamp))
         {
-            yuvconfig2image(&ctx->img, &sd, user_priv);
             ctx->img_avail = 1;
         }
     }
@@ -299,24 +271,50 @@ vpx_codec_err_t vp8_decode(vpx_codec_alg_priv_t *ctx,
     return res;
 }
 
-vpx_image_t *vp8_get_frame(vpx_codec_alg_priv_t *ctx,
-                           vpx_codec_iter_t     *iter)
+vpx_codec_err_t vp8_dump_frame(vpx_codec_alg_priv_t *ctx)
 {
-    vpx_image_t *img = NULL;
-
-    /* printf("[VP8] vp8_get_frame()\n"); */
+    vpx_codec_err_t res = VPX_CODEC_ERROR;
 
     if (ctx->img_avail)
     {
-        /* iter acts as a flip flop, so an image is only returned on the first
-         * call to get_frame.
-         */
-        if (!(*iter))
+        // Write the frame on disk (for debugging purpose only)
+        FILE *outfile = fopen("output_img.yv12", "wb");
+        if (outfile)
         {
-            img = &ctx->img;
-            *iter = img;
+           unsigned y;
+
+           for (y = 0; y < ctx->img_yv12.y_height; y++)
+           {
+              fwrite(ctx->img_yv12.y_buffer, 1, ctx->img_yv12.y_width, outfile);
+           }
+
+           for (y = 0; y < ctx->img_yv12.uv_height; y++)
+           {
+              fwrite(ctx->img_yv12.u_buffer, 1, ctx->img_yv12.uv_width, outfile);
+           }
+
+           for (y = 0; y < ctx->img_yv12.uv_height; y++)
+           {
+              fwrite(ctx->img_yv12.v_buffer, 1, ctx->img_yv12.uv_width, outfile);
+           }
+
+           fclose(outfile);
+           res = VPX_CODEC_OK;
+           printf("[G3DVL] Image written on disk !\n");
         }
     }
 
-    return img;
+    return res;
+}
+
+YV12_BUFFER_CONFIG *vp8_get_frame(vpx_codec_alg_priv_t *ctx)
+{
+    YV12_BUFFER_CONFIG *yv12 = NULL;
+
+    if (ctx->img_avail)
+    {
+        yv12 = &ctx->img_yv12;
+    }
+
+    return yv12;
 }

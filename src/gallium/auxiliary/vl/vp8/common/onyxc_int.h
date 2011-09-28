@@ -13,7 +13,6 @@
 #define VP8C_INT_H
 
 #include "../vp8_debug.h"
-#include "loopfilter.h"
 #include "entropymv.h"
 #include "entropy.h"
 #include "idct.h"
@@ -60,7 +59,13 @@ typedef enum
 {
     SIXTAP   = 0,
     BILINEAR = 1
-} INTERPOLATIONFILTERTYPE;
+} INTERPOLATIONFILTER_TYPE;
+
+typedef enum
+{
+    NORMAL_LOOPFILTER = 0,
+    SIMPLE_LOOPFILTER = 1
+} LOOPFILTER_TYPE;
 
 typedef struct VP8Common
 {
@@ -122,10 +127,8 @@ typedef struct VP8Common
     MODE_INFO *mip; /**< Base of allocated array */
     MODE_INFO *mi;  /**< Corresponds to upper left visible macroblock */
 
-    INTERPOLATIONFILTERTYPE mcomp_filter_type;
-    LOOPFILTERTYPE filter_type;
-
-    loop_filter_info_n lf_info;
+    INTERPOLATIONFILTER_TYPE mcomp_filter_type;
+    LOOPFILTER_TYPE filter_type;
 
     int filter_level;
     int last_sharpness_level;
@@ -151,7 +154,6 @@ typedef struct VP8Common
     vp8_prob kf_bmode_prob [VP8_BINTRAMODES] [VP8_BINTRAMODES] [VP8_BINTRAMODES-1];
     vp8_prob kf_ymode_prob [VP8_YMODES-1];  /**< keyframe "" */
     vp8_prob kf_uv_mode_prob [VP8_UV_MODES-1];
-
 
     FRAME_CONTEXT lfc; /**< last frame entropy */
     FRAME_CONTEXT fc;  /**< this frame entropy */

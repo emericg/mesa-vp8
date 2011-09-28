@@ -269,10 +269,22 @@ vl_vp8_end_frame(struct pipe_video_decoder *decoder)
    buf = dec->current_buffer;
    assert(buf);
 
-   /* Get the decoded frame */
-   vpx_codec_iter_t iter = NULL;
-   vpx_image_t *img = vp8_get_frame(dec->vp8dec_ctx.priv->alg_priv, &iter);
+   pipe = buf->bs.decoder->context;
+   if (!pipe) {
+      printf("[end_frame] no pipe\n");
+      return;
+   }
 
+   sampler_views = dec->target->get_sampler_view_planes(dec->target);
+   if (!sampler_views) {
+      printf("[end_frame] no sampler_views\n");
+      return;
+   }
+
+   // Get the decoded frame
+   YV12_BUFFER_CONFIG *img = vp8_get_frame(dec->vp8dec_ctx.priv->alg_priv);
+
+   // Load YCbCr planes into a GPU texture
    if (img == NULL)
    {
       printf("[end_frame] No image to output !\n");
@@ -280,59 +292,8 @@ vl_vp8_end_frame(struct pipe_video_decoder *decoder)
    }
    else
    {
-#if 0
-      // Write the frame on disk (for debugging purpose only)
-      FILE *outfile = fopen("output_img.yv12", "wb");
-      if (outfile)
+      for (i = 0; i < 3; ++i)
       {
-         unsigned y;
-         unsigned char *img_plane = img->planes[VPX_PLANE_Y];
-
-         for (y = 0; y < img->d_h; y++)
-         {
-            fwrite(img_plane, 1, img->d_w, outfile);
-            img_plane += img->stride[VPX_PLANE_Y];
-         }
-
-         img_plane = img->planes[VPX_PLANE_V];
-
-         for (y = 0; y < (1 + img->d_h) / 2; y++)
-         {
-            fwrite(img_plane, 1, (1 + img->d_w) / 2, outfile);
-            img_plane += img->stride[VPX_PLANE_U];
-         }
-
-         img_plane = img->planes[VPX_PLANE_U];
-
-         for (y = 0; y < (1 + img->d_h) / 2; y++)
-         {
-            fwrite(img_plane, 1, (1 + img->d_w) / 2, outfile);
-            img_plane += img->stride[VPX_PLANE_V];
-         }
-
-         fclose(outfile);
-         printf("[G3DVL] Image written on disk !\n");
-      }
-      else
-      {
-         printf("[G3DVL] Failed to open 'output_img.yv12' for writing the decoded image !\n");
-      }
-#endif
-
-      /* Load YCbCr planes into a texture */
-      pipe = buf->bs.decoder->context;
-      if (!pipe) {
-         printf("[end_frame] no pipe\n");
-         return;
-      }
-
-      sampler_views = dec->target->get_sampler_view_planes(dec->target);
-      if (!sampler_views) {
-         printf("[end_frame] no sampler_views\n");
-         return;
-      }
-
-      for (i = 0; i < 3; ++i) {
          struct pipe_sampler_view *sv = sampler_views[i ? i ^ 3 : 0];
          struct pipe_box dst_box = { 0, 0, 0, sv->texture->width0, sv->texture->height0, 1 };
 
@@ -340,17 +301,24 @@ vl_vp8_end_frame(struct pipe_video_decoder *decoder)
          void *map;
 
          transfer = pipe->get_transfer(pipe, sv->texture, 0, PIPE_TRANSFER_WRITE, &dst_box);
-         if (!transfer) {
+         if (!transfer)
+         {
             printf("[end_frame] no transfer\n");
             return;
          }
+
+         ubyte *dst = img->y_buffer;
+
+         if (i == 1)
+             dst = img->v_buffer;
+         else if (i == 2)
+             dst = img->u_buffer;
 
          map = pipe->transfer_map(pipe, transfer);
          if (map)
          {
             util_copy_rect(map, sv->texture->format, transfer->stride, 0, 0,
-                           dst_box.width, dst_box.height,
-                           img->planes[i], img->stride[i], 0, 0);
+                           dst_box.width, dst_box.height, dst, (i ? img->uv_stride : img->y_stride), 0, 0);
 
             pipe->transfer_unmap(pipe, transfer);
          }

@@ -738,7 +738,7 @@ int vp8_decode_frame(VP8D_COMP *pbi)
     }
 
     /* Read the loop filter level and type */
-    pc->filter_type = (LOOPFILTERTYPE) vp8_read_bit(bc);
+    pc->filter_type = (LOOPFILTER_TYPE) vp8_read_bit(bc);
     pc->filter_level = vp8_read_literal(bc, 6);
     pc->sharpness_level = vp8_read_literal(bc, 3);
 
