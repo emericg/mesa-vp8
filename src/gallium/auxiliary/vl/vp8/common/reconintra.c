@@ -11,7 +11,7 @@
 
 #include "recon.h"
 #include "reconintra.h"
-#include "../vpx_mem.h"
+#include "../vp8_mem.h"
 
 /* For skip_recon_mb(), add vp8_build_intra_predictors_mby_s(MACROBLOCKD *x) and
  * vp8_build_intra_predictors_mbuv_s(MACROBLOCKD *x).

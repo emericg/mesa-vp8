@@ -15,7 +15,7 @@
 #include <stddef.h>
 #include <limits.h>
 
-#include "../vpx_mem.h"
+#include "../vp8_mem.h"
 
 typedef size_t VP8_BD_VALUE;
 

@@ -11,7 +11,7 @@
 
 #include "entropymode.h"
 #include "entropy.h"
-#include "../vpx_mem.h"
+#include "../vp8_mem.h"
 
 static const unsigned int kf_y_mode_cts[VP8_YMODES] = { 1607, 915, 812, 811, 5455};
 static const unsigned int y_mode_cts  [VP8_YMODES] = { 8080, 1908, 1582, 1007, 5874};

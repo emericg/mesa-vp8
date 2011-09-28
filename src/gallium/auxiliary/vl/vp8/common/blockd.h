@@ -12,7 +12,7 @@
 #ifndef BLOCKD_H
 #define BLOCKD_H
 
-#include "../vpx_mem.h"
+#include "../vp8_mem.h"
 #include "yv12utils.h"
 
 #include "mv.h"

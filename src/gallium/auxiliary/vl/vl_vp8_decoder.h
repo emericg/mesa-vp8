@@ -35,7 +35,7 @@
 #include "vl_vp8_bitstream.h"
 #include "vl_video_buffer.h"
 
-#include "vp8/vp8_dx_iface.h"
+#include "vp8/vp8_decoder.h"
 
 struct pipe_screen;
 struct pipe_context;

@@ -8,7 +8,7 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#include "vp8_dx_iface.h"
+#include "vp8_decoder.h"
 
 static const mem_req_t vp8_mem_req_segs[] =
 {

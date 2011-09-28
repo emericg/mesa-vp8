@@ -8,7 +8,7 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#include "vpx_mem.h"
+#include "vp8_mem.h"
 
 void *vpx_memalign(size_t align, size_t size)
 {

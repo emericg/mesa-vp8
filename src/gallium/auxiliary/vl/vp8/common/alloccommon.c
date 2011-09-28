@@ -9,7 +9,7 @@
  */
 
 
-#include "../vpx_mem.h"
+#include "../vp8_mem.h"
 #include "blockd.h"
 #include "alloccommon.h"
 #include "onyxc_int.h"

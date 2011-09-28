@@ -10,7 +10,7 @@
 
 
 #include "setupintrarecon.h"
-#include "../vpx_mem.h"
+#include "../vp8_mem.h"
 
 void vp8_setup_intra_recon(YV12_BUFFER_CONFIG *ybf)
 {

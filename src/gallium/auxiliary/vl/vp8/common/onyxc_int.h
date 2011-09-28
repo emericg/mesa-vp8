@@ -12,7 +12,7 @@
 #ifndef VP8C_INT_H
 #define VP8C_INT_H
 
-#include "../vpx_codec.h"
+#include "../vp8_debug.h"
 #include "loopfilter.h"
 #include "entropymv.h"
 #include "entropy.h"

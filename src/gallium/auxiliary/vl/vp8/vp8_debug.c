@@ -9,7 +9,7 @@
  */
 
 
-#include "vpx_codec.h"
+#include "vp8_debug.h"
 
 const char *vpx_codec_err_to_string(vpx_codec_err_t err)
 {

@@ -11,7 +11,7 @@
 
 #include "../common/onyxc_int.h"
 #include "onyxd_int.h"
-#include "../vpx_mem.h"
+#include "../vp8_mem.h"
 #include "../common/onyxd.h"
 #include "../common/alloccommon.h"
 #include "../common/loopfilter.h"

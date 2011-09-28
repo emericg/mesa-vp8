@@ -10,7 +10,7 @@
 
 
 #include "recon.h"
-#include "../vpx_mem.h"
+#include "../vp8_mem.h"
 #include "reconintra.h"
 
 void vp8_intra4x4_predict(BLOCKD *x, int b_mode, unsigned char *predictor)

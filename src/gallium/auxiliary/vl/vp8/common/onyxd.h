@@ -20,8 +20,8 @@ extern "C"
 
 #include <stdint.h>
 
-#include "../vpx_codec.h"
-#include "../vpx_mem.h"
+#include "../vp8_debug.h"
+#include "../vp8_mem.h"
 #include "yv12utils.h"
 
 typedef void *VP8D_PTR;

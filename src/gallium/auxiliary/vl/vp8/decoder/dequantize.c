@@ -11,7 +11,7 @@
 
 #include "dequantize.h"
 #include "../common/idct.h"
-#include "../vpx_mem.h"
+#include "../vp8_mem.h"
 
 extern void vp8_short_idct4x4llm_c(short *input, short *output, int pitch) ;
 extern void vp8_short_idct4x4llm_1_c(short *input, short *output, int pitch);

@@ -11,7 +11,7 @@
 
 #include <stdint.h>
 
-#include "../vpx_mem.h"
+#include "../vp8_mem.h"
 #include "onyxd_int.h"
 #include "detokenize.h"
 #include "../common/blockd.h"
