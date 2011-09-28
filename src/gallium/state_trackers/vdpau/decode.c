@@ -418,7 +418,7 @@ vlVdpDecoderRenderVP8(struct pipe_video_decoder *decoder,
 {
    struct pipe_vp8_picture_desc picture;
    struct pipe_video_buffer *ref_frames[3];
-   unsigned i, j, k, l;
+   unsigned i = 0, j, k, l;
 
    VDPAU_MSG(VDPAU_TRACE, "[VDPAU] Decoding VP8\n");
 
@@ -432,16 +432,21 @@ vlVdpDecoderRenderVP8(struct pipe_video_decoder *decoder,
       ref_frames[0] = ((vlVdpSurface *)vlGetDataHTAB(picture_info->golden_frame))->video_buffer;
       if (!ref_frames[0])
          return VDP_STATUS_INVALID_HANDLE;
+      ++i;
    }
+
    if (picture_info->altref_frame != VDP_INVALID_HANDLE) {
       ref_frames[1] = ((vlVdpSurface *)vlGetDataHTAB(picture_info->altref_frame))->video_buffer;
       if (!ref_frames[1])
          return VDP_STATUS_INVALID_HANDLE;
+      ++i;
    }
+
    if (picture_info->previous_frame != VDP_INVALID_HANDLE) {
       ref_frames[2] = ((vlVdpSurface *)vlGetDataHTAB(picture_info->previous_frame))->video_buffer;
       if (!ref_frames[2])
          return VDP_STATUS_INVALID_HANDLE;
+      ++i;
    }
 
    decoder->set_reference_frames(decoder, ref_frames, i);
