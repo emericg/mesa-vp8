@@ -62,23 +62,6 @@ typedef struct vpx_codec_priv
 } vpx_codec_priv_t;
 
 /**
- * \brief Codec context structure.
- *
- * All codecs \ref MUST support this context structure fully. In general,
- * this data should be considered private to the codec algorithm, and
- * not be manipulated or examined by the calling application. Applications
- * may reference the 'name' member to get a printable description of the
- * algorithm.
- */
-typedef struct vpx_codec_ctx
-{
-    const char                   *name;        /**< Printable interface name */
-    vpx_codec_err_t               err;         /**< Last returned error */
-    const char                   *err_detail;  /**< Detailed info, if available */
-    vpx_codec_priv_t             *priv;        /**< Algorithm private storage */
-} vpx_codec_ctx_t;
-
-/**
  * \brief Memory Map Entry.
  *
  * This structure is used to contain the properties of a memory segment. It
@@ -151,14 +134,13 @@ typedef struct vpx_codec_alg_priv
 
 /* ************************************************************************** */
 
-vpx_codec_err_t vp8_init(vpx_codec_ctx_t *ctx);
+vpx_codec_err_t vp8_init(vpx_codec_priv_t **priv);
 
 vpx_codec_err_t vp8_destroy(vpx_codec_alg_priv_t *ctx);
 
 vpx_codec_err_t vp8_decode(vpx_codec_alg_priv_t *ctx,
                            const uint8_t        *data,
                            unsigned int          data_sz,
-                           void                 *user_priv,
                            long                  deadline);
 
 vpx_codec_err_t vp8_dump_frame(vpx_codec_alg_priv_t *ctx);

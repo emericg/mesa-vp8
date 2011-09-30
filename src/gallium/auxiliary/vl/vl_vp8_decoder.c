@@ -67,13 +67,10 @@ vl_vp8_destroy(struct pipe_video_decoder *decoder)
 
    printf("[G3DVL] vl_vp8_destroy()\n");
 
-   if (dec->vp8dec_ctx.priv)
+   if (dec->priv)
    {
-      if (dec->vp8dec_ctx.priv->alg_priv)
-         vp8_destroy(dec->vp8dec_ctx.priv->alg_priv);
-
-      dec->vp8dec_ctx.name = NULL;
-      dec->vp8dec_ctx.priv = NULL;
+      if (dec->priv->alg_priv)
+         vp8_destroy(dec->priv->alg_priv);
    }
 }
 
@@ -212,10 +209,11 @@ vl_vp8_decode_macroblock(struct pipe_video_decoder *decoder,
 
    buf = dec->current_buffer;
    assert(buf);
-
+/*
    for (; num_macroblocks > 0; --num_macroblocks) {
       // STUB
    }
+*/
 }
 
 static void
@@ -245,7 +243,7 @@ vl_vp8_decode_bitstream(struct pipe_video_decoder *decoder,
    }
    else
    {
-      if (vp8_decode(dec->vp8dec_ctx.priv->alg_priv, data, num_bytes, NULL, 0) != VPX_CODEC_OK)
+      if (vp8_decode(dec->priv->alg_priv, data, num_bytes, 0) != VPX_CODEC_OK)
       {
          printf("[G3DVL] Error while decoding VP8 frame !\n");
       }
@@ -282,7 +280,7 @@ vl_vp8_end_frame(struct pipe_video_decoder *decoder)
    }
 
    // Get the decoded frame
-   YV12_BUFFER_CONFIG *img = vp8_get_frame(dec->vp8dec_ctx.priv->alg_priv);
+   YV12_BUFFER_CONFIG *img = vp8_get_frame(dec->priv->alg_priv);
 
    // Load YCbCr planes into a GPU texture
    if (img == NULL)
@@ -447,14 +445,8 @@ vl_create_vp8_decoder(struct pipe_context *context,
    if (!init_pipe_state(dec))
       goto error_pipe_state;
 
-   {
-       memset(&dec->vp8dec_ctx, 0, sizeof(&dec->vp8dec_ctx));
-       dec->vp8dec_ctx.name = NULL;
-       dec->vp8dec_ctx.priv = NULL;
-
-       if (vp8_init(&dec->vp8dec_ctx) != VPX_CODEC_OK)
-          goto error_vp8_dec;
-   }
+   if (vp8_init(&(dec->priv)) != VPX_CODEC_OK)
+      goto error_vp8_dec;
 
    return &dec->base;
 

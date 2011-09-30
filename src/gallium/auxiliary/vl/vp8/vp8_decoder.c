@@ -65,7 +65,7 @@ static vpx_codec_err_t vp8_validate_mmaps(const vp8_stream_info_t *si,
     return res;
 }
 
-vpx_codec_err_t vp8_init(vpx_codec_ctx_t *ctx)
+vpx_codec_err_t vp8_init(vpx_codec_priv_t **priv)
 {
     vpx_codec_err_t res = VPX_CODEC_OK;
 
@@ -75,7 +75,7 @@ vpx_codec_err_t vp8_init(vpx_codec_ctx_t *ctx)
      * structure. More memory may be required at the time the stream
      * information becomes known.
      */
-    if (!ctx->priv)
+    if (*priv == NULL)
     {
         vpx_codec_mmap_t mmap;
 
@@ -90,16 +90,16 @@ vpx_codec_err_t vp8_init(vpx_codec_ctx_t *ctx)
         {
             int i;
 
-            ctx->priv = mmap.base;
-            ctx->priv->sz = sizeof(*ctx->priv);
-            ctx->priv->alg_priv = mmap.base;
+            *priv = mmap.base;
+            (*priv)->sz = sizeof(*priv);
+            (*priv)->alg_priv = mmap.base;
 
-            for (i = 0; i < NELEMENTS(ctx->priv->alg_priv->mmaps); i++)
-                ctx->priv->alg_priv->mmaps[i].id = vp8_mem_req_segs[i].id;
+            for (i = 0; i < NELEMENTS((*priv)->alg_priv->mmaps); i++)
+                (*priv)->alg_priv->mmaps[i].id = vp8_mem_req_segs[i].id;
 
-            ctx->priv->alg_priv->mmaps[0] = mmap;
-            ctx->priv->alg_priv->si.sz = sizeof(ctx->priv->alg_priv->si);
-            ctx->priv->alg_priv->defer_alloc = 1;
+            (*priv)->alg_priv->mmaps[0] = mmap;
+            (*priv)->alg_priv->si.sz = sizeof((*priv)->alg_priv->si);
+            (*priv)->alg_priv->defer_alloc = 1;
         }
     }
 
@@ -186,7 +186,6 @@ update_error_state(vpx_codec_alg_priv_t                 *ctx,
 vpx_codec_err_t vp8_decode(vpx_codec_alg_priv_t *ctx,
                            const uint8_t        *data,
                            unsigned int          data_sz,
-                           void                 *user_priv,
                            long                  deadline)
 {
     vpx_codec_err_t res = VPX_CODEC_OK;
