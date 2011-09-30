@@ -62,7 +62,6 @@ int vp8_alloc_frame_buffers(VP8_COMMON *oci, int width, int height)
     if ((height & 0xf) != 0)
         height += 16 - (height & 0xf);
 
-
     for (i = 0; i < NUM_YV12_BUFFERS; i++)
     {
         oci->fb_idx_ref_cnt[i] = 0;

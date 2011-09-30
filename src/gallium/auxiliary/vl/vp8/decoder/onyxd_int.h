@@ -62,12 +62,9 @@ typedef struct
 typedef struct VP8Decompressor
 {
     DECLARE_ALIGNED(16, MACROBLOCKD, mb);
-
     DECLARE_ALIGNED(16, VP8_COMMON, common);
 
     vp8_reader bc, bc2;
-
-    VP8D_CONFIG oxcf;
 
     const unsigned char *Source;
     unsigned int         source_sz;

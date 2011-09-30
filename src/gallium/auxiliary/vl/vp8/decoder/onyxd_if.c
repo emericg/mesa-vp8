@@ -39,7 +39,7 @@ void vp8dx_initialize()
 }
 
 
-VP8D_PTR vp8dx_create_decompressor(VP8D_CONFIG *oxcf)
+VP8D_PTR vp8dx_create_decompressor(int width, int height, int input_partition)
 {
     VP8D_COMP *pbi = vpx_memalign(32, sizeof(VP8D_COMP));
 
@@ -73,7 +73,7 @@ VP8D_PTR vp8dx_create_decompressor(VP8D_CONFIG *oxcf)
     // vp8_loop_filter_init(&pbi->common);
 
     pbi->common.error.setjmp = 0;
-    pbi->input_partition = oxcf->input_partition;
+    pbi->input_partition = input_partition;
 
     return (VP8D_PTR) pbi;
 }
@@ -378,7 +378,10 @@ int vp8dx_receive_compressed_data(VP8D_PTR ptr, unsigned long size, const unsign
     return retcode;
 }
 
-int vp8dx_get_raw_frame(VP8D_PTR ptr, YV12_BUFFER_CONFIG *sd, int64_t *time_stamp, int64_t *time_end_stamp)
+int vp8dx_get_raw_frame(VP8D_PTR ptr,
+                        YV12_BUFFER_CONFIG *sd,
+                        int64_t *time_stamp,
+                        int64_t *time_end_stamp)
 {
     int ret = -1;
     VP8D_COMP *pbi = (VP8D_COMP *) ptr;

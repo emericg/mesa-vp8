@@ -61,8 +61,7 @@ struct vl_vp8_decoder
    struct pipe_surface *target_surfaces[VL_MAX_PLANES];
 
    // vp8 decoder context
-   vpx_codec_priv_t *priv; // lvl 1
-   vpx_codec_alg_priv_t *alg_priv; // lvl 2
+   vpx_codec_alg_priv_t alg_priv;
 };
 
 struct vl_vp8_buffer

@@ -40,49 +40,7 @@ extern "C" {
  * @{
  */
 
-#define NELEMENTS(x) ((int)(sizeof(x)/sizeof(x[0])))
-
-/**
- * \brief Instance private storage.
- *
- * Contains data private to the codec implementation. This structure is opaque
- * to the application.
- *
- * This structure is allocated by the algorithm's init function. It can be
- * extended in one of two ways. First, a second, algorithm specific structure
- * can be allocated and the priv member pointed to it. Alternatively, this
- * structure can be made the first member of the algorithm specific structure,
- * and the pointer cast to the proper type.
- */
-typedef struct vpx_codec_priv
-{
-    unsigned int               sz;
-    struct vpx_codec_alg_priv *alg_priv;
-    const char                *err_detail;
-} vpx_codec_priv_t;
-
-/**
- * \brief Memory Map Entry.
- *
- * This structure is used to contain the properties of a memory segment. It
- * is populated by the codec in the request phase, and by the calling
- * application once the requested allocation has been performed.
- */
-typedef struct vpx_codec_mmap
-{
-   /*
-    * The following members are set by the codec when requesting a segment
-    */
-   unsigned int  id;     /**< identifier for the segment's contents */
-   unsigned long sz;     /**< size of the segment, in bytes */
-   unsigned int  align;  /**< required alignment of the segment, in bytes */
-   unsigned int  flags;  /**< bitfield containing segment properties */
-
-   /* The following members are to be filled in by the allocation function */
-   void *base;   /**< pointer to the allocated segment */
-   void (*dtor)(struct vpx_codec_mmap *map);   /**< destructor to call */
-   void *priv;   /**< allocator private storage */
-} vpx_codec_mmap_t; /**< alias for struct vpx_codec_mmap */
+/* ************************************************************************** */
 
 /**
  * \brief Stream properties.
@@ -99,42 +57,24 @@ typedef struct vp8_stream_info
     unsigned int is_kf; /**< Current frame is a keyframe */
 } vp8_stream_info_t;
 
-/* Structures for handling memory allocations */
-typedef enum
-{
-    VP8_SEG_ALG_PRIV = 256,
-    VP8_SEG_MAX
-} mem_seg_id_t;
-
-typedef struct
-{
-    unsigned int  id;
-    unsigned long sz;
-    unsigned int  align;
-    unsigned int  flags;
-} mem_req_t;
-
-static const mem_req_t vp8_mem_req_segs[] =
-{
-    {VP8_SEG_ALG_PRIV, 0, 8, 1},
-    {VP8_SEG_MAX, 0, 0, 0}
-};
-
+/**
+ * \brief Instance private storage.
+ *
+ * Contains data private to the codec implementation. This structure is opaque
+ * to the application.
+ */
 typedef struct vpx_codec_alg_priv
 {
-    vpx_codec_priv_t        base;
-    vpx_codec_mmap_t        mmaps[NELEMENTS(vp8_mem_req_segs)-1];
-    vp8_stream_info_t       si;
-    int                     defer_alloc;
     int                     decoder_init;
+    vp8_stream_info_t       si;
     VP8D_PTR                pbi;
-    YV12_BUFFER_CONFIG      img_yv12;
     int                     img_avail;
+    YV12_BUFFER_CONFIG      img_yv12;
 } vpx_codec_alg_priv_t;
 
 /* ************************************************************************** */
 
-vpx_codec_err_t vp8_init(vpx_codec_priv_t **priv);
+vpx_codec_err_t vp8_init(vpx_codec_alg_priv_t *ctx);
 
 vpx_codec_err_t vp8_destroy(vpx_codec_alg_priv_t *ctx);
 
