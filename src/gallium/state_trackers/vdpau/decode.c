@@ -428,22 +428,22 @@ vlVdpDecoderRenderVP8(struct pipe_video_decoder *decoder,
    ref_frames[1] = NULL;
    ref_frames[2] = NULL;
 
-   if (picture_info->golden_frame != VDP_INVALID_HANDLE) {
-      ref_frames[0] = ((vlVdpSurface *)vlGetDataHTAB(picture_info->golden_frame))->video_buffer;
+   if (picture_info->previous_frame != VDP_INVALID_HANDLE) {
+      ref_frames[0] = ((vlVdpSurface *)vlGetDataHTAB(picture_info->previous_frame))->video_buffer;
       if (!ref_frames[0])
          return VDP_STATUS_INVALID_HANDLE;
       ++i;
    }
 
-   if (picture_info->altref_frame != VDP_INVALID_HANDLE) {
-      ref_frames[1] = ((vlVdpSurface *)vlGetDataHTAB(picture_info->altref_frame))->video_buffer;
+   if (picture_info->golden_frame != VDP_INVALID_HANDLE) {
+      ref_frames[1] = ((vlVdpSurface *)vlGetDataHTAB(picture_info->golden_frame))->video_buffer;
       if (!ref_frames[1])
          return VDP_STATUS_INVALID_HANDLE;
       ++i;
    }
 
-   if (picture_info->previous_frame != VDP_INVALID_HANDLE) {
-      ref_frames[2] = ((vlVdpSurface *)vlGetDataHTAB(picture_info->previous_frame))->video_buffer;
+   if (picture_info->altref_frame != VDP_INVALID_HANDLE) {
+      ref_frames[2] = ((vlVdpSurface *)vlGetDataHTAB(picture_info->altref_frame))->video_buffer;
       if (!ref_frames[2])
          return VDP_STATUS_INVALID_HANDLE;
       ++i;
@@ -506,8 +506,10 @@ vlVdpDecoderRenderVP8(struct pipe_video_decoder *decoder,
    picture.prob_intra = picture_info->prob_intra;
    picture.prob_last = picture_info->prob_last;
    picture.prob_golden = picture_info->prob_golden;
-   picture.intra_16x16_prob[4]; // fixme
-   picture.intra_chroma_prob[3]; // fixme
+   for (i = 0; i < 4; i++)
+       picture.intra_16x16_prob[i] = picture_info->intra_16x16_prob[i];
+   for (i = 0; i < 3; i++)
+       picture.intra_chroma_prob[i] = picture_info->intra_chroma_prob[i];
    for (i = 0; i < 2; i++)
       for (j = 0; j < 19; j++)
          picture.mv_prob[i][j] = picture_info->mv_prob[i][j];
