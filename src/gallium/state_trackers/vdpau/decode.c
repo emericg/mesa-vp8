@@ -441,14 +441,15 @@ vlVdpDecoderRenderVP8(struct pipe_video_decoder *decoder,
          return VDP_STATUS_INVALID_HANDLE;
       ++i;
    }
-
+/*
+   // Disable altref frames as reference for now, as it causes segfault inside vl_vp8_set_reference_frames()
    if (picture_info->altref_frame != VDP_INVALID_HANDLE) {
       ref_frames[2] = ((vlVdpSurface *)vlGetDataHTAB(picture_info->altref_frame))->video_buffer;
       if (!ref_frames[2])
          return VDP_STATUS_INVALID_HANDLE;
       ++i;
    }
-
+*/
    decoder->set_reference_frames(decoder, ref_frames, i);
 
    /* Get back picture parameters */
