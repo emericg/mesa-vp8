@@ -23,9 +23,8 @@
 #include "detokenize.h"
 
 extern void vp8cx_init_de_quantizer(VP8D_COMP *pbi);
-static int get_free_fb (VP8_COMMON *cm);
-static void ref_cnt_fb (int *buf, int *idx, int new_idx);
-
+static int get_free_fb(VP8_COMMON *cm);
+static void ref_cnt_fb(int *buf, int *idx, int new_idx);
 
 void vp8dx_initialize()
 {
@@ -38,8 +37,7 @@ void vp8dx_initialize()
     }
 }
 
-
-VP8D_PTR vp8dx_create_decompressor(int width, int height, int input_partition)
+VP8D_PTR vp8dx_create_decompressor(int input_partition)
 {
     VP8D_COMP *pbi = vpx_memalign(32, sizeof(VP8D_COMP));
 
@@ -78,10 +76,9 @@ VP8D_PTR vp8dx_create_decompressor(int width, int height, int input_partition)
     return (VP8D_PTR) pbi;
 }
 
-
 void vp8dx_remove_decompressor(VP8D_PTR ptr)
 {
-    VP8D_COMP *pbi = (VP8D_COMP *) ptr;
+    VP8D_COMP *pbi = (VP8D_COMP *)ptr;
 
     printf("[VP8] vp8dx_remove_decompressor()\n");
 
@@ -93,12 +90,11 @@ void vp8dx_remove_decompressor(VP8D_PTR ptr)
     vpx_free(pbi);
 }
 
-
 vpx_codec_err_t vp8dx_get_reference(VP8D_PTR ptr,
                                     VP8_REF_FRAME ref_frame_flag,
                                     YV12_BUFFER_CONFIG *sd)
 {
-    VP8D_COMP *pbi = (VP8D_COMP *) ptr;
+    VP8D_COMP *pbi = (VP8D_COMP *)ptr;
     VP8_COMMON *cm = &pbi->common;
     int ref_fb_idx;
 
@@ -125,12 +121,11 @@ vpx_codec_err_t vp8dx_get_reference(VP8D_PTR ptr,
     return pbi->common.error.error_code;
 }
 
-
 vpx_codec_err_t vp8dx_set_reference(VP8D_PTR ptr,
                                     VP8_REF_FRAME ref_frame_flag,
                                     YV12_BUFFER_CONFIG *sd)
 {
-    VP8D_COMP *pbi = (VP8D_COMP *) ptr;
+    VP8D_COMP *pbi = (VP8D_COMP *)ptr;
     VP8_COMMON *cm = &pbi->common;
     int *ref_fb_ptr = NULL;
     int free_fb;
@@ -248,9 +243,9 @@ static int swap_frame_buffers (VP8_COMMON *cm)
     return err;
 }
 
-int vp8dx_receive_compressed_data(VP8D_PTR ptr, unsigned long size, const unsigned char *source, int64_t time_stamp)
+int vp8dx_receive_compressed_data(VP8D_PTR ptr, const unsigned char *data, unsigned data_size, int64_t time_stamp)
 {
-    VP8D_COMP *pbi = (VP8D_COMP *) ptr;
+    VP8D_COMP *pbi = (VP8D_COMP *)ptr;
     VP8_COMMON *cm = &pbi->common;
     int retcode = 0;
 
@@ -264,14 +259,14 @@ int vp8dx_receive_compressed_data(VP8D_PTR ptr, unsigned long size, const unsign
 
     pbi->common.error.error_code = VPX_CODEC_OK;
 
-    if (pbi->input_partition && !(source == NULL && size == 0))
+    if (pbi->input_partition && !(data == NULL && data_size == 0))
     {
         /* Store a pointer to this partition and return. We haven't
          * received the complete frame yet, so we will wait with decoding.
          */
-        pbi->partitions[pbi->num_partitions] = source;
-        pbi->partition_sizes[pbi->num_partitions] = size;
-        pbi->source_sz += size;
+        pbi->partitions[pbi->num_partitions] = data;
+        pbi->partition_sizes[pbi->num_partitions] = data_size;
+        pbi->source_sz += data_size;
         pbi->num_partitions++;
         if (pbi->num_partitions > (1<<pbi->common.multi_token_partition) + 1)
             pbi->common.multi_token_partition++;
@@ -288,8 +283,8 @@ int vp8dx_receive_compressed_data(VP8D_PTR ptr, unsigned long size, const unsign
     {
         if (!pbi->input_partition)
         {
-            pbi->Source = source;
-            pbi->source_sz = size;
+            pbi->Source = data;
+            pbi->source_sz = data_size;
         }
 
         if (pbi->source_sz == 0)
@@ -384,7 +379,7 @@ int vp8dx_get_raw_frame(VP8D_PTR ptr,
                         int64_t *time_end_stamp)
 {
     int ret = -1;
-    VP8D_COMP *pbi = (VP8D_COMP *) ptr;
+    VP8D_COMP *pbi = (VP8D_COMP *)ptr;
 
     if (pbi->ready_for_new_data == 1)
         return ret;

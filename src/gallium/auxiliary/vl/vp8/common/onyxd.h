@@ -35,15 +35,15 @@ typedef enum
     VP8_ALTR_FRAME = 4
 } VP8_REF_FRAME;
 
-void vp8dx_initialize(void);
+void vp8dx_initialize();
 
-int vp8dx_receive_compressed_data(VP8D_PTR comp, unsigned long size, const unsigned char *dest, int64_t time_stamp);
+int vp8dx_receive_compressed_data(VP8D_PTR comp, const unsigned char *data, unsigned data_size, int64_t time_stamp);
 int vp8dx_get_raw_frame(VP8D_PTR comp, YV12_BUFFER_CONFIG *sd, int64_t *time_stamp, int64_t *time_end_stamp);
 
 vpx_codec_err_t vp8dx_get_reference(VP8D_PTR comp, VP8_REF_FRAME ref_frame_flag, YV12_BUFFER_CONFIG *sd);
 vpx_codec_err_t vp8dx_set_reference(VP8D_PTR comp, VP8_REF_FRAME ref_frame_flag, YV12_BUFFER_CONFIG *sd);
 
-VP8D_PTR vp8dx_create_decompressor(int width, int height, int input_partition);
+VP8D_PTR vp8dx_create_decompressor(int input_partition);
 
 void vp8dx_remove_decompressor(VP8D_PTR comp);
 

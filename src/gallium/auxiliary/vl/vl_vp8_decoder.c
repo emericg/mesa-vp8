@@ -62,17 +62,9 @@ static void
 vl_vp8_destroy(struct pipe_video_decoder *decoder)
 {
    struct vl_vp8_decoder *dec = (struct vl_vp8_decoder *)decoder;
-
-   assert(decoder);
+   assert(dec);
 
    printf("[G3DVL] vl_vp8_destroy()\n");
-/*
-   if (dec->priv)
-   {
-      if (dec->priv->alg_priv)
-         vp8_destroy(dec->priv->alg_priv);
-   }
-*/
 }
 
 static void *
@@ -131,10 +123,7 @@ vl_vp8_set_quant_matrix(struct pipe_video_decoder *decoder,
                         const struct pipe_quant_matrix *matrix)
 {
    struct vl_vp8_decoder *dec = (struct vl_vp8_decoder *)decoder;
-
    assert(dec);
-
-   // STUB
 }
 
 static void
@@ -192,8 +181,6 @@ vl_vp8_begin_frame(struct pipe_video_decoder *decoder)
 
    buf = dec->current_buffer;
    assert(buf);
-
-   // unused
 }
 
 static void
@@ -246,7 +233,7 @@ vl_vp8_decode_bitstream(struct pipe_video_decoder *decoder,
    {
       if (vp8_decode(&dec->alg_priv, data, num_bytes, 0) != VPX_CODEC_OK)
       {
-         printf("[G3DVL] Error while decoding VP8 frame !\n");
+         printf("[G3DVL] Error : not a VP8 VDPAU frame !\n");
       }
    }
 }
@@ -445,8 +432,6 @@ vl_create_vp8_decoder(struct pipe_context *context,
 */
    if (!init_pipe_state(dec))
       goto error_pipe_state;
-
-   dec->alg_priv.si.sz = sizeof(dec->alg_priv.si);
 
    //if (vp8_init(&(dec->priv)) != VPX_CODEC_OK)
    //   goto error_vp8_dec;

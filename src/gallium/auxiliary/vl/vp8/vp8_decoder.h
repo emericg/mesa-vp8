@@ -43,45 +43,24 @@ extern "C" {
 /* ************************************************************************** */
 
 /**
- * \brief Stream properties.
- *
- * This structure is used to query or set properties of the decoded
- * stream. Algorithms may extend this structure with data specific
- * to their bitstream by setting the sz member appropriately.
- */
-typedef struct vp8_stream_info
-{
-    unsigned int sz;    /**< Size of this structure */
-    unsigned int w;     /**< Width (or 0 for unknown/default) */
-    unsigned int h;     /**< Height (or 0 for unknown/default) */
-    unsigned int is_kf; /**< Current frame is a keyframe */
-} vp8_stream_info_t;
-
-/**
  * \brief Instance private storage.
  *
- * Contains data private to the codec implementation. This structure is opaque
- * to the application.
+ * Contains data private to the VP8 codec implementation.
  */
 typedef struct vpx_codec_alg_priv
 {
-    int                     decoder_init;
-    vp8_stream_info_t       si;
-    VP8D_PTR                pbi;
-    int                     img_avail;
-    YV12_BUFFER_CONFIG      img_yv12;
+    int                decoder_init;
+    VP8D_PTR           pbi;
+    int                img_avail;
+    YV12_BUFFER_CONFIG img_yv12;
 } vpx_codec_alg_priv_t;
 
 /* ************************************************************************** */
 
-vpx_codec_err_t vp8_init(vpx_codec_alg_priv_t *ctx);
-
-vpx_codec_err_t vp8_destroy(vpx_codec_alg_priv_t *ctx);
-
 vpx_codec_err_t vp8_decode(vpx_codec_alg_priv_t *ctx,
                            const uint8_t        *data,
-                           unsigned int          data_sz,
-                           long                  deadline);
+                           unsigned              data_size,
+                           int64_t               deadline);
 
 vpx_codec_err_t vp8_dump_frame(vpx_codec_alg_priv_t *ctx);
 
