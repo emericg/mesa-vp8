@@ -86,13 +86,12 @@ struct vp8_token_struct vp8_coef_encodings[MAX_ENTROPY_TOKENS];
 /* Trees for extra bits.  Probabilities are constant and
    do not depend on previously encoded bits */
 
-static const vp8_prob Pcat1[] = { 159};
-static const vp8_prob Pcat2[] = { 165, 145};
-static const vp8_prob Pcat3[] = { 173, 148, 140};
-static const vp8_prob Pcat4[] = { 176, 155, 140, 135};
-static const vp8_prob Pcat5[] = { 180, 157, 141, 134, 130};
-static const vp8_prob Pcat6[] =
-{ 254, 254, 243, 230, 196, 177, 153, 140, 133, 130, 129};
+static const vp8_prob Pcat1[] = {159};
+static const vp8_prob Pcat2[] = {165, 145};
+static const vp8_prob Pcat3[] = {173, 148, 140};
+static const vp8_prob Pcat4[] = {176, 155, 140, 135};
+static const vp8_prob Pcat5[] = {180, 157, 141, 134, 130};
+static const vp8_prob Pcat6[] = {254, 254, 243, 230, 196, 177, 153, 140, 133, 130, 129};
 
 static vp8_tree_index cat1[2], cat2[4], cat3[6], cat4[8], cat5[10], cat6[22];
 
@@ -132,19 +131,20 @@ static void init_bit_trees()
 
 vp8_extra_bit_struct vp8_extra_bits[12] =
 {
-    { 0, 0, 0, 0},
-    { 0, 0, 0, 1},
-    { 0, 0, 0, 2},
-    { 0, 0, 0, 3},
-    { 0, 0, 0, 4},
-    { cat1, Pcat1, 1, 5},
-    { cat2, Pcat2, 2, 7},
-    { cat3, Pcat3, 3, 11},
-    { cat4, Pcat4, 4, 19},
-    { cat5, Pcat5, 5, 35},
-    { cat6, Pcat6, 11, 67},
-    { 0, 0, 0, 0}
+    {0, 0, 0, 0},
+    {0, 0, 0, 1},
+    {0, 0, 0, 2},
+    {0, 0, 0, 3},
+    {0, 0, 0, 4},
+    {cat1, Pcat1, 1, 5},
+    {cat2, Pcat2, 2, 7},
+    {cat3, Pcat3, 3, 11},
+    {cat4, Pcat4, 4, 19},
+    {cat5, Pcat5, 5, 35},
+    {cat6, Pcat6, 11, 67},
+    {0, 0, 0, 0}
 };
+
 #include "defaultcoefcounts.h"
 
 void vp8_default_coef_probs(VP8_COMMON *pc)
@@ -176,7 +176,6 @@ void vp8_default_coef_probs(VP8_COMMON *pc)
     }
     while (++h < BLOCK_TYPES);
 }
-
 
 void vp8_coef_tree_initialize()
 {

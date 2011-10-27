@@ -16,7 +16,7 @@
 #include "findnearmv.h"
 #include "entropymode.h"
 
-extern  void vp8_init_scan_order_mask();
+extern void vp8_init_scan_order_mask();
 
 static void update_mode_info_border(MODE_INFO *mi, int rows, int cols)
 {
@@ -176,8 +176,6 @@ void vp8_remove_common(VP8_COMMON *oci)
 void vp8_initialize_common()
 {
     vp8_coef_tree_initialize();
-
     vp8_entropy_mode_init();
-
     vp8_init_scan_order_mask();
 }
