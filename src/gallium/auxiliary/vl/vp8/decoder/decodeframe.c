@@ -162,11 +162,9 @@ void clamp_mvs(MACROBLOCKD *xd)
         clamp_mv_to_umv_border(&xd->mode_info_context->mbmi.mv.as_mv, xd);
         clamp_uvmv_to_umv_border(&xd->block[16].bmi.mv.as_mv, xd);
     }
-
 }
 
-static void decode_macroblock(VP8D_COMP *pbi, MACROBLOCKD *xd,
-                              unsigned int mb_idx)
+static void decode_macroblock(VP8D_COMP *pbi, MACROBLOCKD *xd, unsigned int mb_idx)
 {
     int eobtotal = 0;
     MB_PREDICTION_MODE mode;
@@ -210,9 +208,10 @@ static void decode_macroblock(VP8D_COMP *pbi, MACROBLOCKD *xd,
 
         if (mode != B_PRED)
         {
-            RECON_INVOKE(&pbi->common.rtcd.recon,
-                         build_intra_predictors_mby)(xd);
-        } else {
+            RECON_INVOKE(&pbi->common.rtcd.recon, build_intra_predictors_mby)(xd);
+        }
+        else
+        {
             vp8_intra_prediction_down_copy(xd);
         }
     }
@@ -412,6 +411,7 @@ static void setup_token_decoder_partition_input(VP8D_COMP *pbi)
 
     TOKEN_PARTITION multi_token_partition = (TOKEN_PARTITION)vp8_read_literal(&pbi->bc, 2);
     assert(vp8dx_bool_error(&pbi->bc) || multi_token_partition == pbi->common.multi_token_partition);
+
     if (pbi->num_partitions > 2)
     {
         CHECK_MEM_ERROR(pbi->mbc, vpx_malloc((pbi->num_partitions - 1) * sizeof(vp8_reader)));
@@ -423,9 +423,10 @@ static void setup_token_decoder_partition_input(VP8D_COMP *pbi)
         if (vp8dx_start_decode(bool_decoder,
                                pbi->partitions[part_idx],
                                pbi->partition_sizes[part_idx]))
+        {
             vpx_internal_error(&pbi->common.error, VPX_CODEC_MEM_ERROR,
-                               "Failed to allocate bool decoder %d",
-                               part_idx);
+                               "Failed to allocate bool decoder %d", part_idx);
+        }
 
         bool_decoder++;
     }
@@ -609,8 +610,7 @@ int vp8_decode_frame(VP8D_COMP *pbi)
         pc->frame_type = (FRAME_TYPE)(data[0] & 1);
         pc->version = (data[0] >> 1) & 7;
         pc->show_frame = (data[0] >> 4) & 1;
-        first_partition_length_in_bytes =
-            (data[0] | (data[1] << 8) | (data[2] << 16)) >> 5;
+        first_partition_length_in_bytes = (data[0] | (data[1] << 8) | (data[2] << 16)) >> 5;
         data += 3;
 
         if (data + first_partition_length_in_bytes > data_end
@@ -667,8 +667,10 @@ int vp8_decode_frame(VP8D_COMP *pbi)
                 }
 
                 if (vp8_alloc_frame_buffers(pc, pc->Width, pc->Height))
+                {
                     vpx_internal_error(&pc->error, VPX_CODEC_MEM_ERROR,
                                        "Failed to allocate frame buffers");
+                }
             }
         }
     }
@@ -681,9 +683,13 @@ int vp8_decode_frame(VP8D_COMP *pbi)
     init_frame(pbi);
 
     if (vp8dx_start_decode(bc, data, data_end - data))
+    {
         vpx_internal_error(&pc->error, VPX_CODEC_MEM_ERROR,
                            "Failed to allocate bool decoder 0");
-    if (pc->frame_type == KEY_FRAME) {
+    }
+
+    if (pc->frame_type == KEY_FRAME)
+    {
         pc->clr_type    = (YUV_TYPE)vp8_read_bit(bc);
         pc->clamp_type  = (CLAMP_TYPE)vp8_read_bit(bc);
     }
