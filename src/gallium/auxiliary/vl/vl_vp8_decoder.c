@@ -40,23 +40,28 @@
 #define SCALE_FACTOR_SSCALED (1.0f / 256.0f)
 
 struct format_config {
-   enum pipe_format zscan_source_format;
-   enum pipe_format idct_source_format;
-   enum pipe_format mc_source_format;
-
-   float idct_scale;
-   float mc_scale;
+   enum pipe_format loopfilter_source_format;
 };
 
 static const struct format_config bitstream_format_config[] = {
-   { PIPE_FORMAT_R16_SSCALED, PIPE_FORMAT_R16G16B16A16_SSCALED, PIPE_FORMAT_R16G16B16A16_FLOAT, 1.0f, SCALE_FACTOR_SSCALED },
-   { PIPE_FORMAT_R16_SSCALED, PIPE_FORMAT_R16G16B16A16_SSCALED, PIPE_FORMAT_R16G16B16A16_SSCALED, 1.0f, SCALE_FACTOR_SSCALED },
+//   { PIPE_FORMAT_R16_SSCALED, PIPE_FORMAT_R16G16B16A16_SSCALED, PIPE_FORMAT_R16G16B16A16_FLOAT, 1.0f, SCALE_FACTOR_SSCALED },
+//   { PIPE_FORMAT_R16_SSCALED, PIPE_FORMAT_R16G16B16A16_SSCALED, PIPE_FORMAT_R16G16B16A16_SSCALED, 1.0f, SCALE_FACTOR_SSCALED },
    { PIPE_FORMAT_R16_SNORM, PIPE_FORMAT_R16G16B16A16_SNORM, PIPE_FORMAT_R16G16B16A16_FLOAT, 1.0f, SCALE_FACTOR_SNORM },
    { PIPE_FORMAT_R16_SNORM, PIPE_FORMAT_R16G16B16A16_SNORM, PIPE_FORMAT_R16G16B16A16_SNORM, 1.0f, SCALE_FACTOR_SNORM }
 };
 
 static const unsigned num_bitstream_format_configs =
    sizeof(bitstream_format_config) / sizeof(struct format_config);
+
+static const struct format_config loopfilter_format_config[] = {
+//   { PIPE_FORMAT_R16_SSCALED, PIPE_FORMAT_R16G16B16A16_SSCALED, PIPE_FORMAT_R16G16B16A16_FLOAT, 1.0f, SCALE_FACTOR_SSCALED },
+//   { PIPE_FORMAT_R16_SSCALED, PIPE_FORMAT_R16G16B16A16_SSCALED, PIPE_FORMAT_R16G16B16A16_SSCALED, 1.0f, SCALE_FACTOR_SSCALED },
+   { PIPE_FORMAT_R16_SNORM, PIPE_FORMAT_R16G16B16A16_SNORM, PIPE_FORMAT_R16G16B16A16_FLOAT, 1.0f, SCALE_FACTOR_SNORM },
+   { PIPE_FORMAT_R16_SNORM, PIPE_FORMAT_R16G16B16A16_SNORM, PIPE_FORMAT_R16G16B16A16_SNORM, 1.0f, SCALE_FACTOR_SNORM }
+};
+
+static const unsigned num_loopfilter_format_configs =
+   sizeof(loopfilter_format_config) / sizeof(struct format_config);
 
 static void
 vl_vp8_destroy(struct pipe_video_decoder *decoder)
@@ -65,6 +70,13 @@ vl_vp8_destroy(struct pipe_video_decoder *decoder)
    assert(dec);
 
    printf("[G3DVL] vl_vp8_destroy()\n");
+
+   /* Asserted in softpipe_delete_fs_state() for some reason */
+   dec->base.context->bind_vs_state(dec->base.context, NULL);
+   dec->base.context->bind_fs_state(dec->base.context, NULL);
+
+   dec->base.context->delete_depth_stencil_alpha_state(dec->base.context, dec->dsa);
+   dec->base.context->delete_sampler_state(dec->base.context, dec->sampler_ycbcr);
 
    vp8dx_remove_decompressor(dec->vp8_dec);
    FREE(dec);
@@ -300,8 +312,9 @@ vl_vp8_end_frame(struct pipe_video_decoder *decoder)
       if (map)
       {
          util_copy_rect(map, sv->texture->format, transfer->stride, 0, 0,
-                       dst_box.width, dst_box.height, dst,
-                       (i ? dec->img_yv12.uv_stride : dec->img_yv12.y_stride), 0, 0);
+                        dst_box.width, dst_box.height, dst,
+                        (i ? dec->img_yv12.uv_stride : dec->img_yv12.y_stride),
+                        0, 0);
 
          pipe->transfer_unmap(pipe, transfer);
       }
@@ -363,6 +376,31 @@ init_pipe_state(struct vl_vp8_decoder *dec)
    return true;
 }
 
+static const struct format_config*
+find_format_config(struct vl_vp8_decoder *dec,
+                   const struct format_config configs[],
+                   unsigned num_configs)
+{
+   struct pipe_screen *screen;
+   unsigned i;
+
+   assert(dec);
+
+   screen = dec->base.context->screen;
+
+   for (i = 0; i < num_configs; ++i) {
+       if (!screen->is_format_supported(screen,
+                                        configs[i].loopfilter_source_format,
+                                        PIPE_TEXTURE_2D,
+                                        1, PIPE_BIND_SAMPLER_VIEW))
+           continue;
+
+      return &configs[i];
+   }
+
+   return NULL;
+}
+
 /** Called by the VDPAU state tracker */
 struct pipe_video_decoder *
 vl_create_vp8_decoder(struct pipe_context *context,
@@ -413,10 +451,13 @@ vl_create_vp8_decoder(struct pipe_context *context,
    dec->chroma_width = dec->base.width / 2;
    dec->chroma_height = dec->base.height / 2;
    dec->width_in_macroblocks = align(dec->base.width, MACROBLOCK_WIDTH) / MACROBLOCK_WIDTH;
-/*
+
    switch (entrypoint) {
    case PIPE_VIDEO_ENTRYPOINT_BITSTREAM:
       format_config = find_format_config(dec, bitstream_format_config, num_bitstream_format_configs);
+      break;
+   case PIPE_VIDEO_ENTRYPOINT_LOOPFILTER:
+      format_config = find_format_config(dec, loopfilter_format_config, num_loopfilter_format_configs);
       break;
    default:
       assert(0);
@@ -425,7 +466,7 @@ vl_create_vp8_decoder(struct pipe_context *context,
 
    if (!format_config)
       return NULL;
-*/
+
    if (!init_pipe_state(dec))
       goto error_pipe_state;
 
