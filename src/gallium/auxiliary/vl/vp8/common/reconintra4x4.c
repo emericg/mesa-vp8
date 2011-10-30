@@ -138,7 +138,6 @@ void vp8_intra4x4_predict(BLOCKD *x, int b_mode, unsigned char *predictor)
         predictor[2 * 16 + 3] =
             predictor[3 * 16 + 2] = (ptr[5] + ptr[6] * 2 + ptr[7] + 2) >> 2;
         predictor[3 * 16 + 3] = (ptr[6] + ptr[7] * 2 + ptr[7] + 2) >> 2;
-
     }
     break;
 
@@ -172,7 +171,6 @@ void vp8_intra4x4_predict(BLOCKD *x, int b_mode, unsigned char *predictor)
         predictor[1 * 16 + 3] =
             predictor[0 * 16 + 2] = (pp[5] + pp[6] * 2 + pp[7] + 2) >> 2;
         predictor[0 * 16 + 3] = (pp[6] + pp[7] * 2 + pp[8] + 2) >> 2;
-
     }
     break;
 
@@ -206,7 +204,6 @@ void vp8_intra4x4_predict(BLOCKD *x, int b_mode, unsigned char *predictor)
             predictor[0 * 16 + 2] = (pp[6] + pp[7] + 1) >> 1;
         predictor[1 * 16 + 3] = (pp[6] + pp[7] * 2 + pp[8] + 2) >> 2;
         predictor[0 * 16 + 3] = (pp[7] + pp[8] + 1) >> 1;
-
     }
     break;
 

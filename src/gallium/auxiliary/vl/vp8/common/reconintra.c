@@ -69,8 +69,6 @@ void vp8_build_intra_predictors_mby(MACROBLOCKD *x)
 
             }
 
-
-
             shift = 3 + x->up_available + x->left_available;
             expected_dc = (average + (1 << (shift - 1))) >> shift;
         }
@@ -82,6 +80,7 @@ void vp8_build_intra_predictors_mby(MACROBLOCKD *x)
         memset(ypred_ptr, expected_dc, 256);
     }
     break;
+
     case V_PRED:
     {
         for (r = 0; r < 16; r++)
@@ -95,6 +94,7 @@ void vp8_build_intra_predictors_mby(MACROBLOCKD *x)
         }
     }
     break;
+
     case H_PRED:
     {
         for (r = 0; r < 16; r++)
@@ -103,9 +103,9 @@ void vp8_build_intra_predictors_mby(MACROBLOCKD *x)
             memset(ypred_ptr, yleft_col[r], 16);
             ypred_ptr += 16;
         }
-
     }
     break;
+
     case TM_PRED:
     {
         for (r = 0; r < 16; r++)
@@ -127,6 +127,7 @@ void vp8_build_intra_predictors_mby(MACROBLOCKD *x)
         }
     }
     break;
+
     case B_PRED:
     case NEARESTMV:
     case NEARMV:
@@ -200,6 +201,7 @@ void vp8_build_intra_predictors_mby_s(MACROBLOCKD *x)
         }
     }
     break;
+
     case V_PRED:
     {
         for (r = 0; r < 16; r++)
@@ -212,6 +214,7 @@ void vp8_build_intra_predictors_mby_s(MACROBLOCKD *x)
         }
     }
     break;
+
     case H_PRED:
     {
         for (r = 0; r < 16; r++)
@@ -219,9 +222,9 @@ void vp8_build_intra_predictors_mby_s(MACROBLOCKD *x)
             memset(ypred_ptr, yleft_col[r], 16);
             ypred_ptr += y_stride;  /*16;*/
         }
-
     }
     break;
+
     case TM_PRED:
     {
         for (r = 0; r < 16; r++)
@@ -243,6 +246,7 @@ void vp8_build_intra_predictors_mby_s(MACROBLOCKD *x)
         }
     }
     break;
+
     case B_PRED:
     case NEARESTMV:
     case NEARMV:
@@ -317,6 +321,7 @@ void vp8_build_intra_predictors_mbuv(MACROBLOCKD *x)
         memset(vpred_ptr, expected_vdc, 64);
     }
     break;
+
     case V_PRED:
     {
         int i;
@@ -330,6 +335,7 @@ void vp8_build_intra_predictors_mbuv(MACROBLOCKD *x)
         }
     }
     break;
+
     case H_PRED:
     {
         int i;
@@ -342,6 +348,7 @@ void vp8_build_intra_predictors_mbuv(MACROBLOCKD *x)
         }
     }
     break;
+
     case TM_PRED:
     {
         int i;
@@ -373,6 +380,7 @@ void vp8_build_intra_predictors_mbuv(MACROBLOCKD *x)
         }
     }
     break;
+
     case B_PRED:
     case NEARESTMV:
     case NEARMV:
@@ -456,6 +464,7 @@ void vp8_build_intra_predictors_mbuv_s(MACROBLOCKD *x)
         }
     }
     break;
+
     case V_PRED:
     {
         int i;
@@ -468,6 +477,7 @@ void vp8_build_intra_predictors_mbuv_s(MACROBLOCKD *x)
         }
     }
     break;
+
     case H_PRED:
     {
         int i;
@@ -480,8 +490,8 @@ void vp8_build_intra_predictors_mbuv_s(MACROBLOCKD *x)
             vpred_ptr += uv_stride; /*8;*/
         }
     }
-
     break;
+
     case TM_PRED:
     {
         int i;
@@ -513,6 +523,7 @@ void vp8_build_intra_predictors_mbuv_s(MACROBLOCKD *x)
         }
     }
     break;
+
     case B_PRED:
     case NEARESTMV:
     case NEARMV:

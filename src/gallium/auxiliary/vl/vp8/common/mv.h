@@ -22,8 +22,8 @@ typedef struct
 
 typedef union
 {
-    uint32_t  as_int;
-    MV        as_mv;
+    uint32_t as_int;
+    MV       as_mv;
 } int_mv; /* facilitates faster equality tests and copies */
 
 #endif /* MV_H */

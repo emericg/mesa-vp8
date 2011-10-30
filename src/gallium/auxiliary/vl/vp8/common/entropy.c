@@ -103,7 +103,6 @@ void vp8_init_scan_order_mask()
     {
         vp8_default_zig_zag_mask[vp8_default_zig_zag1d[i]] = 1 << i;
     }
-
 }
 
 static void init_bit_tree(vp8_tree_index *p, int n)

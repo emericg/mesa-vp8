@@ -22,7 +22,7 @@ vp8_yv12_de_alloc_frame_buffer(YV12_BUFFER_CONFIG *ybf)
         /* buffer_alloc isn't accessed by most functions.  Rather y_buffer,
           u_buffer and v_buffer point to buffer_alloc and are used.  Clear out
           all of this so that a freed pointer isn't inadvertently used */
-        memset (ybf, 0, sizeof (YV12_BUFFER_CONFIG));
+        memset (ybf, 0, sizeof(YV12_BUFFER_CONFIG));
     }
     else
     {
@@ -31,7 +31,6 @@ vp8_yv12_de_alloc_frame_buffer(YV12_BUFFER_CONFIG *ybf)
 
     return 0;
 }
-
 
 int
 vp8_yv12_alloc_frame_buffer(YV12_BUFFER_CONFIG *ybf, int width, int height, int border)
@@ -68,7 +67,7 @@ vp8_yv12_alloc_frame_buffer(YV12_BUFFER_CONFIG *ybf, int width, int height, int 
         ybf->border = border;
         ybf->frame_size = yplane_size + 2 * uvplane_size;
 
-        ybf->buffer_alloc = (unsigned char *) vpx_memalign(32, ybf->frame_size);
+        ybf->buffer_alloc = (unsigned char *)vpx_memalign(32, ybf->frame_size);
 
         if (ybf->buffer_alloc == NULL)
             return -1;
@@ -137,7 +136,6 @@ vp8_yv12_extend_frame_borders(YV12_BUFFER_CONFIG *ybf)
         dest_ptr1 += plane_stride;
         dest_ptr2 += plane_stride;
     }
-
 
     /***********/
     /* U Plane */

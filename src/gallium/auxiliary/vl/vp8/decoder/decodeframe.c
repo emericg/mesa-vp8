@@ -27,7 +27,6 @@
 #include "../common/extend.h"
 #include "../vp8_mem.h"
 #include "../common/idct.h"
-#include "dequantize.h"
 #include "dboolhuff.h"
 
 #include <assert.h>
@@ -69,8 +68,9 @@ void mb_init_dequantizer(VP8D_COMP *pbi, MACROBLOCKD *xd)
     {
         /* Abs Value */
         if (xd->mb_segement_abs_delta == SEGMENT_ABSDATA)
+        {
             QIndex = xd->segment_feature_data[MB_LVL_ALT_Q][mbmi->segment_id];
-
+        }
         /* Delta Value */
         else
         {
@@ -289,7 +289,6 @@ static void decode_macroblock(VP8D_COMP *pbi, MACROBLOCKD *xd, unsigned int mb_i
                      xd->dst.uv_stride, xd->eobs+16);
 }
 
-
 static int get_delta_q(vp8_reader *bc, int prev, int *q_update)
 {
     int ret_val = 0;
@@ -308,7 +307,6 @@ static int get_delta_q(vp8_reader *bc, int prev, int *q_update)
 
     return ret_val;
 }
-
 
 static void
 decode_mb_row(VP8D_COMP *pbi, VP8_COMMON *pc, int mb_row, MACROBLOCKD *xd)
@@ -396,7 +394,6 @@ decode_mb_row(VP8D_COMP *pbi, VP8_COMMON *pc, int mb_row, MACROBLOCKD *xd)
     /* skip prediction column */
     ++xd->mode_info_context;
 }
-
 
 static unsigned int read_partition_size(const unsigned char *cx_size)
 {
@@ -499,7 +496,6 @@ static void setup_token_decoder(VP8D_COMP *pbi,
     }
 }
 
-
 static void stop_token_decoder(VP8D_COMP *pbi)
 {
     VP8_COMMON *pc = &pbi->common;
@@ -548,25 +544,21 @@ static void init_frame(VP8D_COMP *pbi)
     }
     else
     {
-        if (!pc->use_bilinear_mc_filter)
-            pc->mcomp_filter_type = SIXTAP;
-        else
+        if (pc->use_bilinear_mc_filter)
+        {
             pc->mcomp_filter_type = BILINEAR;
-
-        /* To enable choice of different interploation filters */
-        if (pc->mcomp_filter_type == SIXTAP)
-        {
-            xd->subpixel_predict      = SUBPIX_INVOKE(RTCD_VTABLE(subpix), sixtap4x4);
-            xd->subpixel_predict8x4   = SUBPIX_INVOKE(RTCD_VTABLE(subpix), sixtap8x4);
-            xd->subpixel_predict8x8   = SUBPIX_INVOKE(RTCD_VTABLE(subpix), sixtap8x8);
-            xd->subpixel_predict16x16 = SUBPIX_INVOKE(RTCD_VTABLE(subpix), sixtap16x16);
-        }
-        else
-        {
             xd->subpixel_predict      = SUBPIX_INVOKE(RTCD_VTABLE(subpix), bilinear4x4);
             xd->subpixel_predict8x4   = SUBPIX_INVOKE(RTCD_VTABLE(subpix), bilinear8x4);
             xd->subpixel_predict8x8   = SUBPIX_INVOKE(RTCD_VTABLE(subpix), bilinear8x8);
             xd->subpixel_predict16x16 = SUBPIX_INVOKE(RTCD_VTABLE(subpix), bilinear16x16);
+        }
+        else
+        {
+            pc->mcomp_filter_type = SIXTAP;
+            xd->subpixel_predict      = SUBPIX_INVOKE(RTCD_VTABLE(subpix), sixtap4x4);
+            xd->subpixel_predict8x4   = SUBPIX_INVOKE(RTCD_VTABLE(subpix), sixtap8x4);
+            xd->subpixel_predict8x8   = SUBPIX_INVOKE(RTCD_VTABLE(subpix), sixtap8x8);
+            xd->subpixel_predict16x16 = SUBPIX_INVOKE(RTCD_VTABLE(subpix), sixtap16x16);
         }
     }
 

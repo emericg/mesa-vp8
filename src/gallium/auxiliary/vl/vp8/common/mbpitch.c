@@ -38,7 +38,6 @@ static void setup_block(BLOCKD *b,
     }
 }
 
-
 static void setup_macroblock(MACROBLOCKD *x, BLOCKSET bs)
 {
     int block;

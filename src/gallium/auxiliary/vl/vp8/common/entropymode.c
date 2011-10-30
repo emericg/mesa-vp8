@@ -13,11 +13,11 @@
 #include "entropy.h"
 #include "../vp8_mem.h"
 
-static const unsigned int kf_y_mode_cts[VP8_YMODES] = { 1607, 915, 812, 811, 5455};
-static const unsigned int y_mode_cts  [VP8_YMODES] = { 8080, 1908, 1582, 1007, 5874};
+static const unsigned int kf_y_mode_cts[VP8_YMODES] = {1607, 915, 812, 811, 5455};
+static const unsigned int y_mode_cts   [VP8_YMODES] = {8080, 1908, 1582, 1007, 5874};
 
-static const unsigned int uv_mode_cts  [VP8_UV_MODES] = { 59483, 13605, 16492, 4230};
-static const unsigned int kf_uv_mode_cts[VP8_UV_MODES] = { 5319, 1904, 1703, 674};
+static const unsigned int uv_mode_cts   [VP8_UV_MODES] = {59483, 13605, 16492, 4230};
+static const unsigned int kf_uv_mode_cts[VP8_UV_MODES] = {5319, 1904, 1703, 674};
 
 static const unsigned int bmode_cts[VP8_BINTRAMODES] =
 {
@@ -93,10 +93,9 @@ vp8_mbsplit vp8_mbsplits [VP8_NUMMBSPLITS] =
     },
 };
 
-const int vp8_mbsplit_count [VP8_NUMMBSPLITS] = { 2, 2, 4, 16};
+const int vp8_mbsplit_count[VP8_NUMMBSPLITS] = {2, 2, 4, 16};
 
-const vp8_prob vp8_mbsplit_probs [VP8_NUMMBSPLITS-1] = { 110, 111, 150};
-
+const vp8_prob vp8_mbsplit_probs[VP8_NUMMBSPLITS-1] = {110, 111, 150};
 
 /** Array indices are identical to previously-existing INTRAMODECONTEXTNODES. */
 const vp8_tree_index vp8_bmode_tree[18] =  /* INTRAMODECONTEXTNODE value */
@@ -186,31 +185,26 @@ struct vp8_token_struct vp8_small_mvencodings [8];
 
 void vp8_init_mbmode_probs(VP8_COMMON *x)
 {
-    unsigned int bct [VP8_YMODES] [2];      /* num Ymodes > num UV modes */
+    unsigned int bct [VP8_YMODES] [2]; /* num Ymodes > num UV modes */
 
     vp8_tree_probs_from_distribution(
         VP8_YMODES, vp8_ymode_encodings, vp8_ymode_tree,
-        x->fc.ymode_prob, bct, y_mode_cts,
-        256, 1
-    );
+        x->fc.ymode_prob, bct, y_mode_cts, 256, 1);
+
     vp8_tree_probs_from_distribution(
         VP8_YMODES, vp8_kf_ymode_encodings, vp8_kf_ymode_tree,
-        x->kf_ymode_prob, bct, kf_y_mode_cts,
-        256, 1
-    );
+        x->kf_ymode_prob, bct, kf_y_mode_cts, 256, 1);
+
     vp8_tree_probs_from_distribution(
         VP8_UV_MODES, vp8_uv_mode_encodings, vp8_uv_mode_tree,
-        x->fc.uv_mode_prob, bct, uv_mode_cts,
-        256, 1
-    );
+        x->fc.uv_mode_prob, bct, uv_mode_cts, 256, 1);
+
     vp8_tree_probs_from_distribution(
         VP8_UV_MODES, vp8_uv_mode_encodings, vp8_uv_mode_tree,
-        x->kf_uv_mode_prob, bct, kf_uv_mode_cts,
-        256, 1
-    );
+        x->kf_uv_mode_prob, bct, kf_uv_mode_cts, 256, 1);
+
     memcpy(x->fc.sub_mv_ref_prob, sub_mv_ref_prob, sizeof(sub_mv_ref_prob));
 }
-
 
 static void intra_bmode_probs_from_distribution(vp8_prob p [VP8_BINTRAMODES-1],
                                                 unsigned int branch_ct [VP8_BINTRAMODES-1] [2],
@@ -244,7 +238,6 @@ void vp8_kf_default_bmode_probs(vp8_prob p [VP8_BINTRAMODES] [VP8_BINTRAMODES] [
     }
     while (++i < VP8_BINTRAMODES);
 }
-
 
 void vp8_entropy_mode_init()
 {
