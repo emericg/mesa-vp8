@@ -95,15 +95,3 @@ vpx_codec_err_t vp8_dump_frame(vpx_codec_alg_priv_t *ctx)
 
     return res;
 }
-
-YV12_BUFFER_CONFIG *vp8_get_frame(vpx_codec_alg_priv_t *ctx)
-{
-    YV12_BUFFER_CONFIG *yv12 = NULL;
-
-    if (ctx->img_avail)
-    {
-        yv12 = &ctx->img_yv12;
-    }
-
-    return yv12;
-}

@@ -250,6 +250,8 @@ vl_vp8_end_frame(struct pipe_video_decoder *decoder)
    struct pipe_context *pipe;
    struct pipe_sampler_view **sampler_views;
 
+   YV12_BUFFER_CONFIG *img;
+
    unsigned i;
 
    dec = (struct vl_vp8_decoder*)decoder;
@@ -271,9 +273,11 @@ vl_vp8_end_frame(struct pipe_video_decoder *decoder)
    }
 
    // Get the decoded frame
-   YV12_BUFFER_CONFIG *img = vp8_get_frame(&dec->alg_priv);
+   if (dec->alg_priv.img_avail)
+   {
+       img = &dec->alg_priv.img_yv12;
+   }
 
-   // Load YCbCr planes into a GPU texture
    if (img == NULL)
    {
       printf("[end_frame] No image to output !\n");
@@ -281,6 +285,7 @@ vl_vp8_end_frame(struct pipe_video_decoder *decoder)
    }
    else
    {
+      // Load YCbCr planes into a GPU texture
       for (i = 0; i < 3; ++i)
       {
          struct pipe_sampler_view *sv = sampler_views[i ? i ^ 3 : 0];
