@@ -30,8 +30,6 @@ VP8D_PTR vp8dx_create_decompressor(int input_partition)
 {
     VP8D_COMP *pbi = vpx_memalign(32, sizeof(VP8D_COMP));
 
-    printf("[VP8] vp8dx_create_decompressor()\n");
-
     if (!pbi)
         return NULL;
 
@@ -68,8 +66,6 @@ VP8D_PTR vp8dx_create_decompressor(int input_partition)
 void vp8dx_remove_decompressor(VP8D_PTR ptr)
 {
     VP8D_COMP *pbi = (VP8D_COMP *)ptr;
-
-    printf("[VP8] vp8dx_remove_decompressor()\n");
 
     if (!pbi)
         return;
