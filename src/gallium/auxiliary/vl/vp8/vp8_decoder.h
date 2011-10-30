@@ -23,7 +23,6 @@ extern "C" {
 
 /**
  * \defgroup vp8 VP8
- * \ingroup codecs
  *
  * VP8 is vpx's newest video compression algorithm that uses motion
  * compensated prediction, Discrete Cosine Transform (DCT) coding of the
@@ -49,7 +48,6 @@ extern "C" {
  */
 typedef struct vpx_codec_alg_priv
 {
-    int                decoder_init;
     VP8D_PTR           pbi;
     int                img_avail;
     YV12_BUFFER_CONFIG img_yv12;
@@ -63,8 +61,6 @@ vpx_codec_err_t vp8_decode(vpx_codec_alg_priv_t *ctx,
                            int64_t               deadline);
 
 vpx_codec_err_t vp8_dump_frame(vpx_codec_alg_priv_t *ctx);
-
-YV12_BUFFER_CONFIG *vp8_get_frame(vpx_codec_alg_priv_t *ctx);
 
 /* ************************************************************************** */
 

@@ -441,8 +441,11 @@ vl_create_vp8_decoder(struct pipe_context *context,
    if (!init_pipe_state(dec))
       goto error_pipe_state;
 
-   //if (vp8_init(&(dec->priv)) != VPX_CODEC_OK)
-   //   goto error_vp8_dec;
+   // Initialize the vp8 decoder instance
+   dec->alg_priv.pbi = vp8dx_create_decompressor(0);
+
+   if (!dec->alg_priv.pbi)
+      goto error_vp8_dec;
 
    return &dec->base;
 

@@ -25,8 +25,9 @@ extern "C"
 
 typedef void *VP8D_PTR;
 
-/*!\brief reference frame type
- * The set of macros define the type of VP8 reference frames
+/**
+ * !\brief reference frame type.
+ * The set of macros define the type of VP8 reference frames.
  */
 typedef enum
 {
@@ -34,8 +35,6 @@ typedef enum
     VP8_GOLD_FRAME = 2,
     VP8_ALTR_FRAME = 4
 } VP8_REF_FRAME;
-
-void vp8dx_initialize();
 
 int vp8dx_receive_compressed_data(VP8D_PTR comp, const unsigned char *data, unsigned data_size, int64_t time_stamp);
 int vp8dx_get_raw_frame(VP8D_PTR comp, YV12_BUFFER_CONFIG *sd, int64_t *time_stamp, int64_t *time_end_stamp);

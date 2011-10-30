@@ -21,40 +21,20 @@ vpx_codec_err_t vp8_decode(vpx_codec_alg_priv_t *ctx,
                            int64_t               deadline)
 {
     vpx_codec_err_t res = VPX_CODEC_OK;
+    int64_t time_stamp = 0, time_end_stamp = 0;
     ctx->img_avail = 0;
 
     /* printf("[VP8] vp8_decode()\n"); */
 
-    // Initialize the decoder instance on the first frame
-    if (!ctx->decoder_init)
+    if (vp8dx_receive_compressed_data(ctx->pbi, data, data_size, deadline))
     {
-        VP8D_PTR optr;
-
-        vp8dx_initialize();
-
-        optr = vp8dx_create_decompressor(0);
-
-        if (!optr)
-            res = VPX_CODEC_ERROR;
-        else
-            ctx->pbi = optr;
-
-        ctx->decoder_init = 1;
+        res = ((VP8D_COMP *)ctx->pbi)->common.error.error_code;
     }
 
-    if (!res && ctx->pbi)
+    if (!res &&
+        vp8dx_get_raw_frame(ctx->pbi, &ctx->img_yv12, &time_stamp, &time_end_stamp) == 0)
     {
-        int64_t time_stamp = 0, time_end_stamp = 0;
-
-        if (vp8dx_receive_compressed_data(ctx->pbi, data, data_size, deadline))
-        {
-            res = ((VP8D_COMP *)ctx->pbi)->common.error.error_code;
-        }
-
-        if (!res && 0 == vp8dx_get_raw_frame(ctx->pbi, &ctx->img_yv12, &time_stamp, &time_end_stamp))
-        {
-            ctx->img_avail = 1;
-        }
+        ctx->img_avail = 1;
     }
 
     return res;

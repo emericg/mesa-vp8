@@ -26,17 +26,6 @@ extern void vp8cx_init_de_quantizer(VP8D_COMP *pbi);
 static int get_free_fb(VP8_COMMON *cm);
 static void ref_cnt_fb(int *buf, int *idx, int new_idx);
 
-void vp8dx_initialize()
-{
-    static int init_done = 0;
-
-    if (!init_done)
-    {
-        vp8_initialize_common();
-        init_done = 1;
-    }
-}
-
 VP8D_PTR vp8dx_create_decompressor(int input_partition)
 {
     VP8D_COMP *pbi = vpx_memalign(32, sizeof(VP8D_COMP));
@@ -56,7 +45,7 @@ VP8D_PTR vp8dx_create_decompressor(int input_partition)
     }
 
     pbi->common.error.setjmp = 1;
-    vp8dx_initialize();
+    vp8_initialize_common();
 
     vp8_create_common(&pbi->common);
 
@@ -73,7 +62,7 @@ VP8D_PTR vp8dx_create_decompressor(int input_partition)
     pbi->common.error.setjmp = 0;
     pbi->input_partition = input_partition;
 
-    return (VP8D_PTR) pbi;
+    return (VP8D_PTR)pbi;
 }
 
 void vp8dx_remove_decompressor(VP8D_PTR ptr)
