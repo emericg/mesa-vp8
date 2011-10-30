@@ -65,6 +65,9 @@ vl_vp8_destroy(struct pipe_video_decoder *decoder)
    assert(dec);
 
    printf("[G3DVL] vl_vp8_destroy()\n");
+
+   vp8dx_remove_decompressor(dec->alg_priv.pbi);
+   FREE(dec);
 }
 
 static void *
