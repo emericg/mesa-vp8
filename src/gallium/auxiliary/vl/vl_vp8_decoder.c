@@ -167,11 +167,6 @@ vl_vp8_set_reference_frames(struct pipe_video_decoder *decoder,
    for (; i < VL_MAX_REF_FRAMES; ++i)
       for (j = 0; j < VL_MAX_PLANES; ++j)
          pipe_sampler_view_reference(&dec->ref_frames[i][j], NULL);
-/*
-   vpx_codec_err_t vp8dx_set_reference(VP8D_PTR ptr,
-                                       VP8_REF_FRAME ref_frame_flag,
-                                       YV12_BUFFER_CONFIG *sd)
-*/
 }
 
 static void

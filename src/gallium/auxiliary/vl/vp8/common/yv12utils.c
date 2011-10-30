@@ -12,8 +12,6 @@
 #include "../vp8_mem.h"
 #include "yv12utils.h"
 
-/* ************************************************************************** */
-
 int
 vp8_yv12_de_alloc_frame_buffer(YV12_BUFFER_CONFIG *ybf)
 {
@@ -88,8 +86,6 @@ vp8_yv12_alloc_frame_buffer(YV12_BUFFER_CONFIG *ybf, int width, int height, int 
 
     return 0;
 }
-
-/* ************************************************************************** */
 
 void
 vp8_yv12_extend_frame_borders(YV12_BUFFER_CONFIG *ybf)
@@ -216,49 +212,3 @@ vp8_yv12_extend_frame_borders(YV12_BUFFER_CONFIG *ybf)
         dest_ptr2 += plane_stride;
     }
 }
-
-/**
- * Copies the source image (Y,U,V buffer data) into the destination image and
- * updates the destination's UMV borders (filling border of dst as well).
- * SPECIAL NOTES : The frames are assumed to be identical in size.
- */
-void
-vp8_yv12_copy_frame(YV12_BUFFER_CONFIG *src_ybc, YV12_BUFFER_CONFIG *dst_ybc)
-{
-    int row;
-    unsigned char *source, *dest;
-
-    source = src_ybc->y_buffer;
-    dest = dst_ybc->y_buffer;
-
-    for (row = 0; row < src_ybc->y_height; row++)
-    {
-        memcpy(dest, source, src_ybc->y_width);
-        source += src_ybc->y_stride;
-        dest   += dst_ybc->y_stride;
-    }
-
-    source = src_ybc->u_buffer;
-    dest = dst_ybc->u_buffer;
-
-    for (row = 0; row < src_ybc->uv_height; row++)
-    {
-        memcpy(dest, source, src_ybc->uv_width);
-        source += src_ybc->uv_stride;
-        dest   += dst_ybc->uv_stride;
-    }
-
-    source = src_ybc->v_buffer;
-    dest = dst_ybc->v_buffer;
-
-    for (row = 0; row < src_ybc->uv_height; row++)
-    {
-        memcpy(dest, source, src_ybc->uv_width);
-        source += src_ybc->uv_stride;
-        dest   += dst_ybc->uv_stride;
-    }
-
-    vp8_yv12_extend_frame_borders(dst_ybc);
-}
-
-/* ************************************************************************** */

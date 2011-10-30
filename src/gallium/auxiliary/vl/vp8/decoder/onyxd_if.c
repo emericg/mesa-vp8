@@ -79,80 +79,7 @@ void vp8dx_remove_decompressor(VP8D_PTR ptr)
     vpx_free(pbi);
 }
 
-vpx_codec_err_t vp8dx_get_reference(VP8D_PTR ptr,
-                                    VP8_REF_FRAME ref_frame_flag,
-                                    YV12_BUFFER_CONFIG *sd)
-{
-    VP8D_COMP *pbi = (VP8D_COMP *)ptr;
-    VP8_COMMON *cm = &pbi->common;
-    int ref_fb_idx;
-
-    if (ref_frame_flag == VP8_LAST_FRAME)
-        ref_fb_idx = cm->lst_fb_idx;
-    else if (ref_frame_flag == VP8_GOLD_FRAME)
-        ref_fb_idx = cm->gld_fb_idx;
-    else if (ref_frame_flag == VP8_ALTR_FRAME)
-        ref_fb_idx = cm->alt_fb_idx;
-    else {
-        vpx_internal_error(&pbi->common.error, VPX_CODEC_ERROR, "Invalid reference frame");
-        return pbi->common.error.error_code;
-    }
-
-    if (cm->yv12_fb[ref_fb_idx].y_height != sd->y_height ||
-        cm->yv12_fb[ref_fb_idx].y_width != sd->y_width ||
-        cm->yv12_fb[ref_fb_idx].uv_height != sd->uv_height ||
-        cm->yv12_fb[ref_fb_idx].uv_width != sd->uv_width){
-        vpx_internal_error(&pbi->common.error, VPX_CODEC_ERROR, "Incorrect buffer dimensions");
-    }
-    else
-        vp8_yv12_copy_frame(&cm->yv12_fb[ref_fb_idx], sd);
-
-    return pbi->common.error.error_code;
-}
-
-vpx_codec_err_t vp8dx_set_reference(VP8D_PTR ptr,
-                                    VP8_REF_FRAME ref_frame_flag,
-                                    YV12_BUFFER_CONFIG *sd)
-{
-    VP8D_COMP *pbi = (VP8D_COMP *)ptr;
-    VP8_COMMON *cm = &pbi->common;
-    int *ref_fb_ptr = NULL;
-    int free_fb;
-
-    if (ref_frame_flag == VP8_LAST_FRAME)
-        ref_fb_ptr = &cm->lst_fb_idx;
-    else if (ref_frame_flag == VP8_GOLD_FRAME)
-        ref_fb_ptr = &cm->gld_fb_idx;
-    else if (ref_frame_flag == VP8_ALTR_FRAME)
-        ref_fb_ptr = &cm->alt_fb_idx;
-    else {
-        vpx_internal_error(&pbi->common.error, VPX_CODEC_ERROR,
-            "Invalid reference frame");
-        return pbi->common.error.error_code;
-    }
-
-    if (cm->yv12_fb[*ref_fb_ptr].y_height != sd->y_height ||
-        cm->yv12_fb[*ref_fb_ptr].y_width != sd->y_width ||
-        cm->yv12_fb[*ref_fb_ptr].uv_height != sd->uv_height ||
-        cm->yv12_fb[*ref_fb_ptr].uv_width != sd->uv_width){
-        vpx_internal_error(&pbi->common.error, VPX_CODEC_ERROR,
-            "Incorrect buffer dimensions");
-    } else {
-        /* Find an empty frame buffer. */
-        free_fb = get_free_fb(cm);
-        /* Decrease fb_idx_ref_cnt since it will be increased again in
-         * ref_cnt_fb() below. */
-        cm->fb_idx_ref_cnt[free_fb]--;
-
-        /* Manage the reference counters and copy image. */
-        ref_cnt_fb (cm->fb_idx_ref_cnt, ref_fb_ptr, free_fb);
-        vp8_yv12_copy_frame(sd, &cm->yv12_fb[*ref_fb_ptr]);
-    }
-
-   return pbi->common.error.error_code;
-}
-
-static int get_free_fb (VP8_COMMON *cm)
+static int get_free_fb(VP8_COMMON *cm)
 {
     int i;
     for (i = 0; i < NUM_YV12_BUFFERS; i++)
@@ -164,7 +91,7 @@ static int get_free_fb (VP8_COMMON *cm)
     return i;
 }
 
-static void ref_cnt_fb (int *buf, int *idx, int new_idx)
+static void ref_cnt_fb(int *buf, int *idx, int new_idx)
 {
     if (buf[*idx] > 0)
         buf[*idx]--;
@@ -175,7 +102,7 @@ static void ref_cnt_fb (int *buf, int *idx, int new_idx)
 }
 
 /* If any buffer copy / swapping is signalled it should be done here. */
-static int swap_frame_buffers (VP8_COMMON *cm)
+static int swap_frame_buffers(VP8_COMMON *cm)
 {
     int err = 0;
 
@@ -195,7 +122,7 @@ static int swap_frame_buffers (VP8_COMMON *cm)
         else
             err = -1;
 
-        ref_cnt_fb (cm->fb_idx_ref_cnt, &cm->alt_fb_idx, new_fb);
+        ref_cnt_fb(cm->fb_idx_ref_cnt, &cm->alt_fb_idx, new_fb);
     }
 
     if (cm->copy_buffer_to_gf)
@@ -209,18 +136,18 @@ static int swap_frame_buffers (VP8_COMMON *cm)
         else
             err = -1;
 
-        ref_cnt_fb (cm->fb_idx_ref_cnt, &cm->gld_fb_idx, new_fb);
+        ref_cnt_fb(cm->fb_idx_ref_cnt, &cm->gld_fb_idx, new_fb);
     }
 
     if (cm->refresh_golden_frame)
-        ref_cnt_fb (cm->fb_idx_ref_cnt, &cm->gld_fb_idx, cm->new_fb_idx);
+        ref_cnt_fb(cm->fb_idx_ref_cnt, &cm->gld_fb_idx, cm->new_fb_idx);
 
     if (cm->refresh_alt_ref_frame)
-        ref_cnt_fb (cm->fb_idx_ref_cnt, &cm->alt_fb_idx, cm->new_fb_idx);
+        ref_cnt_fb(cm->fb_idx_ref_cnt, &cm->alt_fb_idx, cm->new_fb_idx);
 
     if (cm->refresh_last_frame)
     {
-        ref_cnt_fb (cm->fb_idx_ref_cnt, &cm->lst_fb_idx, cm->new_fb_idx);
+        ref_cnt_fb(cm->fb_idx_ref_cnt, &cm->lst_fb_idx, cm->new_fb_idx);
 
         cm->frame_to_show = &cm->yv12_fb[cm->lst_fb_idx];
     }
@@ -329,20 +256,20 @@ int vp8dx_receive_compressed_data(VP8D_PTR ptr, const unsigned char *data, unsig
     }
 
     {
-        if (swap_frame_buffers (cm))
+        if (swap_frame_buffers(cm))
         {
             pbi->common.error.error_code = VPX_CODEC_ERROR;
             pbi->common.error.setjmp = 0;
 
             return -1;
         }
-
+/*
         if (cm->filter_level)
         {
-            /* Apply the loop filter if appropriate. */
-            // vp8_loop_filter_frame(cm, &pbi->mb);
+            // Apply the loop filter if appropriate.
+            vp8_loop_filter_frame(cm, &pbi->mb);
         }
-
+*/
         vp8_yv12_extend_frame_borders(cm->frame_to_show);
     }
 

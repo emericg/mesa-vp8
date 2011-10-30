@@ -12,7 +12,6 @@
 #ifndef VP8D_H
 #define VP8D_H
 
-/* Create/destroy static data structures. */
 #ifdef __cplusplus
 extern "C"
 {
@@ -25,26 +24,11 @@ extern "C"
 
 typedef void *VP8D_PTR;
 
-/**
- * !\brief reference frame type.
- * The set of macros define the type of VP8 reference frames.
- */
-typedef enum
-{
-    VP8_LAST_FRAME = 1,
-    VP8_GOLD_FRAME = 2,
-    VP8_ALTR_FRAME = 4
-} VP8_REF_FRAME;
+VP8D_PTR vp8dx_create_decompressor(int input_partition);
+void vp8dx_remove_decompressor(VP8D_PTR comp);
 
 int vp8dx_receive_compressed_data(VP8D_PTR comp, const unsigned char *data, unsigned data_size, int64_t time_stamp);
 int vp8dx_get_raw_frame(VP8D_PTR comp, YV12_BUFFER_CONFIG *sd, int64_t *time_stamp, int64_t *time_end_stamp);
-
-vpx_codec_err_t vp8dx_get_reference(VP8D_PTR comp, VP8_REF_FRAME ref_frame_flag, YV12_BUFFER_CONFIG *sd);
-vpx_codec_err_t vp8dx_set_reference(VP8D_PTR comp, VP8_REF_FRAME ref_frame_flag, YV12_BUFFER_CONFIG *sd);
-
-VP8D_PTR vp8dx_create_decompressor(int input_partition);
-
-void vp8dx_remove_decompressor(VP8D_PTR comp);
 
 #ifdef __cplusplus
 }

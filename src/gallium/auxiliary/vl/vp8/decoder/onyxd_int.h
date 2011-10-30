@@ -59,7 +59,7 @@ typedef struct
 
 } DETOK;
 
-typedef struct VP8Decompressor
+typedef struct
 {
     DECLARE_ALIGNED(16, MACROBLOCKD, mb);
     DECLARE_ALIGNED(16, VP8_COMMON, common);

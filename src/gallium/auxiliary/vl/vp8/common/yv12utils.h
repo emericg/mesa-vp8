@@ -63,7 +63,6 @@ int vp8_yv12_alloc_frame_buffer(YV12_BUFFER_CONFIG *ybf, int width, int height, 
 int vp8_yv12_de_alloc_frame_buffer(YV12_BUFFER_CONFIG *ybf);
 
 void vp8_yv12_extend_frame_borders(YV12_BUFFER_CONFIG *ybf);
-void vp8_yv12_copy_frame(YV12_BUFFER_CONFIG *src_ybc, YV12_BUFFER_CONFIG *dst_ybc);
 
 #ifdef __cplusplus
 }
