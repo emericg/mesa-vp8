@@ -33,9 +33,12 @@
 #include "pipe/p_video_decoder.h"
 
 #include "vl_vp8_bitstream.h"
+#include "vl_vertex_buffers.h"
 #include "vl_video_buffer.h"
 
-#include "vp8/vp8_decoder.h"
+#include "vp8/common/onyxd.h"
+#include "vp8/common/yv12utils.h"
+#include "vp8/decoder/onyxd_int.h"
 
 struct pipe_screen;
 struct pipe_context;
@@ -60,8 +63,9 @@ struct vl_vp8_decoder
    struct pipe_video_buffer *target;
    struct pipe_surface *target_surfaces[VL_MAX_PLANES];
 
-   // vp8 decoder context
-   vpx_codec_alg_priv_t alg_priv;
+   // VP8 decoder context
+   VP8D_PTR vp8_dec;
+   YV12_BUFFER_CONFIG img_yv12;
 };
 
 struct vl_vp8_buffer

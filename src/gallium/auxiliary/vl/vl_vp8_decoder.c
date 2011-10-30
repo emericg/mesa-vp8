@@ -66,7 +66,7 @@ vl_vp8_destroy(struct pipe_video_decoder *decoder)
 
    printf("[G3DVL] vl_vp8_destroy()\n");
 
-   vp8dx_remove_decompressor(dec->alg_priv.pbi);
+   vp8dx_remove_decompressor(dec->vp8_dec);
    FREE(dec);
 }
 
@@ -229,9 +229,9 @@ vl_vp8_decode_bitstream(struct pipe_video_decoder *decoder,
    }
    else
    {
-      if (vp8_decode(&dec->alg_priv, data, num_bytes, 0) != VPX_CODEC_OK)
+      if (vp8dx_receive_compressed_data(dec->vp8_dec, data, num_bytes, 0))
       {
-         printf("[G3DVL] Error : not a VP8 VDPAU frame !\n");
+          printf("[G3DVL] Error : not a valid VP8 VDPAU frame !\n");
       }
    }
 }
@@ -245,7 +245,7 @@ vl_vp8_end_frame(struct pipe_video_decoder *decoder)
    struct pipe_context *pipe;
    struct pipe_sampler_view **sampler_views;
 
-   YV12_BUFFER_CONFIG *img;
+   int64_t timestamp = 0, timestamp_end = 0;
 
    unsigned i;
 
@@ -268,52 +268,45 @@ vl_vp8_end_frame(struct pipe_video_decoder *decoder)
    }
 
    // Get the decoded frame
-   if (dec->alg_priv.img_avail)
-   {
-       img = &dec->alg_priv.img_yv12;
+   if (vp8dx_get_raw_frame(dec->vp8_dec, &dec->img_yv12, &timestamp, &timestamp_end)) {
+       printf("[end_frame] No image to output !\n");
+       return;
    }
 
-   if (img == NULL)
+   // Load YCbCr planes into a GPU texture
+   for (i = 0; i < 3; ++i)
    {
-      printf("[end_frame] No image to output !\n");
-      return;
-   }
-   else
-   {
-      // Load YCbCr planes into a GPU texture
-      for (i = 0; i < 3; ++i)
+      struct pipe_sampler_view *sv = sampler_views[i ? i ^ 3 : 0];
+      struct pipe_box dst_box = { 0, 0, 0, sv->texture->width0, sv->texture->height0, 1 };
+
+      struct pipe_transfer *transfer;
+      void *map;
+
+      transfer = pipe->get_transfer(pipe, sv->texture, 0, PIPE_TRANSFER_WRITE, &dst_box);
+      if (!transfer)
       {
-         struct pipe_sampler_view *sv = sampler_views[i ? i ^ 3 : 0];
-         struct pipe_box dst_box = { 0, 0, 0, sv->texture->width0, sv->texture->height0, 1 };
-
-         struct pipe_transfer *transfer;
-         void *map;
-
-         transfer = pipe->get_transfer(pipe, sv->texture, 0, PIPE_TRANSFER_WRITE, &dst_box);
-         if (!transfer)
-         {
-            printf("[end_frame] no transfer\n");
-            return;
-         }
-
-         ubyte *dst = img->y_buffer;
-
-         if (i == 1)
-             dst = img->v_buffer;
-         else if (i == 2)
-             dst = img->u_buffer;
-
-         map = pipe->transfer_map(pipe, transfer);
-         if (map)
-         {
-            util_copy_rect(map, sv->texture->format, transfer->stride, 0, 0,
-                           dst_box.width, dst_box.height, dst, (i ? img->uv_stride : img->y_stride), 0, 0);
-
-            pipe->transfer_unmap(pipe, transfer);
-         }
-
-         pipe->transfer_destroy(pipe, transfer);
+         printf("[end_frame] no transfer\n");
+         return;
       }
+
+      ubyte *dst = dec->img_yv12.y_buffer;
+
+      if (i == 1)
+          dst = dec->img_yv12.v_buffer;
+      else if (i == 2)
+          dst = dec->img_yv12.u_buffer;
+
+      map = pipe->transfer_map(pipe, transfer);
+      if (map)
+      {
+         util_copy_rect(map, sv->texture->format, transfer->stride, 0, 0,
+                       dst_box.width, dst_box.height, dst,
+                       (i ? dec->img_yv12.uv_stride : dec->img_yv12.y_stride), 0, 0);
+
+         pipe->transfer_unmap(pipe, transfer);
+      }
+
+      pipe->transfer_destroy(pipe, transfer);
    }
 }
 
@@ -437,9 +430,9 @@ vl_create_vp8_decoder(struct pipe_context *context,
       goto error_pipe_state;
 
    // Initialize the vp8 decoder instance
-   dec->alg_priv.pbi = vp8dx_create_decompressor(0);
+   dec->vp8_dec = vp8dx_create_decompressor(0);
 
-   if (!dec->alg_priv.pbi)
+   if (!dec->vp8_dec)
       goto error_vp8_dec;
 
    return &dec->base;

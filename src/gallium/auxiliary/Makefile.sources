@@ -152,7 +152,6 @@ C_SOURCES := \
 	vl/vl_video_buffer.c \
 	vl/vl_vp8_decoder.c \
 	vl/vl_vp8_bitstream.c \
-	vl/vp8/vp8_decoder.c \
 	vl/vp8/vp8_debug.c \
 	vl/vp8/vp8_mem.c \
 	vl/vp8/common/alloccommon.c \
