@@ -22,8 +22,6 @@
 extern "C" {
 #endif
 
-/* ************************************************************************** */
-
 #define ADDRESS_STORAGE_SIZE sizeof(size_t)
 #define DEFAULT_ALIGNMENT    32 // must be >= 1 !
 
@@ -37,15 +35,11 @@ extern "C" {
 #define DECLARE_ALIGNED(n,typ,val)  typ val
 #endif
 
-/* ************************************************************************** */
-
 void *vpx_memalign(size_t align, size_t size);
 void *vpx_malloc(size_t size);
 void *vpx_calloc(size_t num, size_t size);
 void *vpx_realloc(void *memblk, size_t size);
 void vpx_free(void *memblk);
-
-/* ************************************************************************** */
 
 #if defined(__cplusplus)
 }

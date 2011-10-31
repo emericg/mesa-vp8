@@ -9,20 +9,20 @@
  */
 
 
+#include <stdio.h>
+#include <assert.h>
+
+#include "../vp8_mem.h"
+
 #include "../common/onyxc_int.h"
 #include "onyxd_int.h"
-#include "../vp8_mem.h"
 #include "../common/onyxd.h"
 #include "../common/alloccommon.h"
 #include "../common/yv12utils.h"
 
-#include <stdio.h>
-#include <assert.h>
-
 #include "../common/quant_common.h"
 #include "detokenize.h"
 
-extern void vp8cx_init_de_quantizer(VP8D_COMP *pbi);
 static int get_free_fb(VP8_COMMON *cm);
 static void ref_cnt_fb(int *buf, int *idx, int new_idx);
 
@@ -50,10 +50,7 @@ VP8D_PTR vp8dx_create_decompressor()
     pbi->common.current_video_frame = 0;
     pbi->ready_for_new_data = 1;
 
-    /* vp8cx_init_de_quantizer() is first called here. Add check in
-     * frame_init_dequantizer() to avoid unnecessary calling of
-     * vp8cx_init_de_quantizer() for every frame. */
-    vp8cx_init_de_quantizer(pbi);
+    vp8_initialize_dequantizer(&pbi->common);
 
     // vp8_loop_filter_init(&pbi->common);
 
@@ -96,7 +93,9 @@ static void ref_cnt_fb(int *buf, int *idx, int new_idx)
     buf[new_idx]++;
 }
 
-/* If any buffer copy / swapping is signalled it should be done here. */
+/**
+ * If any buffer copy / swapping is signalled it should be done here.
+ */
 static int swap_frame_buffers(VP8_COMMON *cm)
 {
     int err = 0;
@@ -104,8 +103,7 @@ static int swap_frame_buffers(VP8_COMMON *cm)
     /* The alternate reference frame or golden frame can be updated
      *  using the new, last, or golden/alt ref frame.  If it
      *  is updated using the newly decoded frame it is a refresh.
-     *  An update using the last or golden/alt ref frame is a copy.
-     */
+     *  An update using the last or golden/alt ref frame is a copy. */
     if (cm->copy_buffer_to_arf)
     {
         int new_fb = 0;
@@ -154,7 +152,9 @@ static int swap_frame_buffers(VP8_COMMON *cm)
     return err;
 }
 
-int vp8dx_receive_compressed_data(VP8D_PTR ptr, const unsigned char *data, unsigned data_size, int64_t time_stamp)
+int vp8dx_receive_compressed_data(VP8D_PTR ptr,
+                                  const unsigned char *data, unsigned data_size,
+                                  int64_t timestamp_deadline)
 {
     VP8D_COMP *pbi = (VP8D_COMP *)ptr;
     VP8_COMMON *cm = &pbi->common;
@@ -171,21 +171,19 @@ int vp8dx_receive_compressed_data(VP8D_PTR ptr, const unsigned char *data, unsig
     pbi->common.error.error_code = VPX_CODEC_OK;
 
     {
-        pbi->Source = data;
-        pbi->source_sz = data_size;
+        pbi->data = data;
+        pbi->data_size = data_size;
 
-        if (pbi->source_sz == 0)
+        if (pbi->data_size == 0)
         {
            /* This is used to signal that we are missing frames.
             * We do not know if the missing frame(s) was supposed to update
             * any of the reference buffers, but we act conservative and
-            * mark only the last buffer as corrupted.
-            */
+            * mark only the last buffer as corrupted. */
             cm->yv12_fb[cm->lst_fb_idx].corrupted = 1;
 
             /* If error concealment is disabled we won't signal missing frames to
-             * the decoder.
-             */
+             * the decoder. */
             {
                 /* Signal that we have no frame to show. */
                 cm->show_frame = 0;
@@ -201,8 +199,7 @@ int vp8dx_receive_compressed_data(VP8D_PTR ptr, const unsigned char *data, unsig
 
            /* We do not know if the missing frame(s) was supposed to update
             * any of the reference buffers, but we act conservative and
-            * mark only the last buffer as corrupted.
-            */
+            * mark only the last buffer as corrupted. */
             cm->yv12_fb[cm->lst_fb_idx].corrupted = 1;
 
             if (cm->fb_idx_ref_cnt[cm->new_fb_idx] > 0)
@@ -214,7 +211,7 @@ int vp8dx_receive_compressed_data(VP8D_PTR ptr, const unsigned char *data, unsig
         pbi->common.error.setjmp = 1;
     }
 
-    retcode = vp8_decode_frame(pbi);
+    retcode = vp8_frame_decode(pbi);
 
     if (retcode < 0)
     {
@@ -250,8 +247,8 @@ int vp8dx_receive_compressed_data(VP8D_PTR ptr, const unsigned char *data, unsig
         cm->current_video_frame++;
 
     pbi->ready_for_new_data = 0;
-    pbi->last_time_stamp = time_stamp;
-    pbi->source_sz = 0;
+    pbi->last_time_stamp = timestamp_deadline;
+    pbi->data_size = 0;
     pbi->common.error.setjmp = 0;
 
     return retcode;
@@ -259,8 +256,8 @@ int vp8dx_receive_compressed_data(VP8D_PTR ptr, const unsigned char *data, unsig
 
 int vp8dx_get_raw_frame(VP8D_PTR ptr,
                         YV12_BUFFER_CONFIG *sd,
-                        int64_t *time_stamp,
-                        int64_t *time_end_stamp)
+                        int64_t *timestamp,
+                        int64_t *timestamp_end)
 {
     int ret = -1;
     VP8D_COMP *pbi = (VP8D_COMP *)ptr;
@@ -273,8 +270,8 @@ int vp8dx_get_raw_frame(VP8D_PTR ptr,
         return ret;
 
     pbi->ready_for_new_data = 1;
-    *time_stamp = pbi->last_time_stamp;
-    *time_end_stamp = 0;
+    *timestamp = pbi->last_time_stamp;
+    *timestamp_end = 0;
 
     sd->clrtype = pbi->common.clr_type;
 

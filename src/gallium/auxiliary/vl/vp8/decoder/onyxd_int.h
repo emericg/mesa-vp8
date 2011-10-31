@@ -39,8 +39,8 @@ typedef struct
 
     vp8_reader bc, bc2;
 
-    const unsigned char *Source;
-    unsigned int         source_sz;
+    const unsigned char *data;
+    unsigned int         data_size;
 
     vp8_reader *mbc;
     int64_t     last_time_stamp;
@@ -53,7 +53,7 @@ typedef struct
 
 } VP8D_COMP;
 
-int vp8_decode_frame(VP8D_COMP *cpi);
+int vp8_frame_decode(VP8D_COMP *cpi);
 
 #if CONFIG_DEBUG
 #define CHECK_MEM_ERROR(lval,expr) do { \

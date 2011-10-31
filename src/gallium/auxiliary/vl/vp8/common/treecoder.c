@@ -82,7 +82,6 @@ static void branch_counts(int n, /* n = size of alphabet */
 #if CONFIG_DEBUG
             assert(j < tree_len  &&  0 <= L);
 #endif
-
             branch_ct [j] [b] += ct;
             i = tree[ i + b];
         }
@@ -95,7 +94,6 @@ static void branch_counts(int n, /* n = size of alphabet */
     while (++t < n);
 
 }
-
 
 void vp8_tree_probs_from_distribution(int n, /* n = size of alphabet */
                                       vp8_token tok[ /* n */ ],
@@ -117,7 +115,7 @@ void vp8_tree_probs_from_distribution(int n, /* n = size of alphabet */
         const unsigned int tot = c[0] + c[1];
 
 #if CONFIG_DEBUG
-        assert(tot < (1 << 24));        /* no overflow below */
+        assert(tot < (1 << 24)); /* no overflow below */
 #endif
 
         if (tot)

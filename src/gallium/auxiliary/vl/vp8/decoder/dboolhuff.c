@@ -12,16 +12,16 @@
 #include "dboolhuff.h"
 
 int vp8dx_start_decode(BOOL_DECODER *br,
-                       const unsigned char *source,
-                       unsigned int source_sz)
+                       const unsigned char *data,
+                       unsigned int data_size)
 {
-    br->user_buffer_end = source+source_sz;
-    br->user_buffer     = source;
-    br->value    = 0;
-    br->count    = -8;
-    br->range    = 255;
+    br->user_buffer_end = data + data_size;
+    br->user_buffer     = data;
+    br->value = 0;
+    br->count = -8;
+    br->range = 255;
 
-    if (source_sz && !source)
+    if (data_size && !data)
         return 1;
 
     /* Populate the buffer */

@@ -136,14 +136,13 @@ typedef struct VP8Common
 
     int ref_frame_sign_bias [MAX_REF_FRAMES]; /**< Two state 0, 1 */
 
-    /* Y,U,V,Y2 */
-    ENTROPY_CONTEXT_PLANES *above_context; /**< row of context for each plane */
-    ENTROPY_CONTEXT_PLANES left_context;   /**< (up to) 4 contexts "" */
+    ENTROPY_CONTEXT_PLANES *above_context; /**< Row of context for each plane */
+    ENTROPY_CONTEXT_PLANES left_context;   /**< (up to) 4 contexts */
 
     /* keyframe block modes are predicted by their above, left neighbors */
 
     vp8_prob kf_bmode_prob [VP8_BINTRAMODES] [VP8_BINTRAMODES] [VP8_BINTRAMODES-1];
-    vp8_prob kf_ymode_prob [VP8_YMODES-1];  /**< keyframe "" */
+    vp8_prob kf_ymode_prob [VP8_YMODES-1];  /**< keyframe */
     vp8_prob kf_uv_mode_prob [VP8_UV_MODES-1];
 
     FRAME_CONTEXT lfc; /**< last frame entropy */
@@ -152,6 +151,7 @@ typedef struct VP8Common
     unsigned int current_video_frame;
 
     TOKEN_PARTITION multi_token_partition;
+
 } VP8_COMMON;
 
 #endif /* VP8C_INT_H */

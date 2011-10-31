@@ -107,7 +107,7 @@ vp8_yv12_extend_frame_borders(YV12_BUFFER_CONFIG *ybf)
     plane_height = ybf->y_height;
     plane_width = ybf->y_width;
 
-    /* copy the left and right most columns out */
+    /* Copy the left and right most columns out */
     src_ptr1 = ybf->y_buffer;
     src_ptr2 = src_ptr1 + plane_width - 1;
     dest_ptr1 = src_ptr1 - Border;
@@ -146,7 +146,7 @@ vp8_yv12_extend_frame_borders(YV12_BUFFER_CONFIG *ybf)
     plane_width = ybf->uv_width;
     Border /= 2;
 
-    /* copy the left and right most columns out */
+    /* Copy the left and right most columns out */
     src_ptr1 = ybf->u_buffer;
     src_ptr2 = src_ptr1 + plane_width - 1;
     dest_ptr1 = src_ptr1 - Border;
@@ -180,7 +180,7 @@ vp8_yv12_extend_frame_borders(YV12_BUFFER_CONFIG *ybf)
     /* V Plane */
     /***********/
 
-    /* copy the left and right most columns out */
+    /* Copy the left and right most columns out */
     src_ptr1 = ybf->v_buffer;
     src_ptr2 = src_ptr1 + plane_width - 1;
     dest_ptr1 = src_ptr1 - Border;

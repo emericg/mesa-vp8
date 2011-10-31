@@ -13,8 +13,9 @@
 #include "reconintra.h"
 #include "../vp8_mem.h"
 
-/* For skip_recon_mb(), add vp8_build_intra_predictors_mby_s(MACROBLOCKD *x) and
- * vp8_build_intra_predictors_mbuv_s(MACROBLOCKD *x).
+/**
+ * For skip_recon_mb(), add vp8_build_intra_predictors_mby_s(MACROBLOCKD *x)
+ * and vp8_build_intra_predictors_mbuv_s(MACROBLOCKD *x).
  */
 void vp8_recon_intra_mbuv(const vp8_recon_rtcd_vtable_t *rtcd, MACROBLOCKD *x)
 {
@@ -141,7 +142,6 @@ void vp8_build_intra_predictors_mby(MACROBLOCKD *x)
 
 void vp8_build_intra_predictors_mby_s(MACROBLOCKD *x)
 {
-
     unsigned char *yabove_row = x->dst.y_buffer - x->dst.y_stride;
     unsigned char yleft_col[16];
     unsigned char ytop_left = yabove_row[-1];

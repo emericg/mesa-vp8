@@ -9,8 +9,8 @@
  */
 
 
-#include "recon.h"
 #include "../vp8_mem.h"
+#include "recon.h"
 #include "reconintra.h"
 
 void vp8_intra4x4_predict(BLOCKD *x, int b_mode, unsigned char *predictor)
@@ -77,7 +77,6 @@ void vp8_intra4x4_predict(BLOCKD *x, int b_mode, unsigned char *predictor)
 
     case B_VE_PRED:
     {
-
         unsigned int ap[4];
         ap[0] = (top_left  + 2 * Above[0] + Above[1] + 2) >> 2;
         ap[1] = (Above[0] + 2 * Above[1] + Above[2] + 2) >> 2;
@@ -100,7 +99,6 @@ void vp8_intra4x4_predict(BLOCKD *x, int b_mode, unsigned char *predictor)
 
     case B_HE_PRED:
     {
-
         unsigned int lp[4];
         lp[0] = (top_left + 2 * Left[0] + Left[1] + 2) >> 2;
         lp[1] = (Left[0] + 2 * Left[1] + Left[2] + 2) >> 2;
@@ -289,8 +287,9 @@ void vp8_intra4x4_predict(BLOCKD *x, int b_mode, unsigned char *predictor)
     }
 }
 
-/* copy 4 bytes from the above right down so that the 4x4 prediction modes using pixels above and
- * to the right prediction have filled in pixels to use.
+/**
+ * Copy 4 bytes from the above right down so that the 4x4 prediction modes using
+ * pixels above and to the right prediction have filled in pixels to use.
  */
 void vp8_intra_prediction_down_copy(MACROBLOCKD *x)
 {

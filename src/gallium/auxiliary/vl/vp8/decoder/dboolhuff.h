@@ -40,8 +40,8 @@ typedef struct
 DECLARE_ALIGNED(16, extern const unsigned char, vp8_norm[256]);
 
 int vp8dx_start_decode(BOOL_DECODER *br,
-                       const unsigned char *source,
-                       unsigned int source_sz);
+                       const unsigned char *data,
+                       unsigned int data_size);
 
 void vp8dx_bool_decoder_fill(BOOL_DECODER *br);
 
@@ -62,13 +62,13 @@ void vp8dx_bool_decoder_fill(BOOL_DECODER *br);
         \
         x = shift + CHAR_BIT - bits_left; \
         loop_end = 0; \
-        if(x >= 0) \
+        if (x >= 0) \
         { \
             (_count) += VP8_LOTS_OF_BITS; \
             loop_end = x; \
-            if(!bits_left) break; \
+            if (!bits_left) break; \
         } \
-        while(shift >= loop_end) \
+        while (shift >= loop_end) \
         { \
             (_count) += CHAR_BIT; \
             (_value) |= (VP8_BD_VALUE)*(_bufptr)++ << shift; \
@@ -148,13 +148,11 @@ static int vp8dx_bool_error(BOOL_DECODER *br)
      */
     if ((br->count > VP8_BD_VALUE_SIZE) && (br->count < VP8_LOTS_OF_BITS))
     {
-       /* We have tried to decode bits after the end of
-        * stream was encountered.
+       /* We have tried to decode bits after the end of stream was encountered.
         */
         return 1;
     }
 
-    /* No error. */
     return 0;
 }
 

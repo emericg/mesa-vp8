@@ -8,6 +8,7 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
+
 #ifndef QUANT_COMMON_H
 #define QUANT_COMMON_H
 
@@ -20,5 +21,7 @@ extern int vp8_dc2quant(int QIndex, int Delta);
 extern int vp8_ac2quant(int QIndex, int Delta);
 extern int vp8_dc_uv_quant(int QIndex, int Delta);
 extern int vp8_ac_uv_quant(int QIndex, int Delta);
+
+extern void vp8_initialize_dequantizer(VP8_COMMON *pc);
 
 #endif /* QUANT_COMMON_H */
