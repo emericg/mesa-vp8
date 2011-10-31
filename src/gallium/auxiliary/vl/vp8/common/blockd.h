@@ -19,25 +19,25 @@
 #include "treecoder.h"
 #include "subpixel.h"
 
-#define MB_FEATURE_TREE_PROBS   3
-#define MAX_MB_SEGMENTS         4
+#define MB_FEATURE_TREE_PROBS 3
+#define MAX_MB_SEGMENTS       4
 
-#define MAX_REF_LF_DELTAS       4
-#define MAX_MODE_LF_DELTAS      4
+#define MAX_REF_LF_DELTAS     4
+#define MAX_MODE_LF_DELTAS    4
 
 /* Segment Feature Masks */
-#define SEGMENT_DELTADATA   0
-#define SEGMENT_ABSDATA     1
+#define SEGMENT_DELTADATA 0
+#define SEGMENT_ABSDATA   1
 
 typedef struct
 {
     int r, c;
 } POS;
 
-#define PLANE_TYPE_Y_NO_DC    0
-#define PLANE_TYPE_Y2         1
-#define PLANE_TYPE_UV         2
-#define PLANE_TYPE_Y_WITH_DC  3
+#define PLANE_TYPE_Y_NO_DC   0
+#define PLANE_TYPE_Y2        1
+#define PLANE_TYPE_UV        2
+#define PLANE_TYPE_Y_WITH_DC 3
 
 typedef char ENTROPY_CONTEXT;
 
@@ -57,7 +57,7 @@ extern const unsigned char vp8_block2above[25];
 
 typedef enum
 {
-    KEY_FRAME = 0,
+    KEY_FRAME   = 0,
     INTER_FRAME = 1
 } FRAME_TYPE;
 
@@ -87,10 +87,10 @@ typedef enum
 } MB_LVL_FEATURES;
 
 /* Segment Feature Masks */
-#define SEGMENT_ALTQ    0x01
-#define SEGMENT_ALT_LF  0x02
+#define SEGMENT_ALTQ   0x01
+#define SEGMENT_ALT_LF 0x02
 
-#define VP8_YMODES  (B_PRED + 1)
+#define VP8_YMODES   (B_PRED + 1)
 #define VP8_UV_MODES (TM_PRED + 1)
 
 #define VP8_MVREFS (1 + SPLITMV - NEARESTMV)
@@ -119,8 +119,8 @@ typedef enum
     B_MODE_COUNT
 } B_PREDICTION_MODE;
 
-#define VP8_BINTRAMODES (B_HU_PRED + 1)  /* 10 */
-#define VP8_SUBMVREFS (1 + NEW4X4 - LEFT4X4)
+#define VP8_BINTRAMODES (B_HU_PRED + 1) /* 10 */
+#define VP8_SUBMVREFS   (1 + NEW4X4 - LEFT4X4)
 
 /* For keyframes, intra block modes are predicted by the (already decoded)
    modes for the Y blocks to the left and above us; for interframes, there
@@ -134,10 +134,10 @@ union b_mode_info
 
 typedef enum
 {
-    INTRA_FRAME = 0,
-    LAST_FRAME = 1,
-    GOLDEN_FRAME = 2,
-    ALTREF_FRAME = 3,
+    INTRA_FRAME    = 0,
+    LAST_FRAME     = 1,
+    GOLDEN_FRAME   = 2,
+    ALTREF_FRAME   = 3,
     MAX_REF_FRAMES = 4
 } MV_REFERENCE_FRAME;
 
@@ -270,10 +270,10 @@ extern void vp8_setup_block_dptrs(MACROBLOCKD *x);
 static void update_blockd_bmi(MACROBLOCKD *xd)
 {
     int i;
-    int is_4x4 = (xd->mode_info_context->mbmi.mode == SPLITMV)
-                  || (xd->mode_info_context->mbmi.mode == B_PRED);
 
-    if (is_4x4)
+    /* If the block size is 4x4. */
+    if (xd->mode_info_context->mbmi.mode == SPLITMV
+        || xd->mode_info_context->mbmi.mode == B_PRED)
     {
         for (i = 0; i < 16; i++)
         {

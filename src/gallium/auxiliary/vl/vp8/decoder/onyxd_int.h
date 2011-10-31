@@ -27,37 +27,10 @@ typedef struct
 
 typedef struct
 {
-    int64_t time_stamp;
-    int size;
-} DATARATE;
-
-typedef struct
-{
     int16_t min_val;
     int16_t Length;
     uint8_t Probs[12];
 } TOKENEXTRABITS;
-
-typedef struct
-{
-    int const *scan;
-    uint8_t const *ptr_block2leftabove;
-    vp8_tree_index const *vp8_coef_tree_ptr;
-    TOKENEXTRABITS const *teb_base_ptr;
-    unsigned char *norm_ptr;
-    uint8_t *ptr_coef_bands_x;
-
-    ENTROPY_CONTEXT_PLANES *A;
-    ENTROPY_CONTEXT_PLANES *L;
-
-    int16_t *qcoeff_start_ptr;
-    BOOL_DECODER *current_bc;
-
-    vp8_prob const *coef_probs[4];
-
-    uint8_t eob[25];
-
-} DETOK;
 
 typedef struct
 {
@@ -73,10 +46,6 @@ typedef struct
     int64_t     last_time_stamp;
     int         ready_for_new_data;
 
-    DATARATE dr[16];
-
-    DETOK detoken;
-
     vp8_prob prob_intra;
     vp8_prob prob_last;
     vp8_prob prob_gf;
@@ -87,19 +56,19 @@ typedef struct
 int vp8_decode_frame(VP8D_COMP *cpi);
 
 #if CONFIG_DEBUG
-#define CHECK_MEM_ERROR(lval,expr) do {\
+#define CHECK_MEM_ERROR(lval,expr) do { \
         lval = (expr); \
-        if(!lval) \
-            vpx_internal_error(&pbi->common.error, VPX_CODEC_MEM_ERROR,\
+        if (!lval) \
+            vpx_internal_error(&pbi->common.error, VPX_CODEC_MEM_ERROR, \
                                "Failed to allocate "#lval" at %s:%d", \
-                               __FILE__,__LINE__);\
+                               __FILE__,__LINE__); \
     } while(0)
 #else
-#define CHECK_MEM_ERROR(lval,expr) do {\
+#define CHECK_MEM_ERROR(lval,expr) do { \
         lval = (expr); \
-        if(!lval) \
-            vpx_internal_error(&pbi->common.error, VPX_CODEC_MEM_ERROR,\
-                               "Failed to allocate "#lval);\
+        if (!lval) \
+            vpx_internal_error(&pbi->common.error, VPX_CODEC_MEM_ERROR, \
+                               "Failed to allocate "#lval); \
     } while(0)
 #endif /* CONFIG_DEBUG */
 

@@ -38,7 +38,6 @@ DECLARE_ALIGNED(16, static const unsigned char, coef_bands_x[16]) =
 #define CAT_THREE_CONTEXT_NODE      9
 #define CAT_FIVE_CONTEXT_NODE       10
 
-
 DECLARE_ALIGNED(16, static const TOKENEXTRABITS, vp8d_token_extra_bits2[MAX_ENTROPY_TOKENS]) =
 {
     {  0, -1, { 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0   } },            /* ZERO_TOKEN */
@@ -54,7 +53,6 @@ DECLARE_ALIGNED(16, static const TOKENEXTRABITS, vp8d_token_extra_bits2[MAX_ENTR
     { 67, 10, { 129, 130, 133, 140, 153, 177, 196, 230, 243, 254, 254, 0   } }, /* DCT_VAL_CATEGORY6 */
     {  0, -1, { 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0   } },            /* EOB TOKEN */
 };
-
 
 void vp8_reset_mb_tokens_context(MACROBLOCKD *x)
 {
@@ -77,7 +75,7 @@ DECLARE_ALIGNED(16, extern const unsigned char, vp8_norm[256]);
         VP8DX_BOOL_DECODER_FILL(count, value, bufptr, bufend);
 
 #define NORMALIZE \
-    /*if(range < 0x80)*/                            \
+    /*if(range < 0x80)*/ \
     { \
         shift = vp8_norm[range]; \
         range <<= shift; \
@@ -100,16 +98,16 @@ DECLARE_ALIGNED(16, extern const unsigned char, vp8_norm[256]);
         value = value-bigsplit; \
         v = -value_to_sign; \
     } \
-    range +=range;                   \
-    value +=value;                   \
+    range +=range; \
+    value +=value; \
     count--;
 
 #define DECODE_AND_BRANCH_IF_ZERO(probability,branch) \
     { \
-        split = 1 +  ((( probability*(range-1) ) )>> 8); \
+        split = 1 + (((probability*(range-1)))>> 8); \
         bigsplit = (VP8_BD_VALUE)split << (VP8_BD_VALUE_SIZE - 8); \
         FILL \
-        if ( value < bigsplit ) \
+        if (value < bigsplit) \
         { \
             range = split; \
             NORMALIZE \
@@ -122,7 +120,7 @@ DECLARE_ALIGNED(16, extern const unsigned char, vp8_norm[256]);
 
 #define DECODE_AND_LOOP_IF_ZERO(probability,branch) \
     { \
-        split = 1 + ((( probability*(range-1) ) ) >> 8); \
+        split = 1 + (((probability*(range-1))) >> 8); \
         bigsplit = (VP8_BD_VALUE)split << (VP8_BD_VALUE_SIZE - 8); \
         FILL \
         if ( value < bigsplit ) \
@@ -130,11 +128,11 @@ DECLARE_ALIGNED(16, extern const unsigned char, vp8_norm[256]);
             range = split; \
             NORMALIZE \
             Prob = coef_probs; \
-            if(c<15) {\
+            if (c < 15) {\
             ++c; \
             Prob += coef_bands_x[c]; \
             goto branch; \
-            } goto BLOCK_FINISHED; /*for malformed input */\
+            } goto BLOCK_FINISHED; /*for malformed input */ \
         } \
         value -= bigsplit; \
         range = range - split; \
@@ -144,28 +142,28 @@ DECLARE_ALIGNED(16, extern const unsigned char, vp8_norm[256]);
 #define DECODE_SIGN_WRITE_COEFF_AND_CHECK_EXIT(val) \
     DECODE_AND_APPLYSIGN(val) \
     Prob = coef_probs + (ENTROPY_NODES*2); \
-    if(c < 15){\
+    if (c < 15) { \
         qcoeff_ptr [ scan[c] ] = (int16_t) v; \
         ++c; \
-        goto DO_WHILE; }\
+        goto DO_WHILE; } \
     qcoeff_ptr [ scan[15] ] = (int16_t) v; \
     goto BLOCK_FINISHED;
 
 
-#define DECODE_EXTRABIT_AND_ADJUST_VAL(t,bits_count)\
-    split = 1 +  (((range-1) * vp8d_token_extra_bits2[t].Probs[bits_count]) >> 8); \
+#define DECODE_EXTRABIT_AND_ADJUST_VAL(t,bits_count) \
+    split = 1 + (((range-1) * vp8d_token_extra_bits2[t].Probs[bits_count]) >> 8); \
     bigsplit = (VP8_BD_VALUE)split << (VP8_BD_VALUE_SIZE - 8); \
     FILL \
-    if(value >= bigsplit)\
-    {\
-        range = range-split;\
-        value = value-bigsplit;\
-        val += ((uint16_t)1<<bits_count);\
-    }\
-    else\
-    {\
-        range = split;\
-    }\
+    if(value >= bigsplit) \
+    { \
+        range = range-split; \
+        value = value-bigsplit; \
+        val += ((uint16_t)1 << bits_count); \
+    } \
+    else \
+    { \
+        range = split; \
+    } \
     NORMALIZE
 
 int vp8_decode_mb_tokens(VP8D_COMP *dx, MACROBLOCKD *x)
@@ -220,14 +218,14 @@ int vp8_decode_mb_tokens(VP8D_COMP *dx, MACROBLOCKD *x)
         eobtotal -= 16;
     }
 
-    bufend  = bc->user_buffer_end;
-    bufptr  = bc->user_buffer;
-    value   = bc->value;
-    count   = bc->count;
-    range   = bc->range;
+    bufend = bc->user_buffer_end;
+    bufptr = bc->user_buffer;
+    value  = bc->value;
+    count  = bc->count;
+    range  = bc->range;
 
 
-    coef_probs = fc->coef_probs [type] [ 0 ] [0];
+    coef_probs = fc->coef_probs [type] [0] [0];
 
 BLOCK_LOOP:
     a = A + vp8_block2above[i];
@@ -318,15 +316,15 @@ ONE_CONTEXT_NODE_0_:
 
     if (c < 15)
     {
-        qcoeff_ptr [ scan[c] ] = (int16_t) v;
+        qcoeff_ptr [ scan[c] ] = (int16_t)v;
         ++c;
         goto DO_WHILE;
     }
 
-    qcoeff_ptr [ scan[15] ] = (int16_t) v;
+    qcoeff_ptr [ scan[15] ] = (int16_t)v;
 
 BLOCK_FINISHED:
-    *a = *l = ((eobs[i] = c) != !type);   /* any nonzero data? */
+    *a = *l = ((eobs[i] = c) != !type); /* any nonzero data ? */
     eobtotal += c;
     qcoeff_ptr += 16;
 
@@ -340,7 +338,7 @@ BLOCK_FINISHED:
         type = 0;
         i = 0;
         stop = 16;
-        coef_probs = fc->coef_probs [type] [ 0 ] [0];
+        coef_probs = fc->coef_probs [type] [0] [0];
         qcoeff_ptr -= (24*16 + 16);
         goto BLOCK_LOOP;
     }
@@ -348,7 +346,7 @@ BLOCK_FINISHED:
     if (i == 16)
     {
         type = 2;
-        coef_probs = fc->coef_probs [type] [ 0 ] [0];
+        coef_probs = fc->coef_probs [type] [0] [0];
         stop = 24;
         goto BLOCK_LOOP;
     }

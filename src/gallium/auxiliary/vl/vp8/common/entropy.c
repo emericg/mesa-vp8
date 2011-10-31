@@ -39,10 +39,10 @@ DECLARE_ALIGNED(16, const unsigned char, vp8_norm[256]) =
 };
 
 DECLARE_ALIGNED(16, const unsigned char, vp8_coef_bands[16]) =
-{ 0, 1, 2, 3, 6, 4, 5, 6, 6, 6, 6, 6, 6, 6, 6, 7};
+{ 0, 1, 2, 3, 6, 4, 5, 6, 6, 6, 6, 6, 6, 6, 6, 7 };
 
 DECLARE_ALIGNED(16, const unsigned char, vp8_prev_token_class[MAX_ENTROPY_TOKENS]) =
-{ 0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0};
+{ 0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0 };
 
 DECLARE_ALIGNED(16, const int, vp8_default_zig_zag1d[16]) =
 {
@@ -128,22 +128,6 @@ static void init_bit_trees()
     init_bit_tree(cat6, 11);
 }
 
-vp8_extra_bit_struct vp8_extra_bits[12] =
-{
-    {0, 0, 0, 0},
-    {0, 0, 0, 1},
-    {0, 0, 0, 2},
-    {0, 0, 0, 3},
-    {0, 0, 0, 4},
-    {cat1, Pcat1, 1, 5},
-    {cat2, Pcat2, 2, 7},
-    {cat3, Pcat3, 3, 11},
-    {cat4, Pcat4, 4, 19},
-    {cat5, Pcat5, 5, 35},
-    {cat6, Pcat6, 11, 67},
-    {0, 0, 0, 0}
-};
-
 #include "defaultcoefcounts.h"
 
 void vp8_default_coef_probs(VP8_COMMON *pc)
@@ -167,7 +151,6 @@ void vp8_default_coef_probs(VP8_COMMON *pc)
                     branch_ct,
                     vp8_default_coef_counts[h][i][k],
                     256, 1);
-
             }
             while (++k < PREV_COEF_CONTEXTS);
         }

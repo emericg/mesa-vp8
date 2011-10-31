@@ -27,8 +27,6 @@ const char *vpx_codec_err_to_string(vpx_codec_err_t err)
         return "Bitstream not supported by this decoder";
     case VPX_CODEC_CORRUPT_FRAME:
         return "Corrupt frame detected";
-    case  VPX_CODEC_INVALID_PARAM:
-        return "Invalid parameter";
     }
 
     return "Unrecognized error code";
@@ -46,13 +44,13 @@ void vpx_internal_error(struct vpx_internal_error_info *info,
 
     if (fmt)
     {
-        size_t  sz = sizeof(info->detail);
+        size_t sz = sizeof(info->detail);
 
         info->has_detail = 1;
         va_start(ap, fmt);
         vsnprintf(info->detail, sz - 1, fmt, ap);
         va_end(ap);
-        info->detail[sz-1] = '\0';
+        info->detail[sz - 1] = '\0';
     }
 
     if (info->setjmp)

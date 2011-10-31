@@ -12,8 +12,8 @@
 #ifndef TREECODER_H
 #define TREECODER_H
 
-#define vp8_prob_half ( (vp8_prob) 128)
-#define vp8_complement( x) (255 - x)
+#define vp8_prob_half ((vp8_prob) 128)
+#define vp8_complement (x) (255 - x)
 
 typedef unsigned char vp8bc_index_t; /* probability index */
 

@@ -48,12 +48,7 @@ typedef enum {
      * stream or \ref MAY be treated as fatal to the current GOP. If decoding
      * is continued for the current GOP, artifacts may be present.
      */
-    VPX_CODEC_CORRUPT_FRAME,
-
-    /**
-     * \brief An application-supplied parameter is not valid.
-     */
-    VPX_CODEC_INVALID_PARAM
+    VPX_CODEC_CORRUPT_FRAME
 
 } vpx_codec_err_t;
 

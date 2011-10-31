@@ -24,16 +24,14 @@
 
 #define NUM_YV12_BUFFERS 4
 
-#define MAX_PARTITIONS 9
-
-typedef struct frame_contexts
+typedef struct
 {
     vp8_prob bmode_prob [VP8_BINTRAMODES-1];
     vp8_prob ymode_prob [VP8_YMODES-1];  /**< interframe intra mode probs */
     vp8_prob uv_mode_prob [VP8_UV_MODES-1];
     vp8_prob sub_mv_ref_prob [VP8_SUBMVREFS-1];
     vp8_prob coef_probs [BLOCK_TYPES] [COEF_BANDS] [PREV_COEF_CONTEXTS] [ENTROPY_NODES];
-    MV_CONTEXT mvc[2];
+    MV_CONTEXT mvc [2];
 } FRAME_CONTEXT;
 
 typedef enum
@@ -69,6 +67,8 @@ typedef struct VP8Common
     DECLARE_ALIGNED(16, short, Y1dequant[QINDEX_RANGE][16]);
     DECLARE_ALIGNED(16, short, Y2dequant[QINDEX_RANGE][16]);
     DECLARE_ALIGNED(16, short, UVdequant[QINDEX_RANGE][16]);
+
+    int version;
 
     int Width;
     int Height;
@@ -134,7 +134,7 @@ typedef struct VP8Common
 
     int refresh_entropy_probs; /**< Two state 0 = NO, 1 = YES */
 
-    int ref_frame_sign_bias[MAX_REF_FRAMES]; /**< Two state 0, 1 */
+    int ref_frame_sign_bias [MAX_REF_FRAMES]; /**< Two state 0, 1 */
 
     /* Y,U,V,Y2 */
     ENTROPY_CONTEXT_PLANES *above_context; /**< row of context for each plane */
@@ -151,13 +151,7 @@ typedef struct VP8Common
 
     unsigned int current_video_frame;
 
-    int near_boffset[3];
-    int version;
-
     TOKEN_PARTITION multi_token_partition;
-
-    double bitrate;
-    double framerate;
 } VP8_COMMON;
 
 #endif /* VP8C_INT_H */

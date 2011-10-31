@@ -189,7 +189,7 @@ static void decode_macroblock(VP8D_COMP *pbi, MACROBLOCKD *xd, unsigned int mb_i
 
     if (eobtotal == 0 && mode != B_PRED && mode != SPLITMV)
     {
-        /* Special case:  Force the loopfilter to skip when eobtotal and
+        /* Special case: Force the loopfilter to skip when eobtotal and
          * mb_skip_coeff are zero.
          * */
         xd->mode_info_context->mbmi.mb_skip_coeff = 1;
@@ -232,7 +232,7 @@ static void decode_macroblock(VP8D_COMP *pbi, MACROBLOCKD *xd, unsigned int mb_i
             if (xd->eobs[i] > 1)
             {
                 DEQUANT_INVOKE(&pbi->dequant, idct_add)
-                    (b->qcoeff, b->dequant,  b->predictor,
+                    (b->qcoeff, b->dequant, b->predictor,
                     *(b->base_dst) + b->dst, 16, b->dst_stride);
             }
             else
@@ -372,7 +372,7 @@ decode_mb_row(VP8D_COMP *pbi, VP8_COMMON *pc, int mb_row, MACROBLOCKD *xd)
         else
         pbi->debugoutput =0;
         */
-        decode_macroblock(pbi, xd, mb_row * pc->mb_cols  + mb_col);
+        decode_macroblock(pbi, xd, mb_row * pc->mb_cols + mb_col);
 
         /* check if the boolean decoder has suffered an error */
         xd->corrupted |= vp8dx_bool_error(xd->current_bc);
@@ -481,11 +481,11 @@ static void stop_token_decoder(VP8D_COMP *pbi)
 static void init_frame(VP8D_COMP *pbi)
 {
     VP8_COMMON *const pc = & pbi->common;
-    MACROBLOCKD *const xd  = & pbi->mb;
+    MACROBLOCKD *const xd = & pbi->mb;
 
     if (pc->frame_type == KEY_FRAME)
     {
-        /* Various keyframe initializations */
+        /* Various keyframe initializations. */
         memcpy(pc->fc.mvc, vp8_default_mv_context, sizeof(vp8_default_mv_context));
 
         vp8_init_mbmode_probs(pc);
@@ -493,11 +493,11 @@ static void init_frame(VP8D_COMP *pbi)
         vp8_default_coef_probs(pc);
         vp8_kf_default_bmode_probs(pc->kf_bmode_prob);
 
-        /* reset the segment feature data to 0 with delta coding (Default state). */
+        /* Reset the segment feature data to 0 with delta coding (Default state). */
         memset(xd->segment_feature_data, 0, sizeof(xd->segment_feature_data));
         xd->mb_segement_abs_delta = SEGMENT_DELTADATA;
 
-        /* reset the mode ref deltasa for loop filter */
+        /* Reset the mode ref deltasa for loop filter. */
         memset(xd->ref_lf_deltas, 0, sizeof(xd->ref_lf_deltas));
         memset(xd->mode_lf_deltas, 0, sizeof(xd->mode_lf_deltas));
 
@@ -544,10 +544,10 @@ int vp8_decode_frame(VP8D_COMP *pbi)
 {
     vp8_reader *const bc = &pbi->bc;
     VP8_COMMON *const pc = &pbi->common;
-    MACROBLOCKD *const xd  = &pbi->mb;
+    MACROBLOCKD *const xd = &pbi->mb;
     const unsigned char *data = (const unsigned char *)pbi->Source;
     const unsigned char *data_end = data + pbi->source_sz;
-    ptrdiff_t first_partition_length_in_bytes;
+    ptrdiff_t first_partition_length_in_bytes = 0;
 
     int mb_row;
     int i, j, k, l;
@@ -606,7 +606,7 @@ int vp8_decode_frame(VP8D_COMP *pbi)
             }
             data += 7;
 
-            if (Width != pc->Width  ||  Height != pc->Height)
+            if (Width != pc->Width || Height != pc->Height)
             {
                 if (pc->Width <= 0)
                 {
@@ -646,8 +646,8 @@ int vp8_decode_frame(VP8D_COMP *pbi)
 
     if (pc->frame_type == KEY_FRAME)
     {
-        pc->clr_type    = (YUV_TYPE)vp8_read_bit(bc);
-        pc->clamp_type  = (CLAMP_TYPE)vp8_read_bit(bc);
+        pc->clr_type   = (YUV_TYPE)vp8_read_bit(bc);
+        pc->clamp_type = (CLAMP_TYPE)vp8_read_bit(bc);
     }
 
     /* Is segmentation enabled */
@@ -692,7 +692,7 @@ int vp8_decode_frame(VP8D_COMP *pbi)
             /* Read the probs used to decode the segment id for each macro block. */
             for (i = 0; i < MB_FEATURE_TREE_PROBS; i++)
             {
-                /* If not explicitly set value is defaulted to 255 by memset above */
+                /* If not explicitly set value is defaulted to 255 by memset above. */
                 if (vp8_read_bit(bc))
                     xd->mb_segment_tree_probs[i] = (vp8_prob)vp8_read_literal(bc, 8);
             }
@@ -700,7 +700,7 @@ int vp8_decode_frame(VP8D_COMP *pbi)
     }
 
     /* Read the loop filter level and type */
-    pc->filter_type = (LOOPFILTER_TYPE) vp8_read_bit(bc);
+    pc->filter_type = (LOOPFILTER_TYPE)vp8_read_bit(bc);
     pc->filter_level = vp8_read_literal(bc, 6);
     pc->sharpness_level = vp8_read_literal(bc, 3);
 
@@ -720,7 +720,6 @@ int vp8_decode_frame(VP8D_COMP *pbi)
             {
                 if (vp8_read_bit(bc))
                 {
-                    /*sign = vp8_read_bit( bc );*/
                     xd->ref_lf_deltas[i] = (signed char)vp8_read_literal(bc, 6);
 
                     /* Apply sign */
@@ -734,10 +733,10 @@ int vp8_decode_frame(VP8D_COMP *pbi)
             {
                 if (vp8_read_bit(bc))
                 {
-                    /*sign = vp8_read_bit( bc );*/
                     xd->mode_lf_deltas[i] = (signed char)vp8_read_literal(bc, 6);
 
-                    if (vp8_read_bit(bc))        /* Apply sign */
+                    /* Apply sign */
+                    if (vp8_read_bit(bc))
                         xd->mode_lf_deltas[i] = xd->mode_lf_deltas[i] * -1;
                 }
             }
@@ -751,7 +750,7 @@ int vp8_decode_frame(VP8D_COMP *pbi)
     {
         int Q, q_update;
 
-        Q = vp8_read_literal(bc, 7);  /* AC 1st order Q = default */
+        Q = vp8_read_literal(bc, 7); /* AC 1st order Q = default */
         pc->base_qindex = Q;
         q_update = 0;
         pc->y1dc_delta_q = get_delta_q(bc, pc->y1dc_delta_q, &q_update);
@@ -799,23 +798,21 @@ int vp8_decode_frame(VP8D_COMP *pbi)
         memcpy(&pc->lfc, &pc->fc, sizeof(pc->fc));
     }
 
-    pc->refresh_last_frame = pc->frame_type == KEY_FRAME  ||  vp8_read_bit(bc);
+    pc->refresh_last_frame = (pc->frame_type == KEY_FRAME || vp8_read_bit(bc));
 
-    {
-        /* read coef probability tree */
-        for (i = 0; i < BLOCK_TYPES; i++)
-            for (j = 0; j < COEF_BANDS; j++)
-                for (k = 0; k < PREV_COEF_CONTEXTS; k++)
-                    for (l = 0; l < ENTROPY_NODES; l++)
+    /* read coef probability tree */
+    for (i = 0; i < BLOCK_TYPES; i++)
+        for (j = 0; j < COEF_BANDS; j++)
+            for (k = 0; k < PREV_COEF_CONTEXTS; k++)
+                for (l = 0; l < ENTROPY_NODES; l++)
+                {
+                    vp8_prob *const p = pc->fc.coef_probs [i][j][k] + l;
+
+                    if (vp8_read(bc, vp8_coef_update_probs [i][j][k][l]))
                     {
-                        vp8_prob *const p = pc->fc.coef_probs [i][j][k] + l;
-
-                        if (vp8_read(bc, vp8_coef_update_probs [i][j][k][l]))
-                        {
-                            *p = (vp8_prob)vp8_read_literal(bc, 8);
-                        }
+                        *p = (vp8_prob)vp8_read_literal(bc, 8);
                     }
-    }
+                }
 
     memcpy(&xd->pre, &pc->yv12_fb[pc->lst_fb_idx], sizeof(YV12_BUFFER_CONFIG));
     memcpy(&xd->dst, &pc->yv12_fb[pc->new_fb_idx], sizeof(YV12_BUFFER_CONFIG));
@@ -831,7 +828,7 @@ int vp8_decode_frame(VP8D_COMP *pbi)
     memset(xd->qcoeff, 0, sizeof(xd->qcoeff));
 
     /* Read the mb_no_coeff_skip flag */
-    pc->mb_no_coeff_skip = (int)vp8_read_bit(bc);
+    pc->mb_no_coeff_skip = vp8_read_bit(bc);
 
     vp8_decode_mode_mvs(pbi);
 
@@ -844,7 +841,6 @@ int vp8_decode_frame(VP8D_COMP *pbi)
         /* Decode the individual macro block */
         for (mb_row = 0; mb_row < pc->mb_rows; mb_row++)
         {
-
             if (num_part > 1)
             {
                 xd->current_bc = & pbi->mbc[ibc];
@@ -867,7 +863,7 @@ int vp8_decode_frame(VP8D_COMP *pbi)
     /* 2. Check the macroblock information */
     pc->yv12_fb[pc->new_fb_idx].corrupted |= xd->corrupted;
 
-    /* printf("Decoder: Frame Decoded, Size Roughly:%d bytes  \n", bc->pos+pbi->bc2.pos); */
+    /* printf("Decoder: Frame Decoded, Size Roughly:%d bytes \n", bc->pos+pbi->bc2.pos); */
 
     /* If this was a kf or Gf note the Q used */
     if ((pc->frame_type == KEY_FRAME) ||
