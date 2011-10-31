@@ -68,9 +68,6 @@ typedef struct
 
     const unsigned char *Source;
     unsigned int         source_sz;
-    const unsigned char *partitions[MAX_PARTITIONS];
-    unsigned int         partition_sizes[MAX_PARTITIONS];
-    unsigned int         num_partitions;
 
     vp8_reader *mbc;
     int64_t     last_time_stamp;
@@ -84,8 +81,6 @@ typedef struct
     vp8_prob prob_last;
     vp8_prob prob_gf;
     vp8_prob prob_skip_false;
-
-    int input_partition;
 
 } VP8D_COMP;
 

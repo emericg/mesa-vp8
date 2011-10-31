@@ -471,7 +471,7 @@ vl_create_vp8_decoder(struct pipe_context *context,
       goto error_pipe_state;
 
    // Initialize the vp8 decoder instance
-   dec->vp8_dec = vp8dx_create_decompressor(0);
+   dec->vp8_dec = vp8dx_create_decompressor();
 
    if (!dec->vp8_dec)
       goto error_vp8_dec;

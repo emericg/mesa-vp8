@@ -26,7 +26,7 @@ extern void vp8cx_init_de_quantizer(VP8D_COMP *pbi);
 static int get_free_fb(VP8_COMMON *cm);
 static void ref_cnt_fb(int *buf, int *idx, int new_idx);
 
-VP8D_PTR vp8dx_create_decompressor(int input_partition)
+VP8D_PTR vp8dx_create_decompressor()
 {
     VP8D_COMP *pbi = vpx_memalign(32, sizeof(VP8D_COMP));
 
@@ -58,7 +58,6 @@ VP8D_PTR vp8dx_create_decompressor(int input_partition)
     // vp8_loop_filter_init(&pbi->common);
 
     pbi->common.error.setjmp = 0;
-    pbi->input_partition = input_partition;
 
     return (VP8D_PTR)pbi;
 }
@@ -171,33 +170,9 @@ int vp8dx_receive_compressed_data(VP8D_PTR ptr, const unsigned char *data, unsig
 
     pbi->common.error.error_code = VPX_CODEC_OK;
 
-    if (pbi->input_partition && !(data == NULL && data_size == 0))
     {
-        /* Store a pointer to this partition and return. We haven't
-         * received the complete frame yet, so we will wait with decoding.
-         */
-        pbi->partitions[pbi->num_partitions] = data;
-        pbi->partition_sizes[pbi->num_partitions] = data_size;
-        pbi->source_sz += data_size;
-        pbi->num_partitions++;
-        if (pbi->num_partitions > (1<<pbi->common.multi_token_partition) + 1)
-            pbi->common.multi_token_partition++;
-        if (pbi->common.multi_token_partition > EIGHT_PARTITION)
-        {
-            pbi->common.error.error_code = VPX_CODEC_UNSUP_BITSTREAM;
-            pbi->common.error.setjmp = 0;
-            return -1;
-        }
-
-        return 0;
-    }
-    else
-    {
-        if (!pbi->input_partition)
-        {
-            pbi->Source = data;
-            pbi->source_sz = data_size;
-        }
+        pbi->Source = data;
+        pbi->source_sz = data_size;
 
         if (pbi->source_sz == 0)
         {
@@ -276,9 +251,6 @@ int vp8dx_receive_compressed_data(VP8D_PTR ptr, const unsigned char *data, unsig
 
     pbi->ready_for_new_data = 0;
     pbi->last_time_stamp = time_stamp;
-    pbi->num_partitions = 0;
-    if (pbi->input_partition)
-        pbi->common.multi_token_partition = 0;
     pbi->source_sz = 0;
     pbi->common.error.setjmp = 0;
 

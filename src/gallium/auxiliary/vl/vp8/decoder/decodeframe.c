@@ -401,34 +401,6 @@ static unsigned int read_partition_size(const unsigned char *cx_size)
     return size;
 }
 
-static void setup_token_decoder_partition_input(VP8D_COMP *pbi)
-{
-    vp8_reader *bool_decoder = &pbi->bc2;
-    int part_idx = 1;
-
-    TOKEN_PARTITION multi_token_partition = (TOKEN_PARTITION)vp8_read_literal(&pbi->bc, 2);
-    assert(vp8dx_bool_error(&pbi->bc) || multi_token_partition == pbi->common.multi_token_partition);
-
-    if (pbi->num_partitions > 2)
-    {
-        CHECK_MEM_ERROR(pbi->mbc, vpx_malloc((pbi->num_partitions - 1) * sizeof(vp8_reader)));
-        bool_decoder = pbi->mbc;
-    }
-
-    for (; part_idx < pbi->num_partitions; ++part_idx)
-    {
-        if (vp8dx_start_decode(bool_decoder,
-                               pbi->partitions[part_idx],
-                               pbi->partition_sizes[part_idx]))
-        {
-            vpx_internal_error(&pbi->common.error, VPX_CODEC_MEM_ERROR,
-                               "Failed to allocate bool decoder %d", part_idx);
-        }
-
-        bool_decoder++;
-    }
-}
-
 static void setup_token_decoder(VP8D_COMP *pbi,
                                 const unsigned char *cx_data)
 {
@@ -465,8 +437,7 @@ static void setup_token_decoder(VP8D_COMP *pbi,
         ptrdiff_t            partition_size;
 
         /* Calculate the length of this partition. The last partition
-         * size is implicit.
-         */
+         * size is implicit. */
         if (i < num_part - 1)
         {
             partition_size = read_partition_size(partition_size_ptr);
@@ -537,8 +508,7 @@ static void init_frame(VP8D_COMP *pbi)
         pc->copy_buffer_to_arf = 0;
 
         /* Note that Golden and Altref modes cannot be used on a key frame so
-         * ref_frame_sign_bias[] is undefined and meaningless
-         */
+         * ref_frame_sign_bias[] is undefined and meaningless. */
         pc->ref_frame_sign_bias[GOLDEN_FRAME] = 0;
         pc->ref_frame_sign_bias[ALTREF_FRAME] = 0;
     }
@@ -582,12 +552,6 @@ int vp8_decode_frame(VP8D_COMP *pbi)
     int mb_row;
     int i, j, k, l;
     const int *const mb_feature_data_bits = vp8_mb_feature_data_bits;
-
-    if (pbi->input_partition)
-    {
-        data = pbi->partitions[0];
-        data_end =  data + pbi->partition_sizes[0];
-    }
 
     /* start with no corruption of current frame */
     xd->corrupted = 0;
@@ -780,14 +744,7 @@ int vp8_decode_frame(VP8D_COMP *pbi)
         }
     }
 
-    if (pbi->input_partition)
-    {
-        setup_token_decoder_partition_input(pbi);
-    }
-    else
-    {
-        setup_token_decoder(pbi, data + first_partition_length_in_bytes);
-    }
+    setup_token_decoder(pbi, data + first_partition_length_in_bytes);
     xd->current_bc = &pbi->bc2;
 
     /* Read the default quantizers. */

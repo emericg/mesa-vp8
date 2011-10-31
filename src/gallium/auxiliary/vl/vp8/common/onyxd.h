@@ -24,7 +24,7 @@ extern "C"
 
 typedef void *VP8D_PTR;
 
-VP8D_PTR vp8dx_create_decompressor(int input_partition);
+VP8D_PTR vp8dx_create_decompressor();
 void vp8dx_remove_decompressor(VP8D_PTR comp);
 
 int vp8dx_receive_compressed_data(VP8D_PTR comp, const unsigned char *data, unsigned data_size, int64_t time_stamp);
