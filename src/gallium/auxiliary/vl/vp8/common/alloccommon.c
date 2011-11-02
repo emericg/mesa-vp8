@@ -136,7 +136,7 @@ void vp8_setup_version(VP8_COMMON *cm)
         cm->full_pixel = 1;
         break;
     default:
-        /*4,5,6,7 are reserved for future use*/
+        /* 4,5,6,7 are reserved for future use */
         cm->no_lpf = 0;
         cm->filter_type = NORMAL_LOOPFILTER;
         cm->use_bilinear_mc_filter = 0;

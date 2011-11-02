@@ -183,11 +183,11 @@ typedef struct
 
 typedef struct MacroBlockD
 {
-    DECLARE_ALIGNED(16, short, diff[400]);      /* from idct diff */
+    DECLARE_ALIGNED(16, short, diff[400]); /* from idct diff */
     DECLARE_ALIGNED(16, unsigned char, predictor[384]);
     DECLARE_ALIGNED(16, short, qcoeff[400]);
     DECLARE_ALIGNED(16, short, dqcoeff[400]);
-    DECLARE_ALIGNED(16, char,  eobs[25]);
+    DECLARE_ALIGNED(16, char, eobs[25]);
 
     /* 16 Y blocks, 4 U, 4 V, 1 DC 2nd order block, each with 16 entries. */
     BLOCKD block[25];
@@ -245,22 +245,14 @@ typedef struct MacroBlockD
 
     unsigned int frames_since_golden;
     unsigned int frames_till_alt_ref_frame;
-    vp8_subpix_fn_t  subpixel_predict;
-    vp8_subpix_fn_t  subpixel_predict8x4;
-    vp8_subpix_fn_t  subpixel_predict8x8;
-    vp8_subpix_fn_t  subpixel_predict16x16;
+    vp8_subpix_fn_t subpixel_predict;
+    vp8_subpix_fn_t subpixel_predict8x4;
+    vp8_subpix_fn_t subpixel_predict8x8;
+    vp8_subpix_fn_t subpixel_predict16x16;
 
     void *current_bc;
 
     int corrupted;
-
-#if defined(PIPE_ARCH_X86) || defined(PIPE_ARCH_X86_64)
-    /* This is an intermediate buffer currently used in sub-pixel motion search
-     * to keep a copy of the reference area. This buffer can be used for other
-     * purpose.
-     */
-    DECLARE_ALIGNED(32, unsigned char, y_buf[22*32]);
-#endif /* PIPE_ARCH_X86 || PIPE_ARCH_X86_64 */
 
 } MACROBLOCKD;
 
@@ -272,8 +264,8 @@ static void update_blockd_bmi(MACROBLOCKD *xd)
     int i;
 
     /* If the block size is 4x4. */
-    if (xd->mode_info_context->mbmi.mode == SPLITMV
-        || xd->mode_info_context->mbmi.mode == B_PRED)
+    if (xd->mode_info_context->mbmi.mode == SPLITMV ||
+        xd->mode_info_context->mbmi.mode == B_PRED)
     {
         for (i = 0; i < 16; i++)
         {

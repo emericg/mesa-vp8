@@ -35,7 +35,7 @@
 static INLINE bool
 decode_frame(struct vl_vp8_bs *bs)
 {
-   // STUB
+   assert(bs);
 
    return false;
 }
@@ -53,6 +53,8 @@ vl_vp8_bs_init(struct vl_vp8_bs *bs, struct pipe_video_decoder *decoder)
 void
 vl_vp8_bs_set_picture_desc(struct vl_vp8_bs *bs, struct pipe_vp8_picture_desc *picture)
 {
+   assert(bs);
+
    bs->desc = *picture;
 }
 
@@ -62,32 +64,8 @@ vl_vp8_bs_decode(struct vl_vp8_bs *bs, unsigned num_bytes, const uint8_t *buffer
    assert(bs);
    assert(buffer && num_bytes);
 
-#if 0
+   if (decode_frame(bs) == false)
    {
-      printf("[G3DVL] vl_vp8_bs_decode()\n");
-
-      // Print some parameters from mplayer/ffmpeg
-      printf("[G3DVL] picture_info->version       %i\n", picture->base.profile);
-      printf("[G3DVL] picture_info->key_frame     %i\n", picture->key_frame);
-      printf("[G3DVL] picture_info->show_frame    %i\n", picture->show_frame);
-
-      // Print the begining of the buffer, for debugging purpose
-      printf("[G3DVL] buffer [%02X %02X %02X %02X ", buffer[0], buffer[1], buffer[2], buffer[3]);
-      printf("%02X %02X %02X %02X]\n", buffer[4], buffer[5], buffer[6], buffer[7]);
-   }
-#endif
-
-   if (buffer[0] == 0x9D &&
-       buffer[1] == 0x01 &&
-       buffer[2] == 0x2A)
-   {
-      printf("[G3DVL] buffer start_code [%02X %02X %02X]\n", buffer[0], buffer[1], buffer[2]);
-   }
-   else
-   {
-      if (decode_frame(bs) == false)
-      {
-         printf("[G3DVL] Error while decoding VP8 frame !\n");
-      }
+      printf("[G3DVL] Error while decoding VP8 frame !\n");
    }
 }
