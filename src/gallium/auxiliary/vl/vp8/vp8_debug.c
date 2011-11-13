@@ -13,25 +13,6 @@
 
 #include "vp8_debug.h"
 
-const char *vpx_codec_err_to_string(vpx_codec_err_t err)
-{
-    switch (err)
-    {
-    case VPX_CODEC_OK:
-        return "Success";
-    case VPX_CODEC_ERROR:
-        return "Unspecified internal error";
-    case VPX_CODEC_MEM_ERROR:
-        return "Memory allocation error";
-    case VPX_CODEC_UNSUP_BITSTREAM:
-        return "Bitstream not supported by this decoder";
-    case VPX_CODEC_CORRUPT_FRAME:
-        return "Corrupt frame detected";
-    }
-
-    return "Unrecognized error code";
-}
-
 void vpx_internal_error(struct vpx_internal_error_info *info,
                         vpx_codec_err_t                 error,
                         const char                     *fmt,

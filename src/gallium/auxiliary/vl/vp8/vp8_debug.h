@@ -31,15 +31,6 @@ typedef enum {
     VPX_CODEC_MEM_ERROR,
 
     /**
-     * \brief The given bitstream is not supported.
-     *
-     * The bitstream was unable to be parsed at the highest level. The decoder
-     * is unable to proceed. This error \ref SHOULD be treated as fatal to the
-     * stream.
-     */
-    VPX_CODEC_UNSUP_BITSTREAM,
-
-    /**
      * \brief The coded data for this stream is corrupt or incomplete.
      *
      * There was a problem decoding the current frame.  This return code
@@ -61,19 +52,7 @@ struct vpx_internal_error_info
     jmp_buf          jmp;
 };
 
-/**
- * \brief Convert error number to printable string.
- * \param[in] err Error number.
- *
- * Returns a human readable string for the last error returned by the
- * algorithm. The returned error will be one line and will not contain
- * any newline characters.
- */
-const char *vpx_codec_err_to_string(vpx_codec_err_t err);
-
-/**
- * \brief Internal error.
- */
+/** \brief Internal error */
 void vpx_internal_error(struct vpx_internal_error_info *info,
                         vpx_codec_err_t                 error,
                         const char                     *fmt,
