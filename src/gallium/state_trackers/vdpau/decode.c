@@ -412,12 +412,10 @@ vlVdpDecoderFixVC1Startcode(uint32_t *num_buffers, const void *buffers[], unsign
 
 static VdpStatus
 vlVdpDecoderRenderVP8(struct pipe_video_decoder *decoder,
-                      VdpPictureInfoVP8 *picture_info,
-                      uint32_t bitstream_buffer_count,
-                      VdpBitstreamBuffer const *bitstream_buffers)
+                      VdpPictureInfoVP8 *picture_info)
 {
    struct pipe_vp8_picture_desc picture;
-   struct pipe_video_buffer *ref_frames[3];
+   struct pipe_video_buffer *ref_frames[3] = {};
    unsigned i = 0, j, k, l;
 
    VDPAU_MSG(VDPAU_TRACE, "[VDPAU] Decoding VP8\n");
