@@ -521,7 +521,7 @@ int vp8_frame_decode(VP8D_COMP *pbi, struct pipe_vp8_picture_desc *frame_header)
     MACROBLOCKD *const xd = &pbi->mb;
     const unsigned char *data = pbi->data;
     const unsigned char *data_end = data + pbi->data_size;
-    ptrdiff_t first_partition_length_in_bytes = 0;
+    ptrdiff_t first_partition_length_in_bytes = (ptrdiff_t)frame_header->first_partition_size;
 
     int mb_row;
     int i, j, k, l;
@@ -530,108 +530,28 @@ int vp8_frame_decode(VP8D_COMP *pbi, struct pipe_vp8_picture_desc *frame_header)
     xd->corrupted = 0;
     pc->yv12_fb[pc->new_fb_idx].corrupted = 0;
 
-/*
+    pc->frame_type = (FRAME_TYPE)frame_header->key_frame;
+    pc->version = (int)frame_header->base.profile;
+    pc->show_frame = (int)frame_header->show_frame;
+
+    vp8_setup_version(pc);
+
+    if (pc->frame_type == KEY_FRAME)
     {
-        pc->frame_type = (FRAME_TYPE)frame_header->key_frame;
-        pc->version = frame_header->base.profile;
-        pc->show_frame = frame_header->show_frame;
-        first_partition_length_in_bytes = frame_header->first_partition_size;
-        data += 3;
-
-        vp8_setup_version(pc);
-
-        if (pc->frame_type == KEY_FRAME)
+        if (pc->Width != frame_header->width ||
+            pc->Height != frame_header->height)
         {
-            if (pc->Width != frame_header->width ||
-                pc->Height != frame_header->height)
+            if (vp8_alloc_frame_buffers(pc, frame_header->width, frame_header->height))
             {
-                if (vp8_alloc_frame_buffers(pc, frame_header->width, frame_header->height))
-                {
-                    vpx_internal_error(&pc->error, VPX_CODEC_MEM_ERROR,
-                                       "Failed to allocate frame buffers");
-                }
+                vpx_internal_error(&pc->error, VPX_CODEC_MEM_ERROR,
+                                   "Failed to allocate frame buffers");
             }
-
-            pc->Width = frame_header->width;
-            pc->horiz_scale = frame_header->horizontal_scale;
-            pc->Height = frame_header->height;
-            pc->vert_scale = frame_header->vertical_scale;
-            data += 7;
-        }
-    }
-*/
-    {
-        pc->frame_type = (FRAME_TYPE)(data[0] & 1);
-        pc->version = (data[0] >> 1) & 7;
-        pc->show_frame = (data[0] >> 4) & 1;
-        first_partition_length_in_bytes = (data[0] | (data[1] << 8) | (data[2] << 16)) >> 5;
-        data += 3;
-
-        if (data + first_partition_length_in_bytes > data_end
-            || data + first_partition_length_in_bytes < data)
-        {
-            vpx_internal_error(&pc->error, VPX_CODEC_CORRUPT_FRAME,
-                               "Truncated packet or corrupt partition 0 length");
         }
 
-        vp8_setup_version(pc);
-
-        if (pc->frame_type == KEY_FRAME)
-        {
-            const int Width = pc->Width;
-            const int Height = pc->Height;
-
-            // Set via sync code
-            /* When error concealment is enabled we should only check the sync
-             * code if we have enough bits available
-             */
-            if (data + 3 < data_end)
-            {
-                if (data[0] != 0x9d || data[1] != 0x01 || data[2] != 0x2a)
-                    vpx_internal_error(&pc->error, VPX_CODEC_CORRUPT_FRAME, "Invalid frame sync code");
-            }
-
-            /* If error concealment is enabled we should only parse the new size
-             * if we have enough data. Otherwise we will end up with the wrong
-             * size.
-             */
-            if (data + 6 < data_end)
-            {
-                pc->Width = (data[3] | (data[4] << 8)) & 0x3fff;
-                pc->horiz_scale = data[4] >> 6;
-                pc->Height = (data[5] | (data[6] << 8)) & 0x3fff;
-                pc->vert_scale = data[6] >> 6;
-            }
-            data += 7;
-
-            if (Width != pc->Width || Height != pc->Height)
-            {
-                if (pc->Width <= 0)
-                {
-                    pc->Width = Width;
-                    vpx_internal_error(&pc->error, VPX_CODEC_CORRUPT_FRAME,
-                                       "Invalid frame width");
-                }
-
-                if (pc->Height <= 0)
-                {
-                    pc->Height = Height;
-                    vpx_internal_error(&pc->error, VPX_CODEC_CORRUPT_FRAME,
-                                       "Invalid frame height");
-                }
-
-                if (vp8_alloc_frame_buffers(pc, pc->Width, pc->Height))
-                {
-                    vpx_internal_error(&pc->error, VPX_CODEC_MEM_ERROR,
-                                       "Failed to allocate frame buffers");
-                }
-            }
-        }
-    }
-
-    if (pc->Width == 0 || pc->Height == 0)
-    {
-        return -1;
+        pc->Width = frame_header->width;
+        pc->horiz_scale = frame_header->horizontal_scale;
+        pc->Height = frame_header->height;
+        pc->vert_scale = frame_header->vertical_scale;
     }
 
     vp8_frame_init(pbi);

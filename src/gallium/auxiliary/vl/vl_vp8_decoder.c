@@ -230,24 +230,12 @@ vl_vp8_decode_bitstream(struct pipe_video_decoder *decoder,
    buf = dec->current_buffer;
    assert(buf);
 
-   assert(data);
+   assert(data && num_bytes);
 
    //vl_vp8_bs_decode(&buf->bs, num_bytes, data);
 
-   if (num_bytes == 0)
-   {
-      printf("[G3DVL] Error : no data !\n");
-      //((VP8_COMMON *)((VP8D_COMP *)(dec->vp8_dec))->common)->show_frame = 0;
-      return;
-   }
-
    if (dec->startcode)
    {
-       //printf("[0]frame_type = %u \n", dec->picture_desc.key_frame);
-       //printf("[0]version = %u \n", dec->picture_desc.base.profile);
-       //printf("[0]show_frame = %u \n", dec->picture_desc.show_frame);
-       //printf("[0]first_partition_size = %u \n \n", dec->picture_desc.first_partition_size);
-
        if (vp8_decoder_start(dec->vp8_dec, &(dec->picture_desc), data, num_bytes, 0))
        {
           printf("[G3DVL] Error : not a valid VP8 VDPAU frame !\n");
