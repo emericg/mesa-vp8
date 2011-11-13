@@ -78,7 +78,7 @@ vl_vp8_destroy(struct pipe_video_decoder *decoder)
    dec->base.context->delete_depth_stencil_alpha_state(dec->base.context, dec->dsa);
    dec->base.context->delete_sampler_state(dec->base.context, dec->sampler_ycbcr);
 
-   vp8dx_remove_decompressor(dec->vp8_dec);
+   vp8_decoder_remove(dec->vp8_dec);
    FREE(dec);
 }
 
@@ -191,6 +191,9 @@ vl_vp8_begin_frame(struct pipe_video_decoder *decoder)
 
    buf = dec->current_buffer;
    assert(buf);
+
+   dec->startcode = 0;
+   dec->img_ready = 0;
 }
 
 static void
@@ -227,23 +230,46 @@ vl_vp8_decode_bitstream(struct pipe_video_decoder *decoder,
    buf = dec->current_buffer;
    assert(buf);
 
+   assert(data);
+
    //vl_vp8_bs_decode(&buf->bs, num_bytes, data);
 
-   const uint8_t *datab;
-   datab = (const uint8_t *)data;
-   assert(datab);
-
-   if (datab[0] == 0x9D &&
-       datab[1] == 0x01 &&
-       datab[2] == 0x2A)
+   if (num_bytes == 0)
    {
-      /*printf("[G3DVL] buffer start_code [%02X %02X %02X]\n", datab[0], datab[1], datab[2]);*/
+      printf("[G3DVL] Error : no data !\n");
+      //((VP8_COMMON *)((VP8D_COMP *)(dec->vp8_dec))->common)->show_frame = 0;
+      return;
+   }
+
+   if (dec->startcode)
+   {
+       //printf("[0]frame_type = %u \n", dec->picture_desc.key_frame);
+       //printf("[0]version = %u \n", dec->picture_desc.base.profile);
+       //printf("[0]show_frame = %u \n", dec->picture_desc.show_frame);
+       //printf("[0]first_partition_size = %u \n \n", dec->picture_desc.first_partition_size);
+
+       if (vp8_decoder_start(dec->vp8_dec, &(dec->picture_desc), data, num_bytes, 0))
+       {
+          printf("[G3DVL] Error : not a valid VP8 VDPAU frame !\n");
+          dec->img_ready = 0;
+       }
+       else
+       {
+          dec->img_ready = 1;
+       }
    }
    else
    {
-      if (vp8dx_receive_compressed_data(dec->vp8_dec, data, num_bytes, 0))
+      const uint8_t *datab = (const uint8_t *)data;
+
+      if (datab[0] == 0x9D &&
+          datab[1] == 0x01 &&
+          datab[2] == 0x2A)
       {
-          printf("[G3DVL] Error : not a valid VP8 VDPAU frame !\n");
+         //printf("[G3DVL] buffer start_code [9D 01 2A] is present\n");
+         dec->startcode = 1;
+
+         //TODO handle the startcode presence on the same buffer than the data
       }
    }
 }
@@ -280,7 +306,7 @@ vl_vp8_end_frame(struct pipe_video_decoder *decoder)
    }
 
    // Get the decoded frame
-   if (vp8dx_get_raw_frame(dec->vp8_dec, &dec->img_yv12, &timestamp, &timestamp_end)) {
+   if (vp8_decoder_getframe(dec->vp8_dec, &dec->img_yv12, &timestamp, &timestamp_end)) {
        printf("[end_frame] No image to output !\n");
        return;
    }
@@ -389,11 +415,11 @@ find_format_config(struct vl_vp8_decoder *dec,
    screen = dec->base.context->screen;
 
    for (i = 0; i < num_configs; ++i) {
-       if (!screen->is_format_supported(screen,
-                                        configs[i].loopfilter_source_format,
-                                        PIPE_TEXTURE_2D,
-                                        1, PIPE_BIND_SAMPLER_VIEW))
-           continue;
+      if (!screen->is_format_supported(screen,
+                                       configs[i].loopfilter_source_format,
+                                       PIPE_TEXTURE_2D,
+                                       1, PIPE_BIND_SAMPLER_VIEW))
+         continue;
 
       return &configs[i];
    }
@@ -471,7 +497,7 @@ vl_create_vp8_decoder(struct pipe_context *context,
       goto error_pipe_state;
 
    // Initialize the vp8 decoder instance
-   dec->vp8_dec = vp8dx_create_decompressor();
+   dec->vp8_dec = vp8_decoder_create();
 
    if (!dec->vp8_dec)
       goto error_vp8_dec;

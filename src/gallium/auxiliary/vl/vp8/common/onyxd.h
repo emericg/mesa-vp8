@@ -19,21 +19,22 @@ extern "C"
 
 #include <stdint.h>
 
+#include "pipe/p_video_decoder.h"
 #include "../vp8_debug.h"
 #include "yv12utils.h"
 
-typedef void *VP8D_PTR;
+typedef void* VP8D_PTR;
 
-VP8D_PTR vp8dx_create_decompressor();
+VP8D_PTR vp8_decoder_create();
 
-void vp8dx_remove_decompressor(VP8D_PTR comp);
+int vp8_decoder_start(VP8D_PTR comp, struct pipe_vp8_picture_desc *frame_header,
+                      const unsigned char *data, unsigned data_size,
+                      int64_t timestamp_deadline);
 
-int vp8dx_receive_compressed_data(VP8D_PTR comp,
-                                  const unsigned char *data, unsigned data_size,
-                                  int64_t timestamp_deadline);
+int vp8_decoder_getframe(VP8D_PTR comp, YV12_BUFFER_CONFIG *sd,
+                         int64_t *timestamp, int64_t *timestamp_end);
 
-int vp8dx_get_raw_frame(VP8D_PTR comp, YV12_BUFFER_CONFIG *sd,
-                        int64_t *timestamp, int64_t *timestamp_end);
+void vp8_decoder_remove(VP8D_PTR comp);
 
 #ifdef __cplusplus
 }

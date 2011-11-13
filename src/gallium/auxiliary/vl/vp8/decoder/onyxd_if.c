@@ -23,54 +23,6 @@
 #include "../common/quant_common.h"
 #include "detokenize.h"
 
-static int get_free_fb(VP8_COMMON *cm);
-static void ref_cnt_fb(int *buf, int *idx, int new_idx);
-
-VP8D_PTR vp8dx_create_decompressor()
-{
-    VP8D_COMP *pbi = vpx_memalign(32, sizeof(VP8D_COMP));
-
-    if (!pbi)
-        return NULL;
-
-    memset(pbi, 0, sizeof(VP8D_COMP));
-
-    if (setjmp(pbi->common.error.jmp))
-    {
-        pbi->common.error.setjmp = 0;
-        vp8dx_remove_decompressor(pbi);
-        return 0;
-    }
-
-    pbi->common.error.setjmp = 1;
-    vp8_initialize_common();
-
-    vp8_create_common(&pbi->common);
-
-    pbi->common.current_video_frame = 0;
-    pbi->ready_for_new_data = 1;
-
-    vp8_initialize_dequantizer(&pbi->common);
-
-    // vp8_loop_filter_init(&pbi->common);
-
-    pbi->common.error.setjmp = 0;
-
-    return (VP8D_PTR)pbi;
-}
-
-void vp8dx_remove_decompressor(VP8D_PTR ptr)
-{
-    VP8D_COMP *pbi = (VP8D_COMP *)ptr;
-
-    if (!pbi)
-        return;
-
-    vp8_remove_common(&pbi->common);
-    vpx_free(pbi->mbc);
-    vpx_free(pbi);
-}
-
 static int get_free_fb(VP8_COMMON *cm)
 {
     int i;
@@ -80,6 +32,7 @@ static int get_free_fb(VP8_COMMON *cm)
 
     assert(i < NUM_YV12_BUFFERS);
     cm->fb_idx_ref_cnt[i] = 1;
+
     return i;
 }
 
@@ -152,44 +105,53 @@ static int swap_frame_buffers(VP8_COMMON *cm)
     return err;
 }
 
-int vp8dx_receive_compressed_data(VP8D_PTR ptr,
-                                  const unsigned char *data, unsigned data_size,
-                                  int64_t timestamp_deadline)
+VP8D_PTR vp8_decoder_create()
+{
+    VP8D_COMP *pbi = vpx_memalign(32, sizeof(VP8D_COMP));
+
+    if (!pbi)
+        return NULL;
+
+    memset(pbi, 0, sizeof(VP8D_COMP));
+
+    if (setjmp(pbi->common.error.jmp))
+    {
+        pbi->common.error.setjmp = 0;
+        vp8_decoder_remove(pbi);
+        return 0;
+    }
+
+    pbi->common.error.setjmp = 1;
+    vp8_initialize_common();
+
+    vp8_create_common(&pbi->common);
+
+    pbi->common.current_video_frame = 0;
+    pbi->common.show_frame = 0;
+    pbi->ready_for_new_data = 1;
+
+    vp8_initialize_dequantizer(&pbi->common);
+
+    // vp8_loop_filter_init(&pbi->common);
+
+    pbi->common.error.setjmp = 0;
+
+    return (VP8D_PTR)pbi;
+}
+
+int vp8_decoder_start(VP8D_PTR ptr, struct pipe_vp8_picture_desc *frame_header,
+                      const unsigned char *data, unsigned data_size,
+                      int64_t timestamp_deadline)
 {
     VP8D_COMP *pbi = (VP8D_COMP *)ptr;
     VP8_COMMON *cm = &pbi->common;
     int retcode = 0;
-
-    /*if(pbi->ready_for_new_data == 0)
-        return -1;*/
-
-    if (ptr == 0)
-    {
-        return -1;
-    }
 
     pbi->common.error.error_code = VPX_CODEC_OK;
 
     {
         pbi->data = data;
         pbi->data_size = data_size;
-
-        if (pbi->data_size == 0)
-        {
-           /* This is used to signal that we are missing frames.
-            * We do not know if the missing frame(s) was supposed to update
-            * any of the reference buffers, but we act conservative and
-            * mark only the last buffer as corrupted. */
-            cm->yv12_fb[cm->lst_fb_idx].corrupted = 1;
-
-            /* If error concealment is disabled we won't signal missing frames to
-             * the decoder. */
-            {
-                /* Signal that we have no frame to show. */
-                cm->show_frame = 0;
-                return 0;
-            }
-        }
 
         cm->new_fb_idx = get_free_fb(cm);
 
@@ -211,7 +173,7 @@ int vp8dx_receive_compressed_data(VP8D_PTR ptr,
         pbi->common.error.setjmp = 1;
     }
 
-    retcode = vp8_frame_decode(pbi);
+    retcode = vp8_frame_decode(pbi, frame_header);
 
     if (retcode < 0)
     {
@@ -254,10 +216,10 @@ int vp8dx_receive_compressed_data(VP8D_PTR ptr,
     return retcode;
 }
 
-int vp8dx_get_raw_frame(VP8D_PTR ptr,
-                        YV12_BUFFER_CONFIG *sd,
-                        int64_t *timestamp,
-                        int64_t *timestamp_end)
+int vp8_decoder_getframe(VP8D_PTR ptr,
+                         YV12_BUFFER_CONFIG *sd,
+                         int64_t *timestamp,
+                         int64_t *timestamp_end)
 {
     int ret = -1;
     VP8D_COMP *pbi = (VP8D_COMP *)ptr;
@@ -273,14 +235,14 @@ int vp8dx_get_raw_frame(VP8D_PTR ptr,
     *timestamp = pbi->last_time_stamp;
     *timestamp_end = 0;
 
-    sd->clrtype = pbi->common.clr_type;
-
     if (pbi->common.frame_to_show)
     {
         *sd = *pbi->common.frame_to_show;
+        sd->clrtype = pbi->common.clr_type;
         sd->y_width = pbi->common.Width;
         sd->y_height = pbi->common.Height;
         sd->uv_height = pbi->common.Height / 2;
+
         ret = 0;
     }
     else
@@ -289,4 +251,16 @@ int vp8dx_get_raw_frame(VP8D_PTR ptr,
     }
 
     return ret;
+}
+
+void vp8_decoder_remove(VP8D_PTR ptr)
+{
+    VP8D_COMP *pbi = (VP8D_COMP *)ptr;
+
+    if (!pbi)
+        return;
+
+    vp8_remove_common(&pbi->common);
+    vpx_free(pbi->mbc);
+    vpx_free(pbi);
 }

@@ -66,6 +66,9 @@ struct vl_vp8_decoder
    // VP8 decoder context
    VP8D_PTR vp8_dec;
    YV12_BUFFER_CONFIG img_yv12;
+
+   unsigned startcode;
+   unsigned img_ready;
 };
 
 struct vl_vp8_buffer

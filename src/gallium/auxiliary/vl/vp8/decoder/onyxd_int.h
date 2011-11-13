@@ -53,7 +53,7 @@ typedef struct
 
 } VP8D_COMP;
 
-int vp8_frame_decode(VP8D_COMP *cpi);
+int vp8_frame_decode(VP8D_COMP *cpi, struct pipe_vp8_picture_desc *frame_header);
 
 #if CONFIG_DEBUG
 #define CHECK_MEM_ERROR(lval,expr) do { \
