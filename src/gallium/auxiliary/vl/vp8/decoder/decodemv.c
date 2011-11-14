@@ -15,7 +15,7 @@
 #include "onyxd_int.h"
 #include "../common/findnearmv.h"
 
-#if CONFIG_DEBUG
+#if ENABLE_DEBUG
 #include <assert.h>
 #endif
 static int vp8_read_bmode(vp8_reader *bc, const vp8_prob *p)
@@ -401,7 +401,7 @@ static void read_mb_modes_mv(VP8D_COMP *pbi, MODE_INFO *mi, MB_MODE_INFO *mbmi,
             break;
 
         default:;
-  #if CONFIG_DEBUG
+  #if ENABLE_DEBUG
             assert(0);
   #endif
         }

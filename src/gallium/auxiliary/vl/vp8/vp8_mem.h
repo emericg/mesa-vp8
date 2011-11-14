@@ -35,7 +35,7 @@ extern "C" {
 #define DECLARE_ALIGNED(n,typ,val) typ val
 #endif
 
-#if CONFIG_DEBUG
+#if ENABLE_DEBUG
 #define CHECK_MEM_ERROR(lval,expr) do { \
         lval = (expr); \
         if (!lval) \
@@ -50,7 +50,7 @@ extern "C" {
             vpx_internal_error(&pbi->common.error, VPX_CODEC_MEM_ERROR, \
                                "Failed to allocate "#lval); \
     } while(0)
-#endif /* CONFIG_DEBUG */
+#endif /* ENABLE_DEBUG */
 
 void *vpx_memalign(size_t align, size_t size);
 void *vpx_malloc(size_t size);

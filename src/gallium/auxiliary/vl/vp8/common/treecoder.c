@@ -9,7 +9,7 @@
  */
 
 
-#if CONFIG_DEBUG
+#if ENABLE_DEBUG
 #include <assert.h>
 #endif
 #include <stdio.h>
@@ -55,7 +55,7 @@ static void branch_counts(int n, /* n = size of alphabet */
     const int tree_len = n - 1;
     int t = 0;
 
-#if CONFIG_DEBUG
+#if ENABLE_DEBUG
     assert(tree_len);
 #endif
 
@@ -79,7 +79,7 @@ static void branch_counts(int n, /* n = size of alphabet */
         {
             const int b = (enc >> --L) & 1;
             const int j = i >> 1;
-#if CONFIG_DEBUG
+#if ENABLE_DEBUG
             assert(j < tree_len  &&  0 <= L);
 #endif
             branch_ct [j] [b] += ct;
@@ -87,7 +87,7 @@ static void branch_counts(int n, /* n = size of alphabet */
         }
         while (i > 0);
 
-#if CONFIG_DEBUG
+#if ENABLE_DEBUG
         assert(!L);
 #endif
     }
@@ -114,7 +114,7 @@ void vp8_tree_probs_from_distribution(int n, /* n = size of alphabet */
         const unsigned int *const c = branch_ct[t];
         const unsigned int tot = c[0] + c[1];
 
-#if CONFIG_DEBUG
+#if ENABLE_DEBUG
         assert(tot < (1 << 24)); /* no overflow below */
 #endif
 
