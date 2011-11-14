@@ -18,13 +18,13 @@
 #if ENABLE_DEBUG
 #include <assert.h>
 #endif
+
 static int vp8_read_bmode(vp8_reader *bc, const vp8_prob *p)
 {
     const int i = vp8_treed_read(bc, vp8_bmode_tree, p);
 
     return i;
 }
-
 
 static int vp8_read_ymode(vp8_reader *bc, const vp8_prob *p)
 {
@@ -39,8 +39,6 @@ static int vp8_kfread_ymode(vp8_reader *bc, const vp8_prob *p)
 
     return i;
 }
-
-
 
 static int vp8_read_uv_mode(vp8_reader *bc, const vp8_prob *p)
 {
@@ -84,7 +82,7 @@ static void vp8_kfread_modes(VP8D_COMP *pbi, MODE_INFO *m, int mb_row, int mb_co
             else
                 m->mbmi.mb_skip_coeff = 0;
 
-            y_mode = (MB_PREDICTION_MODE) vp8_kfread_ymode(bc, pbi->common.kf_ymode_prob);
+            y_mode = (MB_PREDICTION_MODE)vp8_kfread_ymode(bc, pbi->common.kf_ymode_prob);
 
             m->mbmi.ref_frame = INTRA_FRAME;
 
@@ -97,7 +95,7 @@ static void vp8_kfread_modes(VP8D_COMP *pbi, MODE_INFO *m, int mb_row, int mb_co
                     const B_PREDICTION_MODE A = above_block_mode(m, i, mis);
                     const B_PREDICTION_MODE L = left_block_mode(m, i);
 
-                    m->bmi[i].as_mode = (B_PREDICTION_MODE) vp8_read_bmode(bc, pbi->common.kf_bmode_prob [A] [L]);
+                    m->bmi[i].as_mode = (B_PREDICTION_MODE)vp8_read_bmode(bc, pbi->common.kf_bmode_prob [A] [L]);
                 }
                 while (++i < 16);
             }
@@ -108,20 +106,19 @@ static void vp8_kfread_modes(VP8D_COMP *pbi, MODE_INFO *m, int mb_row, int mb_co
 
 static int read_mvcomponent(vp8_reader *r, const MV_CONTEXT *mvc)
 {
-    const vp8_prob *const p = (const vp8_prob *) mvc;
+    const vp8_prob *const p = (const vp8_prob *)mvc;
     int x = 0;
 
-    if (vp8_read(r, p [mvpis_short]))  /* Large */
+    if (vp8_read(r, p [mvpis_short])) /* Large */
     {
         int i = 0;
 
-        do
-        {
+        do {
             x += vp8_read(r, p [MVPbits + i]) << i;
         }
         while (++i < 3);
 
-        i = mvlong_width - 1;  /* Skip bit 3, which is sometimes implicit */
+        i = mvlong_width - 1; /* Skip bit 3, which is sometimes implicit */
 
         do
         {
@@ -129,13 +126,13 @@ static int read_mvcomponent(vp8_reader *r, const MV_CONTEXT *mvc)
         }
         while (--i > 3);
 
-        if (!(x & 0xFFF0)  ||  vp8_read(r, p [MVPbits + 3]))
+        if (!(x & 0xFFF0) || vp8_read(r, p[MVPbits + 3]))
             x += 8;
     }
-    else   /* small */
+    else /* Small */
         x = vp8_treed_read(r, vp8_small_mvtree, p + MVPshort);
 
-    if (x  &&  vp8_read(r, p [MVPsign]))
+    if (x && vp8_read(r, p[MVPsign]))
         x = -x;
 
     return x;
@@ -147,19 +144,16 @@ static void read_mv(vp8_reader *r, MV *mv, const MV_CONTEXT *mvc)
     mv->col = (short)(read_mvcomponent(r, ++mvc) << 1);
 }
 
-
 static void read_mvcontexts(vp8_reader *bc, MV_CONTEXT *mvc)
 {
     int i = 0;
 
-    do
-    {
+    do {
         const vp8_prob *up = vp8_mv_update_probs[i].prob;
         vp8_prob *p = (vp8_prob *)(mvc + i);
         vp8_prob *const pstop = p + MVPcount;
 
-        do
-        {
+        do {
             if (vp8_read(bc, *up++))
             {
                 const vp8_prob x = (vp8_prob)vp8_read_literal(bc, 7);
@@ -171,7 +165,6 @@ static void read_mvcontexts(vp8_reader *bc, MV_CONTEXT *mvc)
     }
     while (++i < 2);
 }
-
 
 static MB_PREDICTION_MODE read_mv_ref(vp8_reader *bc, const vp8_prob *p)
 {
@@ -187,15 +180,13 @@ static B_PREDICTION_MODE sub_mv_ref(vp8_reader *bc, const vp8_prob *p)
     return (B_PREDICTION_MODE)i;
 }
 
-
 static const unsigned char mbsplit_fill_count[4] = {8, 8, 4, 1};
 static const unsigned char mbsplit_fill_offset[4][16] = {
-    { 0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15},
-    { 0,  1,  4,  5,  8,  9, 12, 13,  2,  3,   6,  7, 10, 11, 14, 15},
-    { 0,  1,  4,  5,  2,  3,  6,  7,  8,  9,  12, 13, 10, 11, 14, 15},
-    { 0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15}
+    { 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15},
+    { 0,  1,  4,  5,  8,  9, 12, 13,  2,  3,  6,  7, 10, 11, 14, 15},
+    { 0,  1,  4,  5,  2,  3,  6,  7,  8,  9, 12, 13, 10, 11, 14, 15},
+    { 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15}
 };
-
 
 static void mb_mode_mv_init(VP8D_COMP *pbi)
 {
@@ -216,9 +207,8 @@ static void mb_mode_mv_init(VP8D_COMP *pbi)
         {
             int i = 0;
 
-            do
-            {
-                pbi->common.fc.ymode_prob[i] = (vp8_prob) vp8_read_literal(bc, 8);
+            do {
+                pbi->common.fc.ymode_prob[i] = (vp8_prob)vp8_read_literal(bc, 8);
             }
             while (++i < 4);
         }
@@ -227,9 +217,8 @@ static void mb_mode_mv_init(VP8D_COMP *pbi)
         {
             int i = 0;
 
-            do
-            {
-                pbi->common.fc.uv_mode_prob[i] = (vp8_prob) vp8_read_literal(bc, 8);
+            do {
+                pbi->common.fc.uv_mode_prob[i] = (vp8_prob)vp8_read_literal(bc, 8);
             }
             while (++i < 3);
         }
@@ -238,35 +227,34 @@ static void mb_mode_mv_init(VP8D_COMP *pbi)
     }
 }
 
-
 static void read_mb_modes_mv(VP8D_COMP *pbi, MODE_INFO *mi, MB_MODE_INFO *mbmi,
                             int mb_row, int mb_col)
 {
-    vp8_reader *const bc = & pbi->bc;
+    vp8_reader *const bc = &pbi->bc;
     MV_CONTEXT *const mvc = pbi->common.fc.mvc;
     const int mis = pbi->common.mode_info_stride;
 
-    int_mv *const mv = & mbmi->mv;
+    int_mv *const mv = &mbmi->mv;
     int mb_to_left_edge;
     int mb_to_right_edge;
     int mb_to_top_edge;
     int mb_to_bottom_edge;
 
-    mb_to_top_edge = pbi->mb.mb_to_top_edge;
-    mb_to_bottom_edge = pbi->mb.mb_to_bottom_edge;
-    mb_to_top_edge -= LEFT_TOP_MARGIN;
+    mb_to_top_edge     = pbi->mb.mb_to_top_edge;
+    mb_to_bottom_edge  = pbi->mb.mb_to_bottom_edge;
+    mb_to_top_edge    -= LEFT_TOP_MARGIN;
     mb_to_bottom_edge += RIGHT_BOTTOM_MARGIN;
 
     mbmi->need_to_clamp_mvs = 0;
     /* Distance of Mb to the various image edges.
-     * These specified to 8th pel as they are always compared to MV values that are in 1/8th pel units
-     */
+     * These specified to 8th pel as they are always compared to MV values that
+     * are in 1/8th pel units */
     pbi->mb.mb_to_left_edge =
-    mb_to_left_edge = -((mb_col * 16) << 3);
+    mb_to_left_edge  = -((mb_col * 16) << 3);
     mb_to_left_edge -= LEFT_TOP_MARGIN;
 
     pbi->mb.mb_to_right_edge =
-    mb_to_right_edge = ((pbi->common.mb_cols - 1 - mb_col) * 16) << 3;
+    mb_to_right_edge  = ((pbi->common.mb_cols - 1 - mb_col) * 16) << 3;
     mb_to_right_edge += RIGHT_BOTTOM_MARGIN;
 
     /* If required read in new segmentation data for this MB */
@@ -279,7 +267,7 @@ static void read_mb_modes_mv(VP8D_COMP *pbi, MODE_INFO *mi, MB_MODE_INFO *mbmi,
     else
         mbmi->mb_skip_coeff = 0;
 
-    if ((mbmi->ref_frame = (MV_REFERENCE_FRAME) vp8_read(bc, pbi->prob_intra)))    /* inter MB */
+    if ((mbmi->ref_frame = (MV_REFERENCE_FRAME) vp8_read(bc, pbi->prob_intra))) /* inter MB */
     {
         int rct[4];
         vp8_prob mv_ref_p [VP8_MVREFS-1];
@@ -299,16 +287,15 @@ static void read_mb_modes_mv(VP8D_COMP *pbi, MODE_INFO *mi, MB_MODE_INFO *mbmi,
         {
         case SPLITMV:
         {
-            const int s = mbmi->partitioning =
-                      vp8_treed_read(bc, vp8_mbsplit_tree, vp8_mbsplit_probs);
-            const int num_p = vp8_mbsplit_count [s];
+            const int s = mbmi->partitioning = vp8_treed_read(bc, vp8_mbsplit_tree, vp8_mbsplit_probs);
+            const int num_p = vp8_mbsplit_count[s];
             int j = 0;
 
-            do  /* for each subset j */
+            do /* For each subset j */
             {
                 int_mv leftmv, abovemv;
                 int_mv blockmv;
-                int k;  /* first block in subset j */
+                int k; /* First block in subset j */
                 int mv_contz;
                 k = vp8_mbsplit_offset[s][j];
 
@@ -316,10 +303,10 @@ static void read_mb_modes_mv(VP8D_COMP *pbi, MODE_INFO *mi, MB_MODE_INFO *mbmi,
                 abovemv.as_int = above_block_mv(mi, k, mis);
                 mv_contz = vp8_mv_cont(&leftmv, &abovemv);
 
-                switch (sub_mv_ref(bc, vp8_sub_mv_ref_prob2 [mv_contz])) /*pc->fc.sub_mv_ref_prob))*/
+                switch (sub_mv_ref(bc, vp8_sub_mv_ref_prob2[mv_contz])) /*pc->fc.sub_mv_ref_prob))*/
                 {
                 case NEW4X4:
-                    read_mv(bc, &blockmv.as_mv, (const MV_CONTEXT *) mvc);
+                    read_mv(bc, &blockmv.as_mv, (const MV_CONTEXT *)mvc);
                     blockmv.as_mv.row += best_mv.as_mv.row;
                     blockmv.as_mv.col += best_mv.as_mv.col;
                     break;
@@ -337,33 +324,30 @@ static void read_mb_modes_mv(VP8D_COMP *pbi, MODE_INFO *mi, MB_MODE_INFO *mbmi,
                 }
 
                 mbmi->need_to_clamp_mvs = vp8_check_mv_bounds(&blockmv,
-                                                          mb_to_left_edge,
-                                                          mb_to_right_edge,
-                                                          mb_to_top_edge,
-                                                          mb_to_bottom_edge);
+                                                              mb_to_left_edge,
+                                                              mb_to_right_edge,
+                                                              mb_to_top_edge,
+                                                              mb_to_bottom_edge);
 
                 {
                     /* Fill (uniform) modes, mvs of jth subset.
-                     Must do it here because ensuing subsets can
-                     refer back to us via "left" or "above". */
+                     * Must do it here because ensuing subsets can
+                     * refer back to us via "left" or "above". */
                     const unsigned char *fill_offset;
                     unsigned int fill_count = mbsplit_fill_count[s];
 
                     fill_offset = &mbsplit_fill_offset[s][(unsigned char)j * mbsplit_fill_count[s]];
 
                     do {
-                        mi->bmi[ *fill_offset].mv.as_int = blockmv.as_int;
+                        mi->bmi[*fill_offset].mv.as_int = blockmv.as_int;
                         fill_offset++;
-                    }while (--fill_count);
+                    } while (--fill_count);
                 }
-
             }
             while (++j < num_p);
         }
-
         mv->as_int = mi->bmi[15].mv.as_int;
-
-        break;  /* done with SPLITMV */
+        break; /* Done with SPLITMV */
 
         case NEARMV:
             mv->as_int = nearby.as_int;
@@ -384,35 +368,34 @@ static void read_mb_modes_mv(VP8D_COMP *pbi, MODE_INFO *mi, MB_MODE_INFO *mbmi,
             break;
 
         case NEWMV:
-            read_mv(bc, &mv->as_mv, (const MV_CONTEXT *) mvc);
+            read_mv(bc, &mv->as_mv, (const MV_CONTEXT *)mvc);
             mv->as_mv.row += best_mv.as_mv.row;
             mv->as_mv.col += best_mv.as_mv.col;
 
             /* Don't need to check this on NEARMV and NEARESTMV modes
              * since those modes clamp the MV. The NEWMV mode does not,
              * so signal to the prediction stage whether special
-             * handling may be required.
-             */
+             * handling may be required. */
             mbmi->need_to_clamp_mvs = vp8_check_mv_bounds(mv,
-                                                      mb_to_left_edge,
-                                                      mb_to_right_edge,
-                                                      mb_to_top_edge,
-                                                      mb_to_bottom_edge);
+                                                          mb_to_left_edge,
+                                                          mb_to_right_edge,
+                                                          mb_to_top_edge,
+                                                          mb_to_bottom_edge);
             break;
 
-        default:;
-  #if ENABLE_DEBUG
+#if ENABLE_DEBUG
+        default:
             assert(0);
-  #endif
+#endif
         }
     }
     else
     {
-        /* required for left and above block mv */
+        /* Required for left and above block mv */
         mbmi->mv.as_int = 0;
 
         /* MB is intra coded */
-        if ((mbmi->mode = (MB_PREDICTION_MODE) vp8_read_ymode(bc, pbi->common.fc.ymode_prob)) == B_PRED)
+        if ((mbmi->mode = (MB_PREDICTION_MODE)vp8_read_ymode(bc, pbi->common.fc.ymode_prob)) == B_PRED)
         {
             int j = 0;
             do
@@ -440,11 +423,11 @@ void vp8_decode_mode_mvs(VP8D_COMP *pbi)
         int mb_to_bottom_edge;
 
         pbi->mb.mb_to_top_edge =
-        mb_to_top_edge = -((mb_row * 16)) << 3;
+        mb_to_top_edge  = -((mb_row * 16)) << 3;
         mb_to_top_edge -= LEFT_TOP_MARGIN;
 
         pbi->mb.mb_to_bottom_edge =
-        mb_to_bottom_edge = ((pbi->common.mb_rows - 1 - mb_row) * 16) << 3;
+        mb_to_bottom_edge  = ((pbi->common.mb_rows - 1 - mb_row) * 16) << 3;
         mb_to_bottom_edge += RIGHT_BOTTOM_MARGIN;
 
         while (++mb_col < pbi->common.mb_cols)
@@ -455,10 +438,9 @@ void vp8_decode_mode_mvs(VP8D_COMP *pbi)
             else
                 read_mb_modes_mv(pbi, mi, &mi->mbmi, mb_row, mb_col);
 
-            mi++;       /* next macroblock */
+            mi++; /* Next macroblock */
         }
 
-        mi++;           /* skip left predictor each row */
+        mi++; /* Skip left predictor each row */
     }
 }
-
