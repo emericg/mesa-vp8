@@ -37,14 +37,14 @@ typedef struct
     DECLARE_ALIGNED(16, MACROBLOCKD, mb);
     DECLARE_ALIGNED(16, VP8_COMMON, common);
 
-    vp8_reader bc, bc2;
+    BOOL_DECODER bd, bd2;
 
     const unsigned char *data;
     unsigned int         data_size;
 
-    vp8_reader *mbc;
-    int64_t     last_time_stamp;
-    int         ready_for_new_data;
+    BOOL_DECODER *mbd;
+    int64_t       last_time_stamp;
+    int           ready_for_new_data;
 
     vp8_prob prob_intra;
     vp8_prob prob_last;

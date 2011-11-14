@@ -172,7 +172,7 @@ int vp8_decode_mb_tokens(VP8D_COMP *dx, MACROBLOCKD *x)
     ENTROPY_CONTEXT *L = (ENTROPY_CONTEXT *)x->left_context;
     const FRAME_CONTEXT * const fc = &dx->common.fc;
 
-    BOOL_DECODER *bc = x->current_bc;
+    BOOL_DECODER *bd = x->current_bd;
 
     char *eobs = x->eobs;
 
@@ -218,11 +218,11 @@ int vp8_decode_mb_tokens(VP8D_COMP *dx, MACROBLOCKD *x)
         eobtotal -= 16;
     }
 
-    bufend = bc->user_buffer_end;
-    bufptr = bc->user_buffer;
-    value  = bc->value;
-    count  = bc->count;
-    range  = bc->range;
+    bufend = bd->user_buffer_end;
+    bufptr = bd->user_buffer;
+    value  = bd->value;
+    count  = bd->count;
+    range  = bd->range;
 
 
     coef_probs = fc->coef_probs [type] [0] [0];
@@ -352,10 +352,10 @@ BLOCK_FINISHED:
     }
 
     FILL
-    bc->user_buffer = bufptr;
-    bc->value = value;
-    bc->count = count;
-    bc->range = range;
+    bd->user_buffer = bufptr;
+    bd->value = value;
+    bd->count = count;
+    bd->range = range;
 
     return eobtotal;
 }

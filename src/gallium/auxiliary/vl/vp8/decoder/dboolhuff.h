@@ -39,11 +39,11 @@ typedef struct
 
 DECLARE_ALIGNED(16, extern const unsigned char, vp8_norm[256]);
 
-int vp8dx_start_decode(BOOL_DECODER *br,
+int vp8dx_start_decode(BOOL_DECODER *bd,
                        const unsigned char *data,
                        unsigned int data_size);
 
-void vp8dx_bool_decoder_fill(BOOL_DECODER *br);
+void vp8dx_bool_decoder_fill(BOOL_DECODER *bd);
 
 /**
  * The refill loop is used in several places, so define it in a macro to make
@@ -77,7 +77,7 @@ void vp8dx_bool_decoder_fill(BOOL_DECODER *br);
     } \
     while(0)
 
-static int vp8dx_decode_bool(BOOL_DECODER *br, int probability)
+static int vp8dx_decode_bool(BOOL_DECODER *bd, int probability)
 {
     unsigned int bit = 0;
     VP8_BD_VALUE value;
@@ -86,13 +86,13 @@ static int vp8dx_decode_bool(BOOL_DECODER *br, int probability)
     int count;
     unsigned int range;
 
-    split = 1 + (((br->range - 1) * probability) >> 8);
+    split = 1 + (((bd->range - 1) * probability) >> 8);
 
-    if (br->count < 0)
-        vp8dx_bool_decoder_fill(br);
+    if (bd->count < 0)
+        vp8dx_bool_decoder_fill(bd);
 
-    value = br->value;
-    count = br->count;
+    value = bd->value;
+    count = bd->count;
 
     bigsplit = (VP8_BD_VALUE)split << (VP8_BD_VALUE_SIZE - 8);
 
@@ -100,7 +100,7 @@ static int vp8dx_decode_bool(BOOL_DECODER *br, int probability)
 
     if (value >= bigsplit)
     {
-        range = br->range - split;
+        range = bd->range - split;
         value = value - bigsplit;
         bit = 1;
     }
@@ -112,44 +112,44 @@ static int vp8dx_decode_bool(BOOL_DECODER *br, int probability)
         count -= shift;
     }
 
-    br->value = value;
-    br->count = count;
-    br->range = range;
+    bd->value = value;
+    bd->count = count;
+    bd->range = range;
 
     return bit;
 }
 
-static int vp8_decode_value(BOOL_DECODER *br, int bits)
+static int vp8_decode_value(BOOL_DECODER *bd, int bits)
 {
     int z = 0;
     int bit;
 
     for (bit = bits - 1; bit >= 0; bit--)
     {
-        z |= (vp8dx_decode_bool(br, 0x80) << bit);
+        z |= (vp8dx_decode_bool(bd, 0x80) << bit);
     }
 
     return z;
 }
 
-static int vp8dx_bool_error(BOOL_DECODER *br)
+/**
+ * Check if we have reached the end of the buffer.
+ *
+ * Variable 'count' stores the number of bits in the 'value' buffer, minus
+ * 8. The top byte is part of the algorithm, and the remainder is buffered
+ * to be shifted into it. So if count == 8, the top 16 bits of 'value' are
+ * occupied, 8 for the algorithm and 8 in the buffer.
+ *
+ * When reading a byte from the user's buffer, count is filled with 8 and
+ * one byte is filled into the value buffer. When we reach the end of the
+ * data, count is additionally filled with VP8_LOTS_OF_BITS. So when
+ * count == VP8_LOTS_OF_BITS - 1, the user's data has been exhausted.
+ */
+static int vp8dx_bool_error(BOOL_DECODER *bd)
 {
-    /* Check if we have reached the end of the buffer.
-     *
-     * Variable 'count' stores the number of bits in the 'value' buffer, minus
-     * 8. The top byte is part of the algorithm, and the remainder is buffered
-     * to be shifted into it. So if count == 8, the top 16 bits of 'value' are
-     * occupied, 8 for the algorithm and 8 in the buffer.
-     *
-     * When reading a byte from the user's buffer, count is filled with 8 and
-     * one byte is filled into the value buffer. When we reach the end of the
-     * data, count is additionally filled with VP8_LOTS_OF_BITS. So when
-     * count == VP8_LOTS_OF_BITS - 1, the user's data has been exhausted.
-     */
-    if ((br->count > VP8_BD_VALUE_SIZE) && (br->count < VP8_LOTS_OF_BITS))
+    if ((bd->count > VP8_BD_VALUE_SIZE) && (bd->count < VP8_LOTS_OF_BITS))
     {
-       /* We have tried to decode bits after the end of stream was encountered.
-        */
+        /* We have tried to decode bits after the end of stream was encountered. */
         return 1;
     }
 

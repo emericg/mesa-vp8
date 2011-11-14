@@ -261,6 +261,6 @@ void vp8_decoder_remove(VP8D_PTR ptr)
         return;
 
     vp8_remove_common(&pbi->common);
-    vpx_free(pbi->mbc);
+    vpx_free(pbi->mbd);
     vpx_free(pbi);
 }

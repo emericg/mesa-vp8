@@ -250,7 +250,7 @@ typedef struct MacroBlockD
     vp8_subpix_fn_t subpixel_predict8x8;
     vp8_subpix_fn_t subpixel_predict16x16;
 
-    void *current_bc;
+    void *current_bd;
 
     int corrupted;
 

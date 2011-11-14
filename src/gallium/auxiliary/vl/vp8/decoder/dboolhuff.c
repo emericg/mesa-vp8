@@ -11,39 +11,39 @@
 
 #include "dboolhuff.h"
 
-int vp8dx_start_decode(BOOL_DECODER *br,
+int vp8dx_start_decode(BOOL_DECODER *bd,
                        const unsigned char *data,
                        unsigned int data_size)
 {
-    br->user_buffer_end = data + data_size;
-    br->user_buffer     = data;
-    br->value = 0;
-    br->count = -8;
-    br->range = 255;
+    bd->user_buffer_end = data + data_size;
+    bd->user_buffer     = data;
+    bd->value = 0;
+    bd->count = -8;
+    bd->range = 255;
 
     if (data_size && !data)
         return 1;
 
     /* Populate the buffer */
-    vp8dx_bool_decoder_fill(br);
+    vp8dx_bool_decoder_fill(bd);
 
     return 0;
 }
 
-void vp8dx_bool_decoder_fill(BOOL_DECODER *br)
+void vp8dx_bool_decoder_fill(BOOL_DECODER *bd)
 {
     const unsigned char *bufptr;
     const unsigned char *bufend;
     VP8_BD_VALUE         value;
     int                  count;
-    bufend = br->user_buffer_end;
-    bufptr = br->user_buffer;
-    value = br->value;
-    count = br->count;
+    bufend = bd->user_buffer_end;
+    bufptr = bd->user_buffer;
+    value = bd->value;
+    count = bd->count;
 
     VP8DX_BOOL_DECODER_FILL(count, value, bufptr, bufend);
 
-    br->user_buffer = bufptr;
-    br->value = value;
-    br->count = count;
+    bd->user_buffer = bufptr;
+    bd->value = value;
+    bd->count = count;
 }
