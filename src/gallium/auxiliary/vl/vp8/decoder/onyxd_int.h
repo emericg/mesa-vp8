@@ -55,21 +55,4 @@ typedef struct
 
 int vp8_frame_decode(VP8D_COMP *cpi, struct pipe_vp8_picture_desc *frame_header);
 
-#if CONFIG_DEBUG
-#define CHECK_MEM_ERROR(lval,expr) do { \
-        lval = (expr); \
-        if (!lval) \
-            vpx_internal_error(&pbi->common.error, VPX_CODEC_MEM_ERROR, \
-                               "Failed to allocate "#lval" at %s:%d", \
-                               __FILE__,__LINE__); \
-    } while(0)
-#else
-#define CHECK_MEM_ERROR(lval,expr) do { \
-        lval = (expr); \
-        if (!lval) \
-            vpx_internal_error(&pbi->common.error, VPX_CODEC_MEM_ERROR, \
-                               "Failed to allocate "#lval); \
-    } while(0)
-#endif /* CONFIG_DEBUG */
-
 #endif /* VP8D_INT_H */

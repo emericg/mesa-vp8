@@ -22,18 +22,35 @@
 extern "C" {
 #endif
 
-#define ADDRESS_STORAGE_SIZE sizeof(size_t)
-#define DEFAULT_ALIGNMENT    32 // must be >= 1 !
-
 /* returns an addr aligned to the byte boundary specified by align */
 #define align_addr(addr,align) (void*)(((size_t)(addr) + ((align) - 1)) & (size_t)-(align))
 
+#define ADDRESS_STORAGE_SIZE sizeof(size_t)
+#define DEFAULT_ALIGNMENT    32 // must be >= 1 !
+
 #if defined(__GNUC__) && __GNUC__
-#define DECLARE_ALIGNED(n,typ,val)  typ val __attribute__ ((aligned (n)))
+#define DECLARE_ALIGNED(n,typ,val) typ val __attribute__ ((aligned (n)))
 #else
 #warning No alignment directives known for this compiler.
-#define DECLARE_ALIGNED(n,typ,val)  typ val
+#define DECLARE_ALIGNED(n,typ,val) typ val
 #endif
+
+#if CONFIG_DEBUG
+#define CHECK_MEM_ERROR(lval,expr) do { \
+        lval = (expr); \
+        if (!lval) \
+            vpx_internal_error(&pbi->common.error, VPX_CODEC_MEM_ERROR, \
+                               "Failed to allocate "#lval" at %s:%d", \
+                               __FILE__,__LINE__); \
+    } while(0)
+#else
+#define CHECK_MEM_ERROR(lval,expr) do { \
+        lval = (expr); \
+        if (!lval) \
+            vpx_internal_error(&pbi->common.error, VPX_CODEC_MEM_ERROR, \
+                               "Failed to allocate "#lval); \
+    } while(0)
+#endif /* CONFIG_DEBUG */
 
 void *vpx_memalign(size_t align, size_t size);
 void *vpx_malloc(size_t size);
