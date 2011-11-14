@@ -24,7 +24,6 @@
 #include "../common/setupintrarecon.h"
 
 #include "decodemv.h"
-#include "../common/extend.h"
 #include "../vp8_mem.h"
 #include "../common/idct.h"
 #include "dboolhuff.h"
@@ -159,6 +158,37 @@ static int get_delta_q(vp8_reader *bc, int prev, int *q_update)
         *q_update = 1;
 
     return ret_val;
+}
+
+/* note the extension is only for the last row, for intra prediction purpose */
+static void vp8_extend_mb_row(YV12_BUFFER_CONFIG *ybf,
+                              unsigned char *YPtr,
+                              unsigned char *UPtr,
+                              unsigned char *VPtr)
+{
+    int i;
+
+    YPtr += ybf->y_stride * 14;
+    UPtr += ybf->uv_stride * 6;
+    VPtr += ybf->uv_stride * 6;
+
+    for (i = 0; i < 4; i++)
+    {
+        YPtr[i] = YPtr[-1];
+        UPtr[i] = UPtr[-1];
+        VPtr[i] = VPtr[-1];
+    }
+
+    YPtr += ybf->y_stride;
+    UPtr += ybf->uv_stride;
+    VPtr += ybf->uv_stride;
+
+    for (i = 0; i < 4; i++)
+    {
+        YPtr[i] = YPtr[-1];
+        UPtr[i] = UPtr[-1];
+        VPtr[i] = VPtr[-1];
+    }
 }
 
 static void decode_macroblock(VP8D_COMP *pbi, MACROBLOCKD *xd, unsigned int mb_idx)

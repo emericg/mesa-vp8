@@ -160,7 +160,6 @@ C_SOURCES := \
 	vl/vp8/common/entropy.c \
 	vl/vp8/common/entropymode.c \
 	vl/vp8/common/entropymv.c \
-	vl/vp8/common/extend.c \
 	vl/vp8/common/filter.c \
 	vl/vp8/common/findnearmv.c \
 	vl/vp8/common/idctllm.c \
