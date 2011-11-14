@@ -92,7 +92,6 @@ static void branch_counts(int n, /* n = size of alphabet */
 #endif
     }
     while (++t < n);
-
 }
 
 void vp8_tree_probs_from_distribution(int n, /* n = size of alphabet */

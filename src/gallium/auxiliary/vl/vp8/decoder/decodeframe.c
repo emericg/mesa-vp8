@@ -141,15 +141,15 @@ void clamp_mvs(MACROBLOCKD *xd)
     }
 }
 
-static int get_delta_q(vp8_reader *bc, int prev, int *q_update)
+static int get_delta_q(BOOL_DECODER *bd, int prev, int *q_update)
 {
     int ret_val = 0;
 
-    if (vp8_read_bit(bc))
+    if (vp8_read_bit(bd))
     {
-        ret_val = vp8_read_literal(bc, 4);
+        ret_val = vp8_read_literal(bd, 4);
 
-        if (vp8_read_bit(bc))
+        if (vp8_read_bit(bd))
             ret_val = -ret_val;
     }
 
@@ -372,16 +372,10 @@ decode_macroblock_row(VP8D_COMP *pbi, VP8_COMMON *pc, int mb_row, MACROBLOCKD *x
 
         vp8_build_uvmvs(xd, pc->full_pixel);
 
-        /*
-        if(pc->current_video_frame==0 &&mb_col==1 && mb_row==0)
-        pbi->debugoutput =1;
-        else
-        pbi->debugoutput =0;
-        */
         decode_macroblock(pbi, xd, mb_row * pc->mb_cols + mb_col);
 
         /* Check if the boolean decoder has suffered an error */
-        xd->corrupted |= vp8dx_bool_error(xd->current_bc);
+        xd->corrupted |= vp8dx_bool_error(xd->current_bd);
 
         recon_yoffset += 16;
         recon_uvoffset += 8;
@@ -416,22 +410,22 @@ static void token_decoder_setup(VP8D_COMP *pbi,
     const unsigned char *user_data_end = pbi->data + pbi->data_size;
 
     /* Set up pointers to the first partition */
-    vp8_reader          *bool_decoder = &pbi->bc2;
+    BOOL_DECODER        *bool_decoder = &pbi->bd2;
     const unsigned char *partition = cx_data;
 
     /* Parse number of token partitions to use */
-    const TOKEN_PARTITION multi_token_partition = (TOKEN_PARTITION)vp8_read_literal(&pbi->bc, 2);
+    const TOKEN_PARTITION multi_token_partition = (TOKEN_PARTITION)vp8_read_literal(&pbi->bd, 2);
 
     /* Only update the multi_token_partition field if we are sure the value is correct. */
-    if (!vp8dx_bool_error(&pbi->bc))
+    if (!vp8dx_bool_error(&pbi->bd))
         pc->multi_token_partition = multi_token_partition;
 
     num_part = 1 << pc->multi_token_partition;
 
     if (num_part > 1)
     {
-        CHECK_MEM_ERROR(pbi->mbc, vpx_malloc(num_part * sizeof(vp8_reader)));
-        bool_decoder = pbi->mbc;
+        CHECK_MEM_ERROR(pbi->mbd, vpx_malloc(num_part * sizeof(BOOL_DECODER)));
+        bool_decoder = pbi->mbd;
         partition += 3 * (num_part - 1);
     }
 
@@ -477,8 +471,8 @@ static void token_decoder_stop(VP8D_COMP *pbi)
 
     if (pc->multi_token_partition != ONE_PARTITION)
     {
-        vpx_free(pbi->mbc);
-        pbi->mbc = NULL;
+        vpx_free(pbi->mbd);
+        pbi->mbd = NULL;
     }
 }
 
@@ -546,7 +540,7 @@ static void vp8_frame_init(VP8D_COMP *pbi)
 
 int vp8_frame_decode(VP8D_COMP *pbi, struct pipe_vp8_picture_desc *frame_header)
 {
-    vp8_reader *const bc = &pbi->bc;
+    BOOL_DECODER *const bd = &pbi->bd;
     VP8_COMMON *const pc = &pbi->common;
     MACROBLOCKD *const xd = &pbi->mb;
     const unsigned char *data = pbi->data;
@@ -586,7 +580,7 @@ int vp8_frame_decode(VP8D_COMP *pbi, struct pipe_vp8_picture_desc *frame_header)
 
     vp8_frame_init(pbi);
 
-    if (vp8dx_start_decode(bc, data, data_end - data))
+    if (vp8dx_start_decode(bd, data, data_end - data))
     {
         vpx_internal_error(&pc->error, VPX_CODEC_MEM_ERROR,
                            "Failed to allocate bool decoder 0");
@@ -594,22 +588,22 @@ int vp8_frame_decode(VP8D_COMP *pbi, struct pipe_vp8_picture_desc *frame_header)
 
     if (pc->frame_type == KEY_FRAME)
     {
-        pc->clr_type   = (YUV_TYPE)vp8_read_bit(bc);
-        pc->clamp_type = (CLAMP_TYPE)vp8_read_bit(bc);
+        pc->clr_type   = (YUV_TYPE)vp8_read_bit(bd);
+        pc->clamp_type = (CLAMP_TYPE)vp8_read_bit(bd);
     }
 
     /* Is segmentation enabled */
-    xd->segmentation_enabled = (unsigned char)vp8_read_bit(bc);
+    xd->segmentation_enabled = (unsigned char)vp8_read_bit(bd);
 
     if (xd->segmentation_enabled)
     {
         /* Signal whether or not the segmentation map is being explicitly updated this frame. */
-        xd->update_mb_segmentation_map = (unsigned char)vp8_read_bit(bc);
-        xd->update_mb_segmentation_data = (unsigned char)vp8_read_bit(bc);
+        xd->update_mb_segmentation_map = (unsigned char)vp8_read_bit(bd);
+        xd->update_mb_segmentation_data = (unsigned char)vp8_read_bit(bd);
 
         if (xd->update_mb_segmentation_data)
         {
-            xd->mb_segement_abs_delta = (unsigned char)vp8_read_bit(bc);
+            xd->mb_segement_abs_delta = (unsigned char)vp8_read_bit(bd);
 
             memset(xd->segment_feature_data, 0, sizeof(xd->segment_feature_data));
 
@@ -619,11 +613,11 @@ int vp8_frame_decode(VP8D_COMP *pbi, struct pipe_vp8_picture_desc *frame_header)
                 for (j = 0; j < MAX_MB_SEGMENTS; j++)
                 {
                     /* Frame level data */
-                    if (vp8_read_bit(bc))
+                    if (vp8_read_bit(bd))
                     {
-                        xd->segment_feature_data[i][j] = (signed char)vp8_read_literal(bc, vp8_mb_feature_data_bits[i]);
+                        xd->segment_feature_data[i][j] = (signed char)vp8_read_literal(bd, vp8_mb_feature_data_bits[i]);
 
-                        if (vp8_read_bit(bc))
+                        if (vp8_read_bit(bd))
                             xd->segment_feature_data[i][j] = -xd->segment_feature_data[i][j];
                     }
                     else
@@ -641,37 +635,37 @@ int vp8_frame_decode(VP8D_COMP *pbi, struct pipe_vp8_picture_desc *frame_header)
             for (i = 0; i < MB_FEATURE_TREE_PROBS; i++)
             {
                 /* If not explicitly set value is defaulted to 255 by memset above. */
-                if (vp8_read_bit(bc))
-                    xd->mb_segment_tree_probs[i] = (vp8_prob)vp8_read_literal(bc, 8);
+                if (vp8_read_bit(bd))
+                    xd->mb_segment_tree_probs[i] = (vp8_prob)vp8_read_literal(bd, 8);
             }
         }
     }
 
     /* Read the loop filter level and type */
-    pc->filter_type = (LOOPFILTER_TYPE)vp8_read_bit(bc);
-    pc->filter_level = vp8_read_literal(bc, 6);
-    pc->sharpness_level = vp8_read_literal(bc, 3);
+    pc->filter_type = (LOOPFILTER_TYPE)vp8_read_bit(bd);
+    pc->filter_level = vp8_read_literal(bd, 6);
+    pc->sharpness_level = vp8_read_literal(bd, 3);
 
     /* Read in loop filter deltas applied at the MB level based on mode or ref frame. */
     xd->mode_ref_lf_delta_update = 0;
-    xd->mode_ref_lf_delta_enabled = (unsigned char)vp8_read_bit(bc);
+    xd->mode_ref_lf_delta_enabled = (unsigned char)vp8_read_bit(bd);
 
     if (xd->mode_ref_lf_delta_enabled)
     {
         /* Do the deltas need to be updated */
-        xd->mode_ref_lf_delta_update = (unsigned char)vp8_read_bit(bc);
+        xd->mode_ref_lf_delta_update = (unsigned char)vp8_read_bit(bd);
 
         if (xd->mode_ref_lf_delta_update)
         {
             /* Send update */
             for (i = 0; i < MAX_REF_LF_DELTAS; i++)
             {
-                if (vp8_read_bit(bc))
+                if (vp8_read_bit(bd))
                 {
-                    xd->ref_lf_deltas[i] = (signed char)vp8_read_literal(bc, 6);
+                    xd->ref_lf_deltas[i] = (signed char)vp8_read_literal(bd, 6);
 
                     /* Apply sign */
-                    if (vp8_read_bit(bc))
+                    if (vp8_read_bit(bd))
                         xd->ref_lf_deltas[i] = xd->ref_lf_deltas[i] * -1;
                 }
             }
@@ -679,12 +673,12 @@ int vp8_frame_decode(VP8D_COMP *pbi, struct pipe_vp8_picture_desc *frame_header)
             /* Send update */
             for (i = 0; i < MAX_MODE_LF_DELTAS; i++)
             {
-                if (vp8_read_bit(bc))
+                if (vp8_read_bit(bd))
                 {
-                    xd->mode_lf_deltas[i] = (signed char)vp8_read_literal(bc, 6);
+                    xd->mode_lf_deltas[i] = (signed char)vp8_read_literal(bd, 6);
 
                     /* Apply sign */
-                    if (vp8_read_bit(bc))
+                    if (vp8_read_bit(bd))
                         xd->mode_lf_deltas[i] = xd->mode_lf_deltas[i] * -1;
                 }
             }
@@ -692,20 +686,20 @@ int vp8_frame_decode(VP8D_COMP *pbi, struct pipe_vp8_picture_desc *frame_header)
     }
 
     token_decoder_setup(pbi, data + first_partition_length_in_bytes);
-    xd->current_bc = &pbi->bc2;
+    xd->current_bd = &pbi->bd2;
 
     /* Read the default quantizers. */
     {
         int Q, q_update;
 
-        Q = vp8_read_literal(bc, 7); /* AC 1st order Q = default */
+        Q = vp8_read_literal(bd, 7); /* AC 1st order Q = default */
         pc->base_qindex = Q;
         q_update = 0;
-        pc->y1dc_delta_q = get_delta_q(bc, pc->y1dc_delta_q, &q_update);
-        pc->y2dc_delta_q = get_delta_q(bc, pc->y2dc_delta_q, &q_update);
-        pc->y2ac_delta_q = get_delta_q(bc, pc->y2ac_delta_q, &q_update);
-        pc->uvdc_delta_q = get_delta_q(bc, pc->uvdc_delta_q, &q_update);
-        pc->uvac_delta_q = get_delta_q(bc, pc->uvac_delta_q, &q_update);
+        pc->y1dc_delta_q = get_delta_q(bd, pc->y1dc_delta_q, &q_update);
+        pc->y2dc_delta_q = get_delta_q(bd, pc->y2dc_delta_q, &q_update);
+        pc->y2ac_delta_q = get_delta_q(bd, pc->y2ac_delta_q, &q_update);
+        pc->uvdc_delta_q = get_delta_q(bd, pc->uvdc_delta_q, &q_update);
+        pc->uvac_delta_q = get_delta_q(bd, pc->uvac_delta_q, &q_update);
 
         if (q_update)
             vp8_initialize_dequantizer(&pbi->common);
@@ -720,32 +714,32 @@ int vp8_frame_decode(VP8D_COMP *pbi, struct pipe_vp8_picture_desc *frame_header)
     if (pc->frame_type != KEY_FRAME)
     {
         /* Should the GF or ARF be updated from the current frame. */
-        pc->refresh_golden_frame = vp8_read_bit(bc);
+        pc->refresh_golden_frame = vp8_read_bit(bd);
 
-        pc->refresh_alt_ref_frame = vp8_read_bit(bc);
+        pc->refresh_alt_ref_frame = vp8_read_bit(bd);
 
         /* Buffer to buffer copy flags. */
         pc->copy_buffer_to_gf = 0;
 
         if (!pc->refresh_golden_frame)
-            pc->copy_buffer_to_gf = vp8_read_literal(bc, 2);
+            pc->copy_buffer_to_gf = vp8_read_literal(bd, 2);
 
         pc->copy_buffer_to_arf = 0;
 
         if (!pc->refresh_alt_ref_frame)
-            pc->copy_buffer_to_arf = vp8_read_literal(bc, 2);
+            pc->copy_buffer_to_arf = vp8_read_literal(bd, 2);
 
-        pc->ref_frame_sign_bias[GOLDEN_FRAME] = vp8_read_bit(bc);
-        pc->ref_frame_sign_bias[ALTREF_FRAME] = vp8_read_bit(bc);
+        pc->ref_frame_sign_bias[GOLDEN_FRAME] = vp8_read_bit(bd);
+        pc->ref_frame_sign_bias[ALTREF_FRAME] = vp8_read_bit(bd);
     }
 
-    pc->refresh_entropy_probs = vp8_read_bit(bc);
+    pc->refresh_entropy_probs = vp8_read_bit(bd);
     if (pc->refresh_entropy_probs == 0)
     {
         memcpy(&pc->lfc, &pc->fc, sizeof(pc->fc));
     }
 
-    pc->refresh_last_frame = (pc->frame_type == KEY_FRAME || vp8_read_bit(bc));
+    pc->refresh_last_frame = (pc->frame_type == KEY_FRAME || vp8_read_bit(bd));
 
     /* Read coef probability tree */
     for (i = 0; i < BLOCK_TYPES; i++)
@@ -755,9 +749,9 @@ int vp8_frame_decode(VP8D_COMP *pbi, struct pipe_vp8_picture_desc *frame_header)
                 {
                     vp8_prob *const p = pc->fc.coef_probs[i][j][k] + l;
 
-                    if (vp8_read(bc, vp8_coef_update_probs[i][j][k][l]))
+                    if (vp8_read(bd, vp8_coef_update_probs[i][j][k][l]))
                     {
-                        *p = (vp8_prob)vp8_read_literal(bc, 8);
+                        *p = (vp8_prob)vp8_read_literal(bd, 8);
                     }
                 }
 
@@ -775,7 +769,7 @@ int vp8_frame_decode(VP8D_COMP *pbi, struct pipe_vp8_picture_desc *frame_header)
     memset(xd->qcoeff, 0, sizeof(xd->qcoeff));
 
     /* Read the mb_no_coeff_skip flag */
-    pc->mb_no_coeff_skip = vp8_read_bit(bc);
+    pc->mb_no_coeff_skip = vp8_read_bit(bd);
 
     vp8_decode_mode_mvs(pbi);
 
@@ -790,7 +784,7 @@ int vp8_frame_decode(VP8D_COMP *pbi, struct pipe_vp8_picture_desc *frame_header)
         {
             if (num_part > 1)
             {
-                xd->current_bc = &pbi->mbc[ibc];
+                xd->current_bd = &pbi->mbd[ibc];
                 ibc++;
 
                 if (ibc == num_part)
@@ -805,7 +799,7 @@ int vp8_frame_decode(VP8D_COMP *pbi, struct pipe_vp8_picture_desc *frame_header)
 
     /* Collect information about decoder corruption. */
     /* 1. Check first boolean decoder for errors. */
-    pc->yv12_fb[pc->new_fb_idx].corrupted = vp8dx_bool_error(bc);
+    pc->yv12_fb[pc->new_fb_idx].corrupted = vp8dx_bool_error(bd);
 
     /* 2. Check the macroblock information */
     pc->yv12_fb[pc->new_fb_idx].corrupted |= xd->corrupted;
