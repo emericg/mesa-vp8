@@ -14,17 +14,15 @@
 #include "blockd.h"
 #include "reconinter.h"
 
-/* use this define on systems where unaligned int reads and writes are
- * not allowed, i.e. ARM architectures
+/* Use this define on systems where unaligned int reads and writes are
+ * not allowed, i.e. ARM architectures.
  */
 /*#define MUST_BE_ALIGNED*/
 
 static const int bbb[4] = {0, 2, 8, 10};
 
-void vp8_copy_mem16x16_c(unsigned char *src,
-                         int src_stride,
-                         unsigned char *dst,
-                         int dst_stride)
+void vp8_copy_mem16x16_c(unsigned char *src, int src_stride,
+                         unsigned char *dst, int dst_stride)
 {
     int r;
 
@@ -47,7 +45,6 @@ void vp8_copy_mem16x16_c(unsigned char *src,
         dst[13] = src[13];
         dst[14] = src[14];
         dst[15] = src[15];
-
 #else
         ((int *)dst)[0] = ((int *)src)[0] ;
         ((int *)dst)[1] = ((int *)src)[1] ;
@@ -59,10 +56,8 @@ void vp8_copy_mem16x16_c(unsigned char *src,
     }
 }
 
-void vp8_copy_mem8x8_c(unsigned char *src,
-                       int src_stride,
-                       unsigned char *dst,
-                       int dst_stride)
+void vp8_copy_mem8x8_c(unsigned char *src, int src_stride,
+                       unsigned char *dst, int dst_stride)
 {
     int r;
 
@@ -86,10 +81,8 @@ void vp8_copy_mem8x8_c(unsigned char *src,
     }
 }
 
-void vp8_copy_mem8x4_c(unsigned char *src,
-                       int src_stride,
-                       unsigned char *dst,
-                       int dst_stride)
+void vp8_copy_mem8x4_c(unsigned char *src, int src_stride,
+                       unsigned char *dst, int dst_stride)
 {
     int r;
 
@@ -186,7 +179,6 @@ static void build_inter_predictors2b(MACROBLOCKD *x, BLOCKD *d, int pitch)
     }
 }
 
-
 void vp8_build_inter16x16_predictors_mb(MACROBLOCKD *x,
                                         unsigned char *dst_y,
                                         unsigned char *dst_u,
@@ -232,7 +224,6 @@ void vp8_build_inter16x16_predictors_mb(MACROBLOCKD *x,
         RECON_INVOKE(&x->rtcd->recon, copy8x8)(uptr, pre_stride, dst_u, dst_uvstride);
         RECON_INVOKE(&x->rtcd->recon, copy8x8)(vptr, pre_stride, dst_v, dst_uvstride);
     }
-
 }
 
 void vp8_build_inter4x4_predictors_mb(MACROBLOCKD *x)
@@ -261,9 +252,7 @@ void vp8_build_inter4x4_predictors_mb(MACROBLOCKD *x)
                 vp8_build_inter_predictors_b(d0, 16, x->subpixel_predict);
                 vp8_build_inter_predictors_b(d1, 16, x->subpixel_predict);
             }
-
         }
-
     }
 
     for (i = 16; i < 24; i += 2)
@@ -281,7 +270,6 @@ void vp8_build_inter4x4_predictors_mb(MACROBLOCKD *x)
     }
 }
 
-
 void vp8_build_inter_predictors_mb(MACROBLOCKD *x)
 {
     if (x->mode_info_context->mbmi.mode != SPLITMV)
@@ -294,7 +282,6 @@ void vp8_build_inter_predictors_mb(MACROBLOCKD *x)
         vp8_build_inter4x4_predictors_mb(x);
     }
 }
-
 
 void vp8_build_uvmvs(MACROBLOCKD *x, int fullpixel)
 {

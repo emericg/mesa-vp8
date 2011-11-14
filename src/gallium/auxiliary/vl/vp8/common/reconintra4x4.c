@@ -78,7 +78,7 @@ void vp8_intra4x4_predict(BLOCKD *x, int b_mode, unsigned char *predictor)
     case B_VE_PRED:
     {
         unsigned int ap[4];
-        ap[0] = (top_left  + 2 * Above[0] + Above[1] + 2) >> 2;
+        ap[0] = (top_left + 2 * Above[0] + Above[1] + 2) >> 2;
         ap[1] = (Above[0] + 2 * Above[1] + Above[2] + 2) >> 2;
         ap[2] = (Above[1] + 2 * Above[2] + Above[3] + 2) >> 2;
         ap[3] = (Above[2] + 2 * Above[3] + Above[4] + 2) >> 2;
@@ -93,7 +93,6 @@ void vp8_intra4x4_predict(BLOCKD *x, int b_mode, unsigned char *predictor)
 
             predictor += 16;
         }
-
     }
     break;
 
@@ -283,7 +282,6 @@ void vp8_intra4x4_predict(BLOCKD *x, int b_mode, unsigned char *predictor)
                             predictor[3 * 16 + 3] = pp[3];
     }
     break;
-
     }
 }
 

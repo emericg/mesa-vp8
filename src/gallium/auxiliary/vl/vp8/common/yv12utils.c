@@ -12,8 +12,7 @@
 #include "../vp8_mem.h"
 #include "yv12utils.h"
 
-int
-vp8_yv12_de_alloc_frame_buffer(YV12_BUFFER_CONFIG *ybf)
+int vp8_yv12_de_alloc_frame_buffer(YV12_BUFFER_CONFIG *ybf)
 {
     if (ybf)
     {
@@ -32,8 +31,8 @@ vp8_yv12_de_alloc_frame_buffer(YV12_BUFFER_CONFIG *ybf)
     return 0;
 }
 
-int
-vp8_yv12_alloc_frame_buffer(YV12_BUFFER_CONFIG *ybf, int width, int height, int border)
+int vp8_yv12_alloc_frame_buffer(YV12_BUFFER_CONFIG *ybf,
+                                int width, int height, int border)
 {
     if (ybf)
     {
@@ -86,8 +85,7 @@ vp8_yv12_alloc_frame_buffer(YV12_BUFFER_CONFIG *ybf, int width, int height, int 
     return 0;
 }
 
-void
-vp8_yv12_extend_frame_borders(YV12_BUFFER_CONFIG *ybf)
+void vp8_yv12_extend_frame_borders(YV12_BUFFER_CONFIG *ybf)
 {
     int i;
     unsigned char *src_ptr1, *src_ptr2;

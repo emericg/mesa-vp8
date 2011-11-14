@@ -12,15 +12,17 @@
 #include "findnearmv.h"
 
 const unsigned char vp8_mbsplit_offset[4][16] = {
-    { 0,  8,  0,  0,  0,  0,  0,  0,  0,  0,   0,  0,  0,  0,  0,  0},
-    { 0,  2,  0,  0,  0,  0,  0,  0,  0,  0,   0,  0,  0,  0,  0,  0},
-    { 0,  2,  8, 10,  0,  0,  0,  0,  0,  0,   0,  0,  0,  0,  0,  0},
-    { 0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15}
+    { 0,  8,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
+    { 0,  2,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
+    { 0,  2,  8, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
+    { 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15}
 };
 
-/* Predict motion vectors using those from already-decoded nearby blocks.
-   Note that we only consider one 4x4 subblock from each candidate 16x16
-   macroblock.   */
+/**
+ * Predict motion vectors using those from already-decoded nearby blocks.
+ * Note that we only consider one 4x4 subblock from each candidate 16x16
+ * macroblock.
+ */
 void vp8_find_near_mvs(MACROBLOCKD *xd,
                        const MODE_INFO *here,
                        int_mv *nearest,
@@ -138,9 +140,7 @@ void vp8_find_near_mvs(MACROBLOCKD *xd,
     vp8_clamp_mv2(best_mv, xd);
 }
 
-vp8_prob *vp8_mv_ref_probs(
-    vp8_prob p[VP8_MVREFS-1], const int near_mv_ref_ct[4]
-)
+vp8_prob *vp8_mv_ref_probs(vp8_prob p[VP8_MVREFS-1], const int near_mv_ref_ct[4])
 {
     p[0] = vp8_mode_contexts [near_mv_ref_ct[0]] [0];
     p[1] = vp8_mode_contexts [near_mv_ref_ct[1]] [1];

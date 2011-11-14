@@ -230,9 +230,9 @@ void vp8_kf_default_bmode_probs(vp8_prob p [VP8_BINTRAMODES] [VP8_BINTRAMODES] [
         j = 0;
         do
         {
-            intra_bmode_probs_from_distribution(
-                p[i][j], branch_ct, vp8_kf_default_bmode_counts[i][j]);
-
+            intra_bmode_probs_from_distribution(p[i][j],
+                                                branch_ct,
+                                                vp8_kf_default_bmode_counts[i][j]);
         }
         while (++j < VP8_BINTRAMODES);
     }

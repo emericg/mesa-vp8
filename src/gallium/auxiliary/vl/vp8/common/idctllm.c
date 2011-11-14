@@ -76,7 +76,6 @@ void vp8_short_idct4x4llm_c(short *input, short *output, int pitch)
         temp2 = (ip[3] * sinpi8sqrt2 + rounding) >> 16;
         d1 = temp1 + temp2;
 
-
         op[0] = (a1 + d1 + 4) >> 3;
         op[3] = (a1 - d1 + 4) >> 3;
 
@@ -106,7 +105,8 @@ void vp8_short_idct4x4llm_1_c(short *input, short *output, int pitch)
     }
 }
 
-void vp8_dc_only_idct_add_c(short input_dc, unsigned char *pred_ptr, unsigned char *dst_ptr, int pitch, int stride)
+void vp8_dc_only_idct_add_c(short input_dc, unsigned char *pred_ptr,
+                            unsigned char *dst_ptr, int pitch, int stride)
 {
     int a1 = ((input_dc + 4) >> 3);
     int r, c;
