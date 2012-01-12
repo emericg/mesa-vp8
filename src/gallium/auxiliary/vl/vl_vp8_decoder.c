@@ -40,33 +40,47 @@
 #define SCALE_FACTOR_SSCALED (1.0f / 256.0f)
 
 struct format_config {
-   enum pipe_format loopfilter_source_format;
+    enum pipe_format zscan_source_format;
+    enum pipe_format idct_source_format;
+    enum pipe_format mc_source_format;
+    enum pipe_format loopfilter_source_format;
+
+    float idct_scale;
+    float mc_scale;
 };
 
 static const struct format_config bitstream_format_config[] = {
-//   { PIPE_FORMAT_R16_SSCALED, PIPE_FORMAT_R16G16B16A16_SSCALED, PIPE_FORMAT_R16G16B16A16_FLOAT, 1.0f, SCALE_FACTOR_SSCALED },
-//   { PIPE_FORMAT_R16_SSCALED, PIPE_FORMAT_R16G16B16A16_SSCALED, PIPE_FORMAT_R16G16B16A16_SSCALED, 1.0f, SCALE_FACTOR_SSCALED },
-   { PIPE_FORMAT_R16_SNORM, PIPE_FORMAT_R16G16B16A16_SNORM, PIPE_FORMAT_R16G16B16A16_FLOAT, 1.0f, SCALE_FACTOR_SNORM },
-   { PIPE_FORMAT_R16_SNORM, PIPE_FORMAT_R16G16B16A16_SNORM, PIPE_FORMAT_R16G16B16A16_SNORM, 1.0f, SCALE_FACTOR_SNORM }
+   { PIPE_FORMAT_R16_SNORM, PIPE_FORMAT_R16G16B16A16_SNORM, PIPE_FORMAT_R16G16B16A16_SNORM, PIPE_FORMAT_R16G16B16A16_SNORM, 1.0f, SCALE_FACTOR_SNORM }
 };
 
 static const unsigned num_bitstream_format_configs =
    sizeof(bitstream_format_config) / sizeof(struct format_config);
 
 static const struct format_config loopfilter_format_config[] = {
-//   { PIPE_FORMAT_R16_SSCALED, PIPE_FORMAT_R16G16B16A16_SSCALED, PIPE_FORMAT_R16G16B16A16_FLOAT, 1.0f, SCALE_FACTOR_SSCALED },
-//   { PIPE_FORMAT_R16_SSCALED, PIPE_FORMAT_R16G16B16A16_SSCALED, PIPE_FORMAT_R16G16B16A16_SSCALED, 1.0f, SCALE_FACTOR_SSCALED },
-   { PIPE_FORMAT_R16_SNORM, PIPE_FORMAT_R16G16B16A16_SNORM, PIPE_FORMAT_R16G16B16A16_FLOAT, 1.0f, SCALE_FACTOR_SNORM },
-   { PIPE_FORMAT_R16_SNORM, PIPE_FORMAT_R16G16B16A16_SNORM, PIPE_FORMAT_R16G16B16A16_SNORM, 1.0f, SCALE_FACTOR_SNORM }
+   { PIPE_FORMAT_R16_SNORM, PIPE_FORMAT_R16G16B16A16_SNORM, PIPE_FORMAT_R16G16B16A16_SNORM, PIPE_FORMAT_R16G16B16A16_SNORM, 1.0f, SCALE_FACTOR_SNORM }
 };
 
 static const unsigned num_loopfilter_format_configs =
    sizeof(loopfilter_format_config) / sizeof(struct format_config);
 
 static void
+vl_vp8_destroy_buffer(void *buffer)
+{
+   struct vl_vp8_buffer *buf = buffer;
+
+   assert(buf);
+
+   // Cleanup buffers
+
+   FREE(buf);
+}
+
+static void
 vl_vp8_destroy(struct pipe_video_decoder *decoder)
 {
    struct vl_vp8_decoder *dec = (struct vl_vp8_decoder *)decoder;
+   unsigned i;
+
    assert(dec);
 
    printf("[G3DVL] vl_vp8_destroy()\n");
@@ -78,47 +92,54 @@ vl_vp8_destroy(struct pipe_video_decoder *decoder)
    dec->base.context->delete_depth_stencil_alpha_state(dec->base.context, dec->dsa);
    dec->base.context->delete_sampler_state(dec->base.context, dec->sampler_ycbcr);
 
+   for (i = 0; i < 4; ++i)
+      if (dec->dec_buffers[i])
+          vl_vp8_destroy_buffer(dec->dec_buffers[i]);
+
+   // Destroy the VP8 software decoder
    vp8_decoder_remove(dec->vp8_dec);
+
    FREE(dec);
 }
 
-static void *
-vl_vp8_create_buffer(struct pipe_video_decoder *decoder)
+static struct vl_vp8_buffer *
+vl_vp8_get_decode_buffer(struct vl_vp8_decoder *dec)
 {
-   struct vl_vp8_decoder *dec = (struct vl_vp8_decoder *)decoder;
    struct vl_vp8_buffer *buffer;
 
    assert(dec);
+
+   buffer = vl_video_buffer_get_associated_data(dec->target, &dec->base);
+   if (buffer)
+      return buffer;
+
+   buffer = dec->dec_buffers[dec->current_buffer];
+   if (buffer)
+      return buffer;
 
    buffer = CALLOC_STRUCT(vl_vp8_buffer);
    if (buffer == NULL)
       return NULL;
 
+   if (!vl_vb_init(&buffer->vertex_stream, dec->base.context,
+                   dec->base.width / MACROBLOCK_WIDTH,
+                   dec->base.height / MACROBLOCK_HEIGHT))
+      goto error_vertex_buffer;
+
    if (dec->base.entrypoint == PIPE_VIDEO_ENTRYPOINT_BITSTREAM)
-      vl_vp8_bs_init(&buffer->bs, decoder);
+      vl_vp8_bs_init(&buffer->bs, &dec->base);
+
+   if (dec->expect_chunked_decode)
+      vl_video_buffer_set_associated_data(dec->target, &dec->base,
+                                          buffer, vl_vp8_destroy_buffer);
+   else
+      dec->dec_buffers[dec->current_buffer] = buffer;
 
    return buffer;
-}
 
-static void
-vl_vp8_destroy_buffer(struct pipe_video_decoder *decoder, void *buffer)
-{
-   struct vl_vp8_decoder *dec = (struct vl_vp8_decoder *)decoder;
-   struct vl_vp8_buffer *buf = buffer;
-
-   assert(dec && buf);
-
-   FREE(buf);
-}
-
-static void
-vl_vp8_set_decode_buffer(struct pipe_video_decoder *decoder, void *buffer)
-{
-   struct vl_vp8_decoder *dec = (struct vl_vp8_decoder *)decoder;
-
-   assert(dec && buffer);
-
-   dec->current_buffer = buffer;
+error_vertex_buffer:
+   FREE(buffer);
+   return NULL;
 }
 
 static void
@@ -152,7 +173,6 @@ vl_vp8_set_decode_target(struct pipe_video_decoder *decoder,
    assert(dec);
 
    dec->target = target;
-
    surfaces = target->get_surfaces(target);
    for (i = 0; i < VL_MAX_PLANES; ++i)
       pipe_surface_reference(&dec->target_surfaces[i], surfaces[i]);
@@ -187,12 +207,17 @@ vl_vp8_begin_frame(struct pipe_video_decoder *decoder)
    struct vl_vp8_decoder *dec = (struct vl_vp8_decoder *)decoder;
    struct vl_vp8_buffer *buf;
 
-   assert(dec);
+   struct pipe_resource *tex;
+   struct pipe_box rect = { 0, 0, 0, 1, 1, 1 };
 
-   buf = dec->current_buffer;
+   unsigned i;
+
+   assert(dec && dec->target);
+
+   buf = vl_vp8_get_decode_buffer(dec);
    assert(buf);
 
-   dec->startcode = 0;
+   dec->current_buffer = 0;
    dec->img_ready = 0;
 }
 
@@ -205,91 +230,92 @@ vl_vp8_decode_macroblock(struct pipe_video_decoder *decoder,
    const struct pipe_vp8_macroblock *mb = (const struct pipe_vp8_macroblock *)macroblocks;
    struct vl_vp8_buffer *buf;
 
-   assert(dec && dec->current_buffer);
+   assert(dec && dec->target);
    assert(macroblocks && macroblocks->codec == PIPE_VIDEO_CODEC_VP8);
 
-   buf = dec->current_buffer;
+   buf = vl_vp8_get_decode_buffer(dec);
    assert(buf);
-/*
-   for (; num_macroblocks > 0; --num_macroblocks) {
-      // STUB
-   }
-*/
 }
 
 static void
 vl_vp8_decode_bitstream(struct pipe_video_decoder *decoder,
-                        unsigned num_bytes, const void *data)
+                        unsigned num_buffers,
+                        const void * const *buffers,
+                        const unsigned *sizes)
 {
-   struct vl_vp8_decoder *dec;
+   struct vl_vp8_decoder *dec = (struct vl_vp8_decoder *)decoder;
    struct vl_vp8_buffer *buf;
 
-   dec = (struct vl_vp8_decoder *)decoder;
-   assert(dec && dec->current_buffer);
+   assert(dec && dec->target);
 
-   buf = dec->current_buffer;
+   buf = vl_vp8_get_decode_buffer(dec);
    assert(buf);
 
-   assert(data && num_bytes);
+   // Try and detect start_code from the first data buffer
+   const uint8_t *datab = (const uint8_t *)buffers[dec->current_buffer];
 
-   //vl_vp8_bs_decode(&buf->bs, num_bytes, data);
-
-   if (dec->startcode)
+   if (datab[0] == 0x9D &&
+       datab[1] == 0x01 &&
+       datab[2] == 0x2A)
    {
-       if (vp8_decoder_start(dec->vp8_dec, &(dec->picture_desc), data, num_bytes, 0))
-       {
-          printf("[G3DVL] Error : not a valid VP8 VDPAU frame !\n");
-          dec->img_ready = 0;
-       }
-       else
-       {
-          dec->img_ready = 1;
-       }
+      if (sizes[dec->current_buffer] == 3)
+      {
+         // The start_code [0x9D012A] is present in a dedicated buffer
+         ++dec->current_buffer;
+         dec->current_buffer %= 4;
+      }
+      else if (num_buffers == 1)
+      {
+         // The start_code [0x9D012A] is present in the same buffer as the bistream data
+         //buffers[dec->current_buffer] += 3;
+      }
+
+      // Start bitstream decoding
+      //vl_vp8_bs_decode(&buf->bs, num_buffers, buffers, sizes);
+
+      if (vp8_decoder_start(dec->vp8_dec, &dec->picture_desc, (const uint8_t *)buffers[dec->current_buffer], sizes[dec->current_buffer], 0))
+      {
+         printf("[G3DVL] Error : decoding error, not a valid VP8 VDPAU frame !\n");
+         dec->img_ready = 0;
+      }
+      else
+      {
+         dec->img_ready = 1;
+      }
    }
    else
    {
-      const uint8_t *datab = (const uint8_t *)data;
-
-      if (datab[0] == 0x9D &&
-          datab[1] == 0x01 &&
-          datab[2] == 0x2A)
-      {
-         //printf("[G3DVL] buffer start_code [9D 01 2A] is present\n");
-         dec->startcode = 1;
-
-         //TODO handle the startcode presence on the same buffer than the data
-      }
+      printf("[G3DVL] Error : the first data buffer does not contain the mandatory start_code [0x9D012A] !\n");
    }
 }
 
 static void
 vl_vp8_end_frame(struct pipe_video_decoder *decoder)
 {
-   struct vl_vp8_decoder *dec;
+   struct vl_vp8_decoder *dec = (struct vl_vp8_decoder*)decoder;
    struct vl_vp8_buffer *buf;
 
-   struct pipe_context *pipe;
    struct pipe_sampler_view **sampler_views;
+   struct pipe_vertex_buffer vb[3];
+   struct pipe_context *pipe;
 
    int64_t timestamp = 0, timestamp_end = 0;
-
    unsigned i;
 
-   dec = (struct vl_vp8_decoder*)decoder;
-   assert(dec);
+   assert(dec && dec->target);
 
-   buf = dec->current_buffer;
+   buf = vl_vp8_get_decode_buffer(dec);
    assert(buf);
 
    pipe = buf->bs.decoder->context;
    if (!pipe) {
-      printf("[end_frame] no pipe\n");
+      printf("[end_frame] No pipe\n");
       return;
    }
 
    sampler_views = dec->target->get_sampler_view_planes(dec->target);
    if (!sampler_views) {
-      printf("[end_frame] no sampler_views\n");
+      printf("[end_frame] No sampler_views\n");
       return;
    }
 
@@ -311,7 +337,7 @@ vl_vp8_end_frame(struct pipe_video_decoder *decoder)
       transfer = pipe->get_transfer(pipe, sv->texture, 0, PIPE_TRANSFER_WRITE, &dst_box);
       if (!transfer)
       {
-         printf("[end_frame] no transfer\n");
+         printf("[end_frame] No transfer\n");
          return;
       }
 
@@ -334,7 +360,10 @@ vl_vp8_end_frame(struct pipe_video_decoder *decoder)
       }
 
       pipe->transfer_destroy(pipe, transfer);
-   }
+   }/*
+
+   ++dec->current_buffer;
+   dec->current_buffer %= 4;*/
 }
 
 static void
@@ -421,7 +450,8 @@ vl_create_vp8_decoder(struct pipe_context *context,
                       enum pipe_video_profile profile,
                       enum pipe_video_entrypoint entrypoint,
                       enum pipe_video_chroma_format chroma_format,
-                      unsigned width, unsigned height, unsigned max_references)
+                      unsigned width, unsigned height, unsigned max_references,
+                      bool expect_chunked_decode)
 {
    const unsigned block_size_pixels = VL_MICROBLOCK_WIDTH * VL_MICROBLOCK_HEIGHT;
    const struct format_config *format_config;
@@ -445,9 +475,6 @@ vl_create_vp8_decoder(struct pipe_context *context,
    dec->base.max_references = max_references;
 
    dec->base.destroy = vl_vp8_destroy;
-   dec->base.create_buffer = vl_vp8_create_buffer;
-   dec->base.destroy_buffer = vl_vp8_destroy_buffer;
-   dec->base.set_decode_buffer = vl_vp8_set_decode_buffer;
    dec->base.set_picture_parameters = vl_vp8_set_picture_parameters;
    dec->base.set_quant_matrix = vl_vp8_set_quant_matrix;
    dec->base.set_decode_target = vl_vp8_set_decode_target;
@@ -465,21 +492,27 @@ vl_create_vp8_decoder(struct pipe_context *context,
    dec->chroma_width = dec->base.width / 2;
    dec->chroma_height = dec->base.height / 2;
    dec->width_in_macroblocks = align(dec->base.width, MACROBLOCK_WIDTH) / MACROBLOCK_WIDTH;
+   dec->expect_chunked_decode = expect_chunked_decode;
 
    switch (entrypoint) {
    case PIPE_VIDEO_ENTRYPOINT_BITSTREAM:
       format_config = find_format_config(dec, bitstream_format_config, num_bitstream_format_configs);
       break;
+
    case PIPE_VIDEO_ENTRYPOINT_LOOPFILTER:
       format_config = find_format_config(dec, loopfilter_format_config, num_loopfilter_format_configs);
       break;
+
    default:
       assert(0);
+      FREE(dec);
       return NULL;
    }
 
-   if (!format_config)
+   if (!format_config) {
+      FREE(dec);
       return NULL;
+   }
 
    if (!init_pipe_state(dec))
       goto error_pipe_state;
@@ -495,7 +528,5 @@ vl_create_vp8_decoder(struct pipe_context *context,
 error_pipe_state:
 error_vp8_dec:
    FREE(dec);
-
-error_buffer:
    return NULL;
 }

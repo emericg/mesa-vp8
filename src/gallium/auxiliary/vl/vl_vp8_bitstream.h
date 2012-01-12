@@ -45,6 +45,7 @@ void
 vl_vp8_bs_set_picture_desc(struct vl_vp8_bs *bs, struct pipe_vp8_picture_desc *picture);
 
 void
-vl_vp8_bs_decode(struct vl_vp8_bs *bs, unsigned num_bytes, const uint8_t *buffer);
+vl_vp8_bs_decode(struct vl_vp8_bs *bs, unsigned num_buffers,
+                 const void * const *buffers, const unsigned *sizes);
 
 #endif /* vl_vp8_bitstream_h */

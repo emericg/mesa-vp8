@@ -78,7 +78,7 @@ vl_create_decoder(struct pipe_context *pipe,
                                          expect_chunked_decode);
       case PIPE_VIDEO_CODEC_VP8:
          return vl_create_vp8_decoder(pipe, profile, entrypoint, chroma_format, 
-                                      buffer_width, buffer_height, max_references
+                                      buffer_width, buffer_height, max_references,
                                       expect_chunked_decode);
       default:
          return NULL;

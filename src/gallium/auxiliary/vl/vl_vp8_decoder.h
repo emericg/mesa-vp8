@@ -52,12 +52,15 @@ struct vl_vp8_decoder
    unsigned blocks_per_line;
    unsigned num_blocks;
    unsigned width_in_macroblocks;
+   bool expect_chunked_decode;
 
    void *sampler_ycbcr;
 
    void *dsa;
 
-   struct vl_vp8_buffer *current_buffer;
+   unsigned current_buffer;
+   struct vl_vp8_buffer *dec_buffers[4];
+
    struct pipe_vp8_picture_desc picture_desc;
    struct pipe_sampler_view *ref_frames[VL_MAX_REF_FRAMES][VL_MAX_PLANES];
    struct pipe_video_buffer *target;
@@ -73,7 +76,20 @@ struct vl_vp8_decoder
 
 struct vl_vp8_buffer
 {
+   struct vl_vertex_buffer vertex_stream;
+
+   unsigned block_num;
+   unsigned num_ycbcr_blocks[3];
+
+   struct pipe_sampler_view *zscan_source;
+
    struct vl_vp8_bs bs;
+
+   struct pipe_transfer *tex_transfer;
+   short *texels;
+
+   struct vl_ycbcr_block *ycbcr_stream[VL_MAX_PLANES];
+   struct vl_motionvector *mv_stream[VL_MAX_REF_FRAMES];
 };
 
 /**
@@ -84,6 +100,7 @@ vl_create_vp8_decoder(struct pipe_context *pipe,
                       enum pipe_video_profile profile,
                       enum pipe_video_entrypoint entrypoint,
                       enum pipe_video_chroma_format chroma_format,
-                      unsigned width, unsigned height, unsigned max_references);
+                      unsigned width, unsigned height, unsigned max_references,
+                      bool expect_chunked_decode);
 
 #endif /* vl_vp8_decoder_h */
