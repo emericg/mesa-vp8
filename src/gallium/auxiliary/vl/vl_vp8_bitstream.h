@@ -29,7 +29,6 @@
 #define vl_vp8_bitstream_h
 
 #include "vl_defines.h"
-#include "vl_vlc.h"
 
 struct vl_vp8_bs
 {

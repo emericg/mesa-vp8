@@ -29,7 +29,6 @@
 
 #include <pipe/p_video_state.h>
 
-#include "vl_vlc.h"
 #include "vl_vp8_bitstream.h"
 
 static INLINE bool

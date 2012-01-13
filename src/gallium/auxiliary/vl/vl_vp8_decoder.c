@@ -70,7 +70,7 @@ vl_vp8_destroy_buffer(void *buffer)
 
    assert(buf);
 
-   // Cleanup buffers
+   vl_vb_cleanup(&buf->vertex_stream);
 
    FREE(buf);
 }
@@ -207,15 +207,16 @@ vl_vp8_begin_frame(struct pipe_video_decoder *decoder)
    struct vl_vp8_decoder *dec = (struct vl_vp8_decoder *)decoder;
    struct vl_vp8_buffer *buf;
 
-   struct pipe_resource *tex;
-   struct pipe_box rect = { 0, 0, 0, 1, 1, 1 };
-
-   unsigned i;
-
    assert(dec && dec->target);
 
    buf = vl_vp8_get_decode_buffer(dec);
    assert(buf);
+
+   vl_vb_map(&buf->vertex_stream, dec->base.context);
+
+   if (dec->base.entrypoint == PIPE_VIDEO_ENTRYPOINT_BITSTREAM) {
+      vl_vp8_bs_set_picture_desc(&buf->bs, &dec->picture_desc);
+   }
 
    dec->current_buffer = 0;
    dec->img_ready = 0;
@@ -321,8 +322,8 @@ vl_vp8_end_frame(struct pipe_video_decoder *decoder)
 
    // Get the decoded frame
    if (vp8_decoder_getframe(dec->vp8_dec, &dec->img_yv12, &timestamp, &timestamp_end)) {
-       printf("[end_frame] No image to output !\n");
-       return;
+      printf("[end_frame] No image to output !\n");
+      return;
    }
 
    // Load YCbCr planes into a GPU texture
@@ -344,9 +345,9 @@ vl_vp8_end_frame(struct pipe_video_decoder *decoder)
       ubyte *dst = dec->img_yv12.y_buffer;
 
       if (i == 1)
-          dst = dec->img_yv12.v_buffer;
+         dst = dec->img_yv12.v_buffer;
       else if (i == 2)
-          dst = dec->img_yv12.u_buffer;
+         dst = dec->img_yv12.u_buffer;
 
       map = pipe->transfer_map(pipe, transfer);
       if (map)
@@ -360,10 +361,7 @@ vl_vp8_end_frame(struct pipe_video_decoder *decoder)
       }
 
       pipe->transfer_destroy(pipe, transfer);
-   }/*
-
-   ++dec->current_buffer;
-   dec->current_buffer %= 4;*/
+   }
 }
 
 static void
@@ -517,7 +515,7 @@ vl_create_vp8_decoder(struct pipe_context *context,
    if (!init_pipe_state(dec))
       goto error_pipe_state;
 
-   // Initialize the vp8 decoder instance
+   // Initialize the VP8 software decoder
    dec->vp8_dec = vp8_decoder_create();
 
    if (!dec->vp8_dec)
