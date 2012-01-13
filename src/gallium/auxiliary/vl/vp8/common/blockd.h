@@ -29,16 +29,6 @@
 #define SEGMENT_DELTADATA 0
 #define SEGMENT_ABSDATA   1
 
-typedef struct
-{
-    int r, c;
-} POS;
-
-#define PLANE_TYPE_Y_NO_DC   0
-#define PLANE_TYPE_Y2        1
-#define PLANE_TYPE_UV        2
-#define PLANE_TYPE_Y_WITH_DC 3
-
 typedef char ENTROPY_CONTEXT;
 
 typedef struct
@@ -48,12 +38,6 @@ typedef struct
     ENTROPY_CONTEXT v[2];
     ENTROPY_CONTEXT y2;
 } ENTROPY_CONTEXT_PLANES;
-
-extern const unsigned char vp8_block2left[25];
-extern const unsigned char vp8_block2above[25];
-
-#define VP8_COMBINEENTROPYCONTEXTS( Dest, A, B) \
-    Dest = ((A)!=0) + ((B)!=0);
 
 typedef enum
 {
@@ -181,7 +165,7 @@ typedef struct
     union b_mode_info bmi;
 } BLOCKD;
 
-typedef struct MacroBlockD
+typedef struct
 {
     DECLARE_ALIGNED(16, short, diff[400]); /* from idct diff */
     DECLARE_ALIGNED(16, unsigned char, predictor[384]);
@@ -256,22 +240,8 @@ typedef struct MacroBlockD
 
 } MACROBLOCKD;
 
-extern void vp8_build_block_doffsets(MACROBLOCKD *x);
-extern void vp8_setup_block_dptrs(MACROBLOCKD *x);
-
-static void update_blockd_bmi(MACROBLOCKD *xd)
-{
-    int i;
-
-    /* If the block size is 4x4. */
-    if (xd->mode_info_context->mbmi.mode == SPLITMV ||
-        xd->mode_info_context->mbmi.mode == B_PRED)
-    {
-        for (i = 0; i < 16; i++)
-        {
-            xd->block[i].bmi = xd->mode_info_context->bmi[i];
-        }
-    }
-}
+void vp8_build_block_doffsets(MACROBLOCKD *x);
+void vp8_setup_block_dptrs(MACROBLOCKD *x);
+void update_blockd_bmi(MACROBLOCKD *xd);
 
 #endif /* BLOCKD_H */

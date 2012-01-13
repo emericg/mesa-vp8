@@ -261,19 +261,19 @@ static void decode_macroblock(VP8D_COMP *pbi, MACROBLOCKD *xd, unsigned int mb_i
         {
             BLOCKD *b = &xd->block[i];
             RECON_INVOKE(RTCD_VTABLE(recon), intra4x4_predict)
-                          (b, b->bmi.as_mode, b->predictor);
+                        (b, b->bmi.as_mode, b->predictor);
 
             if (xd->eobs[i] > 1)
             {
                 DEQUANT_INVOKE(&pbi->dequant, idct_add)
-                    (b->qcoeff, b->dequant, b->predictor,
-                    *(b->base_dst) + b->dst, 16, b->dst_stride);
+                              (b->qcoeff, b->dequant, b->predictor,
+                             *(b->base_dst) + b->dst, 16, b->dst_stride);
             }
             else
             {
                 IDCT_INVOKE(RTCD_VTABLE(idct), idct1_scalar_add)
-                    (b->qcoeff[0] * b->dequant[0], b->predictor,
-                    *(b->base_dst) + b->dst, 16, b->dst_stride);
+                           (b->qcoeff[0] * b->dequant[0], b->predictor,
+                          *(b->base_dst) + b->dst, 16, b->dst_stride);
                 ((int *)b->qcoeff)[0] = 0;
             }
         }
@@ -281,10 +281,10 @@ static void decode_macroblock(VP8D_COMP *pbi, MACROBLOCKD *xd, unsigned int mb_i
     }
     else if (mode == SPLITMV)
     {
-        DEQUANT_INVOKE (&pbi->dequant, idct_add_y_block)
-                        (xd->qcoeff, xd->block[0].dequant,
-                         xd->predictor, xd->dst.y_buffer,
-                         xd->dst.y_stride, xd->eobs);
+        DEQUANT_INVOKE(&pbi->dequant, idct_add_y_block)
+                      (xd->qcoeff, xd->block[0].dequant,
+                       xd->predictor, xd->dst.y_buffer,
+                       xd->dst.y_stride, xd->eobs);
     }
     else
     {
@@ -312,15 +312,15 @@ static void decode_macroblock(VP8D_COMP *pbi, MACROBLOCKD *xd, unsigned int mb_i
         }
 
         DEQUANT_INVOKE (&pbi->dequant, dc_idct_add_y_block)
-                        (xd->qcoeff, xd->block[0].dequant,
-                         xd->predictor, xd->dst.y_buffer,
-                         xd->dst.y_stride, xd->eobs, xd->block[24].diff);
+                       (xd->qcoeff, xd->block[0].dequant,
+                        xd->predictor, xd->dst.y_buffer,
+                        xd->dst.y_stride, xd->eobs, xd->block[24].diff);
     }
 
     DEQUANT_INVOKE (&pbi->dequant, idct_add_uv_block)
-                    (xd->qcoeff+16*16, xd->block[16].dequant,
-                     xd->predictor+16*16, xd->dst.u_buffer, xd->dst.v_buffer,
-                     xd->dst.uv_stride, xd->eobs+16);
+                   (xd->qcoeff+16*16, xd->block[16].dequant,
+                    xd->predictor+16*16, xd->dst.u_buffer, xd->dst.v_buffer,
+                    xd->dst.uv_stride, xd->eobs+16);
 }
 
 static void
@@ -453,8 +453,8 @@ static void token_decoder_setup(VP8D_COMP *pbi,
             partition_size = user_data_end - partition;
         }
 
-        if (partition + partition_size > user_data_end
-            || partition + partition_size < partition)
+        if (partition + partition_size > user_data_end ||
+            partition + partition_size < partition)
         {
             vpx_internal_error(&pc->error, VPX_CODEC_CORRUPT_FRAME,
                                "Truncated packet or corrupt partition "
@@ -570,8 +570,8 @@ int vp8_frame_decode(VP8D_COMP *pbi, struct pipe_vp8_picture_desc *frame_header)
 
     if (pc->frame_type == KEY_FRAME)
     {
-        if (pc->Width != frame_header->width ||
-            pc->Height != frame_header->height)
+        if (pc->width != frame_header->width ||
+            pc->height != frame_header->height)
         {
             if (vp8_alloc_frame_buffers(pc, frame_header->width, frame_header->height))
             {
@@ -580,9 +580,9 @@ int vp8_frame_decode(VP8D_COMP *pbi, struct pipe_vp8_picture_desc *frame_header)
             }
         }
 
-        pc->Width = frame_header->width;
+        pc->width = frame_header->width;
         pc->horiz_scale = frame_header->horizontal_scale;
-        pc->Height = frame_header->height;
+        pc->height = frame_header->height;
         pc->vert_scale = frame_header->vertical_scale;
     }
 

@@ -18,14 +18,6 @@
 
 #define OCB_X PREV_COEF_CONTEXTS * ENTROPY_NODES
 
-DECLARE_ALIGNED(16, static const unsigned char, coef_bands_x[16]) =
-{
-    0 * OCB_X, 1 * OCB_X, 2 * OCB_X, 3 * OCB_X,
-    6 * OCB_X, 4 * OCB_X, 5 * OCB_X, 6 * OCB_X,
-    6 * OCB_X, 6 * OCB_X, 6 * OCB_X, 6 * OCB_X,
-    6 * OCB_X, 6 * OCB_X, 6 * OCB_X, 7 * OCB_X
-};
-
 #define EOB_CONTEXT_NODE            0
 #define ZERO_CONTEXT_NODE           1
 #define ONE_CONTEXT_NODE            2
@@ -38,20 +30,38 @@ DECLARE_ALIGNED(16, static const unsigned char, coef_bands_x[16]) =
 #define CAT_THREE_CONTEXT_NODE      9
 #define CAT_FIVE_CONTEXT_NODE       10
 
+DECLARE_ALIGNED(16, static const unsigned char, coef_bands_x[16]) =
+{
+    0 * OCB_X, 1 * OCB_X, 2 * OCB_X, 3 * OCB_X,
+    6 * OCB_X, 4 * OCB_X, 5 * OCB_X, 6 * OCB_X,
+    6 * OCB_X, 6 * OCB_X, 6 * OCB_X, 6 * OCB_X,
+    6 * OCB_X, 6 * OCB_X, 6 * OCB_X, 7 * OCB_X
+};
+
 DECLARE_ALIGNED(16, static const TOKENEXTRABITS, vp8d_token_extra_bits2[MAX_ENTROPY_TOKENS]) =
 {
     {  0, -1, { 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0   } },            /* ZERO_TOKEN */
-    {  1, 0, { 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0   } },             /* ONE_TOKEN */
-    {  2, 0, { 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0   } },             /* TWO_TOKEN */
-    {  3, 0, { 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0   } },             /* THREE_TOKEN */
-    {  4, 0, { 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0   } },             /* FOUR_TOKEN */
-    {  5, 0, { 159, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0   } },            /* DCT_VAL_CATEGORY1 */
-    {  7, 1, { 145, 165, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0   } },           /* DCT_VAL_CATEGORY2 */
-    { 11, 2, { 140, 148, 173, 0,  0,  0,  0,  0,  0,  0,  0,  0   } },          /* DCT_VAL_CATEGORY3 */
-    { 19, 3, { 135, 140, 155, 176, 0,  0,  0,  0,  0,  0,  0,  0   } },         /* DCT_VAL_CATEGORY4 */
-    { 35, 4, { 130, 134, 141, 157, 180, 0,  0,  0,  0,  0,  0,  0   } },        /* DCT_VAL_CATEGORY5 */
+    {  1,  0, { 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0   } },            /* ONE_TOKEN */
+    {  2,  0, { 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0   } },            /* TWO_TOKEN */
+    {  3,  0, { 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0   } },            /* THREE_TOKEN */
+    {  4,  0, { 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0   } },            /* FOUR_TOKEN */
+    {  5,  0, { 159, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0   } },           /* DCT_VAL_CATEGORY1 */
+    {  7,  1, { 145, 165, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0   } },          /* DCT_VAL_CATEGORY2 */
+    { 11,  2, { 140, 148, 173, 0,  0,  0,  0,  0,  0,  0,  0,  0   } },         /* DCT_VAL_CATEGORY3 */
+    { 19,  3, { 135, 140, 155, 176, 0,  0,  0,  0,  0,  0,  0,  0   } },        /* DCT_VAL_CATEGORY4 */
+    { 35,  4, { 130, 134, 141, 157, 180, 0,  0,  0,  0,  0,  0,  0   } },       /* DCT_VAL_CATEGORY5 */
     { 67, 10, { 129, 130, 133, 140, 153, 177, 196, 230, 243, 254, 254, 0   } }, /* DCT_VAL_CATEGORY6 */
     {  0, -1, { 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0   } },            /* EOB TOKEN */
+};
+
+const unsigned char vp8_block2left[25] =
+{
+    0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8
+};
+
+const unsigned char vp8_block2above[25] =
+{
+    0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 4, 5, 4, 5, 6, 7, 6, 7, 8
 };
 
 void vp8_reset_mb_tokens_context(MACROBLOCKD *x)
@@ -70,6 +80,7 @@ void vp8_reset_mb_tokens_context(MACROBLOCKD *x)
 }
 
 DECLARE_ALIGNED(16, extern const unsigned char, vp8_norm[256]);
+
 #define FILL \
     if(count < 0) \
         VP8DX_BOOL_DECODER_FILL(count, value, bufptr, bufend);
@@ -104,7 +115,7 @@ DECLARE_ALIGNED(16, extern const unsigned char, vp8_norm[256]);
 
 #define DECODE_AND_BRANCH_IF_ZERO(probability,branch) \
     { \
-        split = 1 + (((probability*(range-1)))>> 8); \
+        split = 1 + (((probability*(range-1))) >> 8); \
         bigsplit = (VP8_BD_VALUE)split << (VP8_BD_VALUE_SIZE - 8); \
         FILL \
         if (value < bigsplit) \
@@ -128,7 +139,7 @@ DECLARE_ALIGNED(16, extern const unsigned char, vp8_norm[256]);
             range = split; \
             NORMALIZE \
             Prob = coef_probs; \
-            if (c < 15) {\
+            if (c < 15) { \
             ++c; \
             Prob += coef_bands_x[c]; \
             goto branch; \
@@ -150,7 +161,7 @@ DECLARE_ALIGNED(16, extern const unsigned char, vp8_norm[256]);
     goto BLOCK_FINISHED;
 
 
-#define DECODE_EXTRABIT_AND_ADJUST_VAL(t,bits_count) \
+#define DECODE_EXTRABIT_AND_ADJUST_VAL(t, bits_count) \
     split = 1 + (((range-1) * vp8d_token_extra_bits2[t].Probs[bits_count]) >> 8); \
     bigsplit = (VP8_BD_VALUE)split << (VP8_BD_VALUE_SIZE - 8); \
     FILL \
@@ -165,6 +176,10 @@ DECLARE_ALIGNED(16, extern const unsigned char, vp8_norm[256]);
         range = split; \
     } \
     NORMALIZE
+
+#define VP8_COMBINEENTROPYCONTEXTS(Dest, A, B) \
+    Dest = ((A) != 0) + ((B) != 0);
+
 
 int vp8_decode_mb_tokens(VP8D_COMP *dx, MACROBLOCKD *x)
 {
@@ -223,7 +238,6 @@ int vp8_decode_mb_tokens(VP8D_COMP *dx, MACROBLOCKD *x)
     value  = bd->value;
     count  = bd->count;
     range  = bd->range;
-
 
     coef_probs = fc->coef_probs [type] [0] [0];
 

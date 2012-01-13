@@ -66,7 +66,7 @@ const int vp8_mb_feature_data_bits[MB_LVL_MAX] = {7, 6};
 
 /* Array indices are identical to previously-existing CONTEXT_NODE indices */
 
-const vp8_tree_index vp8_coef_tree[ 22] =     /* corresponding _CONTEXT_NODEs */
+const vp8_tree_index vp8_coef_tree[22] =     /* corresponding _CONTEXT_NODEs */
 {
     -DCT_EOB_TOKEN, 2,                        /* 0 = EOB */
     -ZERO_TOKEN, 4,                           /* 1 = ZERO */

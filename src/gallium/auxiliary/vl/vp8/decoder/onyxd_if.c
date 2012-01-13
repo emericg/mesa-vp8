@@ -239,9 +239,9 @@ int vp8_decoder_getframe(VP8D_PTR ptr,
     {
         *sd = *pbi->common.frame_to_show;
         sd->clrtype = pbi->common.clr_type;
-        sd->y_width = pbi->common.Width;
-        sd->y_height = pbi->common.Height;
-        sd->uv_height = pbi->common.Height / 2;
+        sd->y_width = pbi->common.width;
+        sd->y_height = pbi->common.height;
+        sd->uv_height = pbi->common.height / 2;
 
         ret = 0;
     }

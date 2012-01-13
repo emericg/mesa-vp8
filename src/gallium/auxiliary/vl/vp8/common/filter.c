@@ -10,6 +10,7 @@
 
 
 #include <stdlib.h>
+
 #include "filter.h"
 #include "../vp8_mem.h"
 
@@ -47,13 +48,13 @@ static void filter_block2d_first_pass(unsigned char *src_ptr,
                                       const short *vp8_filter)
 {
     unsigned int i, j;
-    int Temp;
+    int temp;
 
     for (i = 0; i < output_height; i++)
     {
         for (j = 0; j < output_width; j++)
         {
-            Temp = ((int)src_ptr[-2 * (int)pixel_step] * vp8_filter[0]) +
+            temp = ((int)src_ptr[-2 * (int)pixel_step] * vp8_filter[0]) +
                    ((int)src_ptr[-1 * (int)pixel_step] * vp8_filter[1]) +
                    ((int)src_ptr[0]                    * vp8_filter[2]) +
                    ((int)src_ptr[pixel_step]           * vp8_filter[3]) +
@@ -62,14 +63,14 @@ static void filter_block2d_first_pass(unsigned char *src_ptr,
                    (VP8_FILTER_WEIGHT >> 1);      /* Rounding */
 
             /* Normalize back to 0-255 */
-            Temp = Temp >> VP8_FILTER_SHIFT;
+            temp = temp >> VP8_FILTER_SHIFT;
 
-            if (Temp < 0)
-                Temp = 0;
-            else if (Temp > 255)
-                Temp = 255;
+            if (temp < 0)
+                temp = 0;
+            else if (temp > 255)
+                temp = 255;
 
-            output_ptr[j] = Temp;
+            output_ptr[j] = temp;
             src_ptr++;
         }
 
@@ -89,14 +90,14 @@ static void filter_block2d_second_pass(int *src_ptr,
                                        const short *vp8_filter)
 {
     unsigned int i, j;
-    int  Temp;
+    int temp;
 
     for (i = 0; i < output_height; i++)
     {
         for (j = 0; j < output_width; j++)
         {
             /* Apply filter */
-            Temp = ((int)src_ptr[-2 * (int)pixel_step] * vp8_filter[0]) +
+            temp = ((int)src_ptr[-2 * (int)pixel_step] * vp8_filter[0]) +
                    ((int)src_ptr[-1 * (int)pixel_step] * vp8_filter[1]) +
                    ((int)src_ptr[0]                    * vp8_filter[2]) +
                    ((int)src_ptr[pixel_step]           * vp8_filter[3]) +
@@ -105,14 +106,14 @@ static void filter_block2d_second_pass(int *src_ptr,
                    (VP8_FILTER_WEIGHT >> 1); /* Rounding */
 
             /* Normalize back to 0-255 */
-            Temp = Temp >> VP8_FILTER_SHIFT;
+            temp = temp >> VP8_FILTER_SHIFT;
 
-            if (Temp < 0)
-                Temp = 0;
-            else if (Temp > 255)
-                Temp = 255;
+            if (temp < 0)
+                temp = 0;
+            else if (temp > 255)
+                temp = 255;
 
-            output_ptr[j] = (unsigned char)Temp;
+            output_ptr[j] = (unsigned char)temp;
             src_ptr++;
         }
 
@@ -300,17 +301,17 @@ static void filter_block2d_bil_second_pass(unsigned short *src_ptr,
                                            const short    *vp8_filter)
 {
     unsigned int i, j;
-    int Temp;
+    int temp;
 
     for (i = 0; i < height; i++)
     {
         for (j = 0; j < width; j++)
         {
             /* Apply filter */
-            Temp = ((int)src_ptr[0]     * vp8_filter[0]) +
+            temp = ((int)src_ptr[0]     * vp8_filter[0]) +
                    ((int)src_ptr[width] * vp8_filter[1]) +
                    (VP8_FILTER_WEIGHT / 2);
-            dst_ptr[j] = (unsigned int)(Temp >> VP8_FILTER_SHIFT);
+            dst_ptr[j] = (unsigned int)(temp >> VP8_FILTER_SHIFT);
             src_ptr++;
         }
 
@@ -353,7 +354,6 @@ static void filter_block2d_bil(unsigned char *src_ptr,
                                int            Width,
                                int            Height)
 {
-
     unsigned short FData[17*16];    /* Temp data buffer used in filtering */
 
     /* First filter 1-D horizontally... */
@@ -362,7 +362,6 @@ static void filter_block2d_bil(unsigned char *src_ptr,
     /* then 1-D vertically... */
     filter_block2d_bil_second_pass(FData, dst_ptr, dst_pitch, Height, Width, VFilter);
 }
-
 
 void vp8_bilinear_predict4x4_c(unsigned char *src_ptr,
                                int src_pixels_per_line,
@@ -376,26 +375,6 @@ void vp8_bilinear_predict4x4_c(unsigned char *src_ptr,
 
     HFilter = vp8_bilinear_filters[xoffset];
     VFilter = vp8_bilinear_filters[yoffset];
-
-#if 0
-    {
-        int i;
-        unsigned char temp1[16];
-        unsigned char temp2[16];
-
-        bilinear_predict4x4_mmx(src_ptr, src_pixels_per_line, xoffset, yoffset, temp1, 4);
-        filter_block2d_bil(src_ptr, temp2, src_pixels_per_line, 4, HFilter, VFilter, 4, 4);
-
-        for (i = 0; i < 16; i++)
-        {
-            if (temp1[i] != temp2[i])
-            {
-                bilinear_predict4x4_mmx(src_ptr, src_pixels_per_line, xoffset, yoffset, temp1, 4);
-                filter_block2d_bil(src_ptr, temp2, src_pixels_per_line, 4, HFilter, VFilter, 4, 4);
-            }
-        }
-    }
-#endif
 
     filter_block2d_bil(src_ptr, dst_ptr, src_pixels_per_line, dst_pitch, HFilter, VFilter, 4, 4);
 }

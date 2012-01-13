@@ -18,9 +18,9 @@ void vp8_intra4x4_predict(BLOCKD *x, int b_mode, unsigned char *predictor)
     int i, r, c;
 
     unsigned char *Above = *(x->base_dst) + x->dst - x->dst_stride;
-    unsigned char Left[4];
     unsigned char top_left = Above[-1];
 
+    unsigned char Left[4];
     Left[0] = (*(x->base_dst))[x->dst - 1];
     Left[1] = (*(x->base_dst))[x->dst - 1 + x->dst_stride];
     Left[2] = (*(x->base_dst))[x->dst - 1 + 2 * x->dst_stride];
@@ -119,6 +119,7 @@ void vp8_intra4x4_predict(BLOCKD *x, int b_mode, unsigned char *predictor)
     case B_LD_PRED:
     {
         unsigned char *ptr = Above;
+
         predictor[0 * 16 + 0] = (ptr[0] + ptr[1] * 2 + ptr[2] + 2) >> 2;
         predictor[0 * 16 + 1] =
             predictor[1 * 16 + 0] = (ptr[1] + ptr[2] * 2 + ptr[3] + 2) >> 2;
@@ -141,7 +142,6 @@ void vp8_intra4x4_predict(BLOCKD *x, int b_mode, unsigned char *predictor)
     case B_RD_PRED:
     {
         unsigned char pp[9];
-
         pp[0] = Left[3];
         pp[1] = Left[2];
         pp[2] = Left[1];
@@ -174,7 +174,6 @@ void vp8_intra4x4_predict(BLOCKD *x, int b_mode, unsigned char *predictor)
     case B_VR_PRED:
     {
         unsigned char pp[9];
-
         pp[0] = Left[3];
         pp[1] = Left[2];
         pp[2] = Left[1];
@@ -230,7 +229,6 @@ void vp8_intra4x4_predict(BLOCKD *x, int b_mode, unsigned char *predictor)
     case B_HD_PRED:
     {
         unsigned char pp[9];
-
         pp[0] = Left[3];
         pp[1] = Left[2];
         pp[2] = Left[1];

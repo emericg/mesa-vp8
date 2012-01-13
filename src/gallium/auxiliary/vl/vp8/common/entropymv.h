@@ -34,7 +34,7 @@ enum
     MVPcount = MVPbits + mvlong_width     /* (with independent probabilities) */
 };
 
-typedef struct mv_context
+typedef struct
 {
     vp8_prob prob[MVPcount]; /* often come in row, col pairs */
 } MV_CONTEXT;

@@ -70,8 +70,8 @@ typedef struct VP8Common
 
     int version;
 
-    int Width;
-    int Height;
+    int width;
+    int height;
     int horiz_scale;
     int vert_scale;
 

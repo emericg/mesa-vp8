@@ -59,14 +59,14 @@ extern prototype_subpixel_predict(vp8_subpix_bilinear4x4);
 typedef prototype_subpixel_predict((*vp8_subpix_fn_t));
 typedef struct
 {
-    vp8_subpix_fn_t  sixtap16x16;
-    vp8_subpix_fn_t  sixtap8x8;
-    vp8_subpix_fn_t  sixtap8x4;
-    vp8_subpix_fn_t  sixtap4x4;
-    vp8_subpix_fn_t  bilinear16x16;
-    vp8_subpix_fn_t  bilinear8x8;
-    vp8_subpix_fn_t  bilinear8x4;
-    vp8_subpix_fn_t  bilinear4x4;
+    vp8_subpix_fn_t sixtap16x16;
+    vp8_subpix_fn_t sixtap8x8;
+    vp8_subpix_fn_t sixtap8x4;
+    vp8_subpix_fn_t sixtap4x4;
+    vp8_subpix_fn_t bilinear16x16;
+    vp8_subpix_fn_t bilinear8x8;
+    vp8_subpix_fn_t bilinear8x4;
+    vp8_subpix_fn_t bilinear4x4;
 } vp8_subpix_rtcd_vtable_t;
 
 #define SUBPIX_INVOKE(ctx,fn) vp8_subpix_##fn

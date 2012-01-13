@@ -14,20 +14,9 @@
 
 #define vp8_prob_half ((vp8_prob) 128)
 
-typedef unsigned char vp8bc_index_t; /* probability index */
-
 typedef unsigned char vp8_prob;
 
 typedef signed char vp8_tree_index;
-struct bool_coder_spec;
-
-typedef struct bool_coder_spec bool_coder_spec;
-typedef struct bool_writer bool_writer;
-typedef struct bool_reader bool_reader;
-
-typedef const bool_coder_spec c_bool_coder_spec;
-typedef const bool_writer c_bool_writer;
-typedef const bool_reader c_bool_reader;
 
 /* We build coding trees compactly in arrays.
    Each node of the tree is a pair of vp8_tree_indices.
