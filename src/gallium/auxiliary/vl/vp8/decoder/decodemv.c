@@ -49,7 +49,7 @@ static int vp8_read_uv_mode(BOOL_DECODER *bd, const vp8_prob *p)
 
 static void vp8_read_mb_features(BOOL_DECODER *bd, MB_MODE_INFO *mi, MACROBLOCKD *x)
 {
-    /* Is segmentation enabled */
+    /* Is segmentation enabled. */
     if (x->segmentation_enabled && x->update_mb_segmentation_map)
     {
         /* If so then read the segment id. */
@@ -69,8 +69,7 @@ static void vp8_kfread_modes(VP8D_COMP *pbi, MODE_INFO *m, int mb_row, int mb_co
             MB_PREDICTION_MODE y_mode;
 
             /* Read the Macroblock segmentation map if it is being updated explicitly this frame (reset to 0 above by default)
-             * By default on a key frame reset all MBs to segment 0
-             */
+             * By default on a key frame reset all MBs to segment 0 */
             m->mbmi.segment_id = 0;
 
             if (pbi->mb.update_mb_segmentation_map)
@@ -181,11 +180,20 @@ static B_PREDICTION_MODE sub_mv_ref(BOOL_DECODER *bd, const vp8_prob *p)
 }
 
 static const unsigned char mbsplit_fill_count[4] = {8, 8, 4, 1};
+
 static const unsigned char mbsplit_fill_offset[4][16] =
 {
     { 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15},
     { 0,  1,  4,  5,  8,  9, 12, 13,  2,  3,  6,  7, 10, 11, 14, 15},
     { 0,  1,  4,  5,  2,  3,  6,  7,  8,  9, 12, 13, 10, 11, 14, 15},
+    { 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15}
+};
+
+static const unsigned char mbsplit_offset[4][16] =
+{
+    { 0,  8,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
+    { 0,  2,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
+    { 0,  2,  8, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
     { 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15}
 };
 
@@ -198,7 +206,7 @@ static void mb_mode_mv_init(VP8D_COMP *pbi)
     if (pbi->common.mb_no_coeff_skip)
         pbi->prob_skip_false = (vp8_prob)vp8_read_literal(bd, 8);
 
-    if(pbi->common.frame_type != KEY_FRAME)
+    if (pbi->common.frame_type != KEY_FRAME)
     {
         pbi->prob_intra = (vp8_prob)vp8_read_literal(bd, 8);
         pbi->prob_last  = (vp8_prob)vp8_read_literal(bd, 8);
@@ -207,7 +215,6 @@ static void mb_mode_mv_init(VP8D_COMP *pbi)
         if (vp8_read_bit(bd))
         {
             int i = 0;
-
             do {
                 pbi->common.fc.ymode_prob[i] = (vp8_prob)vp8_read_literal(bd, 8);
             }
@@ -217,7 +224,6 @@ static void mb_mode_mv_init(VP8D_COMP *pbi)
         if (vp8_read_bit(bd))
         {
             int i = 0;
-
             do {
                 pbi->common.fc.uv_mode_prob[i] = (vp8_prob)vp8_read_literal(bd, 8);
             }
@@ -247,6 +253,7 @@ static void read_mb_modes_mv(VP8D_COMP *pbi, MODE_INFO *mi, MB_MODE_INFO *mbmi,
     mb_to_bottom_edge += RIGHT_BOTTOM_MARGIN;
 
     mbmi->need_to_clamp_mvs = 0;
+
     /* Distance of Mb to the various image edges.
      * These specified to 8th pel as they are always compared to MV values that
      * are in 1/8th pel units */
@@ -298,7 +305,7 @@ static void read_mb_modes_mv(VP8D_COMP *pbi, MODE_INFO *mi, MB_MODE_INFO *mbmi,
                 int_mv blockmv;
                 int k; /* First block in subset j */
                 int mv_contz;
-                k = vp8_mbsplit_offset[s][j];
+                k = mbsplit_offset[s][j];
 
                 leftmv.as_int = left_block_mv(mi, k);
                 abovemv.as_int = above_block_mv(mi, k, mis);
@@ -334,10 +341,8 @@ static void read_mb_modes_mv(VP8D_COMP *pbi, MODE_INFO *mi, MB_MODE_INFO *mbmi,
                     /* Fill (uniform) modes, mvs of jth subset.
                      * Must do it here because ensuing subsets can
                      * refer back to us via "left" or "above". */
-                    const unsigned char *fill_offset;
+                    const unsigned char *fill_offset = &mbsplit_fill_offset[s][(unsigned char)j * mbsplit_fill_count[s]];
                     unsigned int fill_count = mbsplit_fill_count[s];
-
-                    fill_offset = &mbsplit_fill_offset[s][(unsigned char)j * mbsplit_fill_count[s]];
 
                     do {
                         mi->bmi[*fill_offset].mv.as_int = blockmv.as_int;
@@ -399,8 +404,7 @@ static void read_mb_modes_mv(VP8D_COMP *pbi, MODE_INFO *mi, MB_MODE_INFO *mbmi,
         if ((mbmi->mode = (MB_PREDICTION_MODE)vp8_read_ymode(bd, pbi->common.fc.ymode_prob)) == B_PRED)
         {
             int j = 0;
-            do
-            {
+            do {
                 mi->bmi[j].as_mode = (B_PREDICTION_MODE)vp8_read_bmode(bd, pbi->common.fc.bmode_prob);
             }
             while (++j < 16);

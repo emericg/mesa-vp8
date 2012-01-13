@@ -73,7 +73,6 @@ static unsigned int vp8_check_mv_bounds(int_mv *mv, int mb_to_left_edge,
     return need_to_clamp;
 }
 
-
 void vp8_find_near_mvs(MACROBLOCKD *xd,
                        const MODE_INFO *here,
                        int_mv *nearest, int_mv *nearby, int_mv *best,
@@ -81,11 +80,7 @@ void vp8_find_near_mvs(MACROBLOCKD *xd,
                        int refframe,
                        int *ref_frame_sign_bias);
 
-vp8_prob *vp8_mv_ref_probs(vp8_prob p[VP8_MVREFS-1],
-                           const int near_mv_ref_ct[4]);
-
-extern const unsigned char vp8_mbsplit_offset[4][16];
-
+vp8_prob *vp8_mv_ref_probs(vp8_prob p[VP8_MVREFS-1], const int near_mv_ref_ct[4]);
 
 static int left_block_mv(const MODE_INFO *cur_mb, int b)
 {
@@ -123,6 +118,7 @@ static B_PREDICTION_MODE left_block_mode(const MODE_INFO *cur_mb, int b)
     {
         /* On L edge, get from MB to left of us */
         --cur_mb;
+
         switch (cur_mb->mbmi.mode)
         {
             case B_PRED:

@@ -21,7 +21,6 @@
 #include "../common/entropymode.h"
 #include "../common/quant_common.h"
 #include "../common/yv12utils.h"
-#include "../common/setupintrarecon.h"
 
 #include "decodemv.h"
 #include "../vp8_mem.h"
@@ -74,8 +73,11 @@ void mb_init_dequantizer(VP8D_COMP *pbi, MACROBLOCKD *xd)
 
 #define RTCD_VTABLE(x) NULL
 
-/* skip_recon_mb() is Modified: Instead of writing the result to predictor buffer and then copying it
- * to dst buffer, we can write the result directly to dst buffer. This eliminates unnecessary copy. */
+/**
+ * skip_recon_mb() is Modified: Instead of writing the result to predictor
+ * buffer and then copying it to dst buffer, we can write the result directly
+ * to dst buffer. This eliminates unnecessary copy.
+ */
 static void skip_recon_mb(VP8D_COMP *pbi, MACROBLOCKD *xd)
 {
     if (xd->mode_info_context->mbmi.ref_frame == INTRA_FRAME)
@@ -91,17 +93,18 @@ static void skip_recon_mb(VP8D_COMP *pbi, MACROBLOCKD *xd)
     }
 }
 
+/**
+ * If the MV points so far into the UMV border that no visible pixels
+ * are used for reconstruction, the subpel part of the MV can be
+ * discarded and the MV limited to 16 pixels with equivalent results.
+ *
+ * This limit kicks in at 19 pixels for the top and left edges, for
+ * the 16 pixels plus 3 taps right of the central pixel when subpel
+ * filtering. The bottom and right edges use 16 pixels plus 2 pixels
+ * left of the central pixel when filtering.
+ */
 static void clamp_mv_to_umv_border(MV *mv, const MACROBLOCKD *xd)
 {
-    /* If the MV points so far into the UMV border that no visible pixels
-     * are used for reconstruction, the subpel part of the MV can be
-     * discarded and the MV limited to 16 pixels with equivalent results.
-     *
-     * This limit kicks in at 19 pixels for the top and left edges, for
-     * the 16 pixels plus 3 taps right of the central pixel when subpel
-     * filtering. The bottom and right edges use 16 pixels plus 2 pixels
-     * left of the central pixel when filtering.
-     */
     if (mv->col < (xd->mb_to_left_edge - (19 << 3)))
         mv->col = xd->mb_to_left_edge - (16 << 3);
     else if (mv->col > xd->mb_to_right_edge + (18 << 3))
@@ -113,7 +116,10 @@ static void clamp_mv_to_umv_border(MV *mv, const MACROBLOCKD *xd)
         mv->row = xd->mb_to_bottom_edge + (16 << 3);
 }
 
-/* A version of the above function for chroma block MVs.*/
+/**
+ * \note clamp_uvmv_to_umv_border() is a chroma block MVs version of the
+ *       function clamp_mv_to_umv_border().
+ */
 static void clamp_uvmv_to_umv_border(MV *mv, const MACROBLOCKD *xd)
 {
     mv->col = (2*mv->col < (xd->mb_to_left_edge - (19 << 3))) ? (xd->mb_to_left_edge - (16 << 3)) >> 1 : mv->col;
@@ -160,7 +166,9 @@ static int get_delta_q(BOOL_DECODER *bd, int prev, int *q_update)
     return ret_val;
 }
 
-/* note the extension is only for the last row, for intra prediction purpose */
+/**
+ * \note The extension is only for the last row, for intra prediction purpose.
+ */
 static void vp8_extend_mb_row(YV12_BUFFER_CONFIG *ybf,
                               unsigned char *YPtr,
                               unsigned char *UPtr,
@@ -807,9 +815,9 @@ int vp8_frame_decode(VP8D_COMP *pbi, struct pipe_vp8_picture_desc *frame_header)
     /* printf("Decoder: Frame Decoded, Size Roughly:%d bytes \n", bc->pos+pbi->bc2.pos); */
 
     /* If this was a kf or Gf note the Q used */
-    if (pc->frame_type == KEY_FRAME
-        || pc->refresh_golden_frame
-        || pc->refresh_alt_ref_frame)
+    if (pc->frame_type == KEY_FRAME ||
+        pc->refresh_golden_frame ||
+        pc->refresh_alt_ref_frame)
     {
         pc->last_kf_gf_q = pc->base_qindex;
     }

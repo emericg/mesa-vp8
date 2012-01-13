@@ -12,36 +12,29 @@
 
 const int vp8_mode_contexts[6][4] =
 {
-    {
-        /* 0 */
+    { /* 0 */
         7,     1,     1,   143,
     },
-    {
-        /* 1 */
+    { /* 1 */
         14,    18,    14,   107,
     },
-    {
-        /* 2 */
+    { /* 2 */
         135,    64,    57,    68,
     },
-    {
-        /* 3 */
+    { /* 3 */
         60,    56,   128,    65,
     },
-    {
-        /* 4 */
+    { /* 4 */
         159,   134,   128,    34,
     },
-    {
-        /* 5 */
+    { /* 5 */
         234,   188,   128,    28,
     },
 };
 
 const unsigned int vp8_kf_default_bmode_counts [VP8_BINTRAMODES] [VP8_BINTRAMODES] [VP8_BINTRAMODES] =
 {
-    {
-        /*Above Mode :  0*/
+    { /* Above Mode : 0 */
         { 43438,   2195,    470,    316,    615,    171,    217,    412,    124,    160, }, /* left_mode 0 */
         {  5722,   2751,    296,    291,     81,     68,     80,    101,    100,    170, }, /* left_mode 1 */
         {  1629,    201,    307,     25,     47,     16,     34,     72,     19,     28, }, /* left_mode 2 */
@@ -53,8 +46,7 @@ const unsigned int vp8_kf_default_bmode_counts [VP8_BINTRAMODES] [VP8_BINTRAMODE
         {   230,     54,     20,    124,     16,    125,     29,     12,    283,     37, }, /* left_mode 8 */
         {   260,     87,     21,    120,     32,     16,     33,     16,     33,    203, }, /* left_mode 9 */
     },
-    {
-        /*Above Mode :  1*/
+    { /* Above Mode : 1 */
         {  3934,   2573,    355,    137,    128,     87,    133,    117,     37,     27, }, /* left_mode 0 */
         {  1036,   1929,    278,    135,     27,     37,     48,     55,     41,     91, }, /* left_mode 1 */
         {   223,    256,    253,     15,     13,      9,     28,     64,      3,      3, }, /* left_mode 2 */
@@ -66,8 +58,7 @@ const unsigned int vp8_kf_default_bmode_counts [VP8_BINTRAMODES] [VP8_BINTRAMODE
         {    48,     34,     10,     52,      8,     15,      6,      6,     63,     20, }, /* left_mode 8 */
         {    96,     48,     22,     63,     11,     14,      5,      8,      9,     96, }, /* left_mode 9 */
     },
-    {
-        /*Above Mode :  2*/
+    { /* Above Mode : 2 */
         {   709,    461,    506,     36,     27,     33,    151,     98,     24,      6, }, /* left_mode 0 */
         {   201,    375,    442,     27,     13,      8,     46,     58,      6,     19, }, /* left_mode 1 */
         {   122,    140,    417,      4,     13,      3,     33,     59,      4,      2, }, /* left_mode 2 */
@@ -79,8 +70,7 @@ const unsigned int vp8_kf_default_bmode_counts [VP8_BINTRAMODES] [VP8_BINTRAMODE
         {    14,      7,      7,     16,      3,     11,      4,     13,     15,     16, }, /* left_mode 8 */
         {    36,      8,     32,      9,      9,      4,     14,      7,      6,     24, }, /* left_mode 9 */
     },
-    {
-        /*Above Mode :  3*/
+    { /* Above Mode : 3 */
         {  1340,    173,     36,    119,     30,     10,     13,     10,     20,     26, }, /* left_mode 0 */
         {   156,    293,     26,    108,      5,     16,      2,      4,     23,     30, }, /* left_mode 1 */
         {    60,     34,     13,      7,      3,      3,      0,      8,      4,      5, }, /* left_mode 2 */
@@ -92,8 +82,7 @@ const unsigned int vp8_kf_default_bmode_counts [VP8_BINTRAMODES] [VP8_BINTRAMODE
         {    23,     19,      2,     33,      1,      5,      2,      0,     51,      8, }, /* left_mode 8 */
         {    33,     26,      7,     53,      3,      9,      3,      3,      9,     19, }, /* left_mode 9 */
     },
-    {
-        /*Above Mode :  4*/
+    { /* Above Mode : 4 */
         {   410,    165,     43,     31,     66,     15,     30,     54,      8,     17, }, /* left_mode 0 */
         {   115,     64,     27,     18,     30,      7,     11,     15,      4,     19, }, /* left_mode 1 */
         {    31,     23,     25,      1,      7,      2,      2,     10,      0,      5, }, /* left_mode 2 */
@@ -105,8 +94,7 @@ const unsigned int vp8_kf_default_bmode_counts [VP8_BINTRAMODES] [VP8_BINTRAMODE
         {     8,      2,      1,      4,      2,      5,      1,      1,      2,     10, }, /* left_mode 8 */
         {    76,      7,      5,      7,     18,      2,      2,      0,      5,     45, }, /* left_mode 9 */
     },
-    {
-        /*Above Mode :  5*/
+    { /* Above Mode : 5 */
         {   444,     46,     47,     20,     14,    110,     60,     14,     60,      7, }, /* left_mode 0 */
         {    59,     57,     25,     18,      3,     17,     21,      6,     14,      6, }, /* left_mode 1 */
         {    24,     17,     20,      6,      4,     13,      7,      2,      3,      2, }, /* left_mode 2 */
@@ -118,8 +106,7 @@ const unsigned int vp8_kf_default_bmode_counts [VP8_BINTRAMODES] [VP8_BINTRAMODE
         {    15,      1,      3,      7,      3,     21,      7,      1,     34,      5, }, /* left_mode 8 */
         {    18,      5,      1,      3,      4,      3,      7,      1,      2,      9, }, /* left_mode 9 */
     },
-    {
-        /*Above Mode :  6*/
+    { /* Above Mode : 6 */
         {   476,    149,     94,     13,     14,     77,    291,     27,     23,      3, }, /* left_mode 0 */
         {    79,     83,     42,     14,      2,     12,     63,      2,      4,     14, }, /* left_mode 1 */
         {    43,     36,     55,      1,      3,      8,     42,     11,      5,      1, }, /* left_mode 2 */
@@ -131,8 +118,7 @@ const unsigned int vp8_kf_default_bmode_counts [VP8_BINTRAMODES] [VP8_BINTRAMODE
         {    10,      3,      3,      3,      3,      8,      2,      2,      9,      3, }, /* left_mode 8 */
         {    13,      7,     11,      4,      0,      4,      6,      2,      5,      8, }, /* left_mode 9 */
     },
-    {
-        /*Above Mode :  7*/
+    { /* Above Mode : 7 */
         {   376,    135,    119,      6,     32,      8,     31,    224,      9,      3, }, /* left_mode 0 */
         {    93,     60,     54,      6,     13,      7,      8,     92,      2,     12, }, /* left_mode 1 */
         {    74,     36,     84,      0,      3,      2,      9,     67,      2,      1, }, /* left_mode 2 */
@@ -144,8 +130,7 @@ const unsigned int vp8_kf_default_bmode_counts [VP8_BINTRAMODES] [VP8_BINTRAMODE
         {     9,      1,      2,      8,      3,      7,      0,      5,      3,      3, }, /* left_mode 8 */
         {    20,      4,      5,     10,      4,      2,      7,     17,      3,     16, }, /* left_mode 9 */
     },
-    {
-        /*Above Mode :  8*/
+    { /* Above Mode : 8 */
         {   617,     68,     34,     79,     11,     27,     25,     14,     75,     13, }, /* left_mode 0 */
         {    51,     82,     21,     26,      6,     12,     13,      1,     26,     16, }, /* left_mode 1 */
         {    29,      9,     12,     11,      3,      7,      1,     10,      2,      2, }, /* left_mode 2 */
@@ -157,8 +142,7 @@ const unsigned int vp8_kf_default_bmode_counts [VP8_BINTRAMODES] [VP8_BINTRAMODE
         {    14,      8,      5,     23,      2,     12,      6,      2,    117,      5, }, /* left_mode 8 */
         {     9,      6,      2,     19,      1,      6,      3,      2,      9,      9, }, /* left_mode 9 */
     },
-    {
-        /*Above Mode :  9*/
+    { /* Above Mode : 9 */
         {   680,     73,     22,     38,     42,      5,     11,      9,      6,     28, }, /* left_mode 0 */
         {   113,    112,     21,     22,     10,      2,      8,      4,      6,     42, }, /* left_mode 1 */
         {    44,     20,     24,      6,      5,      4,      3,      3,      1,      2, }, /* left_mode 2 */

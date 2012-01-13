@@ -57,11 +57,11 @@ void vp8_tokens_from_tree_offset(struct vp8_token_struct *, vp8_tree, int offset
  * probability updates.
  */
 void vp8_tree_probs_from_distribution(int n, /* n = size of alphabet */
-                                      vp8_token tok[ /* n */ ],
+                                      vp8_token tok[/* n */],
                                       vp8_tree tree,
-                                      vp8_prob probs[ /* n-1 */ ],
-                                      unsigned int branch_ct[ /* n-1 */ ] [2],
-                                      const unsigned int num_events[ /* n */ ],
+                                      vp8_prob probs[/* n-1 */],
+                                      unsigned int branch_ct[/* n-1 */][2],
+                                      const unsigned int num_events[/* n */],
                                       unsigned int Pfactor,
                                       int Round);
 

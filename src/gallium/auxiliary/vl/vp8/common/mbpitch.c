@@ -20,19 +20,19 @@ typedef enum
 static void setup_block(BLOCKD *b,
                         int mv_stride,
                         unsigned char **base,
-                        int Stride,
+                        int stride,
                         int offset,
                         BLOCKSET bs)
 {
     if (bs == DEST)
     {
-        b->dst_stride = Stride;
+        b->dst_stride = stride;
         b->dst = offset;
         b->base_dst = base;
     }
     else
     {
-        b->pre_stride = Stride;
+        b->pre_stride = stride;
         b->pre = offset;
         b->base_pre = base;
     }
@@ -41,7 +41,6 @@ static void setup_block(BLOCKD *b,
 static void setup_macroblock(MACROBLOCKD *x, BLOCKSET bs)
 {
     int block;
-
     unsigned char **y, **u, **v;
 
     if (bs == DEST)

@@ -8,10 +8,11 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-
 #ifndef RECONINTRA_H
 #define RECONINTRA_H
 
-extern void init_intra_left_above_pixels(MACROBLOCKD *x);
+#include "yv12utils.h"
+
+extern void vp8_setup_intra_recon(YV12_BUFFER_CONFIG *ybf);
 
 #endif /* RECONINTRA_H */

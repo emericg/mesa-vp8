@@ -12,10 +12,8 @@
 
 void *vpx_memalign(size_t align, size_t size)
 {
-    void *addr,
-         * x = NULL;
-
-    addr = malloc(size + align - 1 + ADDRESS_STORAGE_SIZE);
+    void *addr = malloc(size + align - 1 + ADDRESS_STORAGE_SIZE);
+    void *x = NULL;
 
     if (addr)
     {
@@ -34,9 +32,7 @@ void *vpx_malloc(size_t size)
 
 void *vpx_calloc(size_t num, size_t size)
 {
-    void *x;
-
-    x = vpx_memalign(DEFAULT_ALIGNMENT, num * size);
+    void *x = vpx_memalign(DEFAULT_ALIGNMENT, num * size);
 
     if (x)
         memset(x, 0, num * size);
@@ -44,19 +40,19 @@ void *vpx_calloc(size_t num, size_t size)
     return x;
 }
 
+/**
+ * \note The realloc() function changes the size of the object pointed to by
+ *       ptr to the size specified by size, and returns a pointer to the
+ *       possibly moved block. The contents are unchanged up to the lesser
+ *       of the new and old sizes. If ptr is null, realloc() behaves like
+ *       malloc() for the specified size. If size is zero (0) and ptr is
+ *       not a null pointer, the object pointed to is freed.
+ */
 void *vpx_realloc(void *memblk, size_t size)
 {
     void *addr, *new_addr = NULL;
     int align = DEFAULT_ALIGNMENT;
 
-    /*
-    The realloc() function changes the size of the object pointed to by
-    ptr to the size specified by size, and returns a pointer to the
-    possibly moved block. The contents are unchanged up to the lesser
-    of the new and old sizes. If ptr is null, realloc() behaves like
-    malloc() for the specified size. If size is zero (0) and ptr is
-    not a null pointer, the object pointed to is freed.
-    */
     if (!memblk)
         new_addr = vpx_malloc(size);
     else if (!size)
@@ -71,9 +67,8 @@ void *vpx_realloc(void *memblk, size_t size)
         if (new_addr)
         {
             addr = new_addr;
-            new_addr = (void *)(((size_t)
-                                 ((unsigned char *)new_addr + ADDRESS_STORAGE_SIZE) + (align - 1)) &
-                                (size_t) - align);
+            new_addr = (void *)(((size_t)((unsigned char *)new_addr + ADDRESS_STORAGE_SIZE) + (align - 1)) & (size_t) - align);
+
             // save the actual malloc address
             ((size_t *)new_addr)[-1] = (size_t)addr;
         }

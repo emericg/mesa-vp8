@@ -171,7 +171,6 @@ C_SOURCES := \
 	vl/vp8/common/reconinter.c \
 	vl/vp8/common/reconintra.c \
 	vl/vp8/common/reconintra4x4.c \
-	vl/vp8/common/setupintrarecon.c \
 	vl/vp8/common/treecoder.c \
 	vl/vp8/common/yv12utils.c \
 	vl/vp8/decoder/dboolhuff.c \

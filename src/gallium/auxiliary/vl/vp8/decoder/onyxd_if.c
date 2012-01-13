@@ -245,10 +245,6 @@ int vp8_decoder_getframe(VP8D_PTR ptr,
 
         ret = 0;
     }
-    else
-    {
-        ret = -1;
-    }
 
     return ret;
 }

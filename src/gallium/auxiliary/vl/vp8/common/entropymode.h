@@ -60,7 +60,7 @@ extern const vp8_tree_index vp8_small_mvtree[];
 
 extern struct vp8_token_struct vp8_small_mvencodings [8];
 
-void vp8_entropy_mode_init(void);
+void vp8_entropy_mode_init();
 
 void vp8_init_mbmode_probs(VP8_COMMON *x);
 
