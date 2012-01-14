@@ -36,6 +36,9 @@ static void tree2tok(struct vp8_token_struct *const p, vp8_tree t, int i, int v,
     while (++v & 1);
 }
 
+/**
+ * Construct encoding array from tree.
+ */
 void vp8_tokens_from_tree(struct vp8_token_struct *p, vp8_tree t)
 {
     tree2tok(p, t, 0, 0, 0);
@@ -94,6 +97,12 @@ static void branch_counts(int n, /* n = size of alphabet */
     while (++t < n);
 }
 
+/**
+ * Convert array of token occurrence counts into a table of probabilities
+ * for the associated binary encoding tree.  Also writes count of branches
+ * taken for each node on the tree; this facilitiates decisions as to
+ * probability updates.
+ */
 void vp8_tree_probs_from_distribution(int n, /* n = size of alphabet */
                                       vp8_token tok[ /* n */ ],
                                       vp8_tree tree,

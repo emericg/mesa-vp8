@@ -9,26 +9,80 @@
  */
 
 
-#ifndef tree_reader_h
-#define tree_reader_h
+#ifndef TREEREADER_H
+#define TREEREADER_H
 
 #include "../common/treecoder.h"
-#include "dboolhuff.h"
+#include "../vp8_mem.h"
 
 #define vp8_read vp8dx_decode_bool
 #define vp8_read_literal vp8_decode_value
 #define vp8_read_bit( R) vp8_read( R, vp8_prob_half)
 
-/* Intent of tree data structure is to make decoding trivial. */
+/**
+ * This is meant to be a large, positive constant that can still be efficiently
+ * loaded as an immediate (on platforms like ARM, for example).
+ * Even relatively modest values like 100 would work fine.
+ */
+#define VP8_LOTS_OF_BITS (0x40000000)
 
-/** must return a 0 or 1 !!! */
-static int vp8_treed_read(BOOL_DECODER *const bd, vp8_tree t, const vp8_prob *const p)
+#define VP8_BD_VALUE_SIZE ((int)sizeof(VP8_BD_VALUE)*CHAR_BIT)
+
+typedef size_t VP8_BD_VALUE;
+
+typedef struct
 {
-    register vp8_tree_index i = 0;
+    const unsigned char *user_buffer_end;
+    const unsigned char *user_buffer;
+    VP8_BD_VALUE         value;
+    int                  count;
+    unsigned int         range;
+} BOOL_DECODER;
 
-    while ((i = t[i + vp8_read(bd, p[i >> 1])]) > 0);
+DECLARE_ALIGNED(16, extern const unsigned char, vp8_norm[256]);
 
-    return -i;
-}
+int vp8dx_start_decode(BOOL_DECODER *bd, const unsigned char *data, unsigned int data_size);
 
-#endif /* tree_reader_h */
+void vp8dx_bool_decoder_fill(BOOL_DECODER *bd);
+
+int vp8dx_bool_error(BOOL_DECODER *bd);
+
+int vp8dx_decode_bool(BOOL_DECODER *bd, int probability);
+
+int vp8_decode_value(BOOL_DECODER *bd, int bits);
+
+int vp8_treed_read(BOOL_DECODER *const bd, vp8_tree t, const vp8_prob *const p);
+
+/**
+ * The refill loop is used in several places, so define it in a macro to make
+ * sure they're all consistent.
+ * An inline function would be cleaner, but has a significant penalty, because
+ * multiple BOOL_DECODER fields must be modified, and the compiler is not smart
+ * enough to eliminate the stores to those fields and the subsequent reloads
+ * from them when inlining the function.
+ */
+#define VP8DX_BOOL_DECODER_FILL(_count,_value,_bufptr,_bufend) \
+    do \
+    { \
+        int shift = VP8_BD_VALUE_SIZE - 8 - ((_count) + 8); \
+        int loop_end, x; \
+        size_t bits_left = ((_bufend)-(_bufptr))*CHAR_BIT; \
+        \
+        x = shift + CHAR_BIT - bits_left; \
+        loop_end = 0; \
+        if (x >= 0) \
+        { \
+            (_count) += VP8_LOTS_OF_BITS; \
+            loop_end = x; \
+            if (!bits_left) break; \
+        } \
+        while (shift >= loop_end) \
+        { \
+            (_count) += CHAR_BIT; \
+            (_value) |= (VP8_BD_VALUE)*(_bufptr)++ << shift; \
+            shift -= CHAR_BIT; \
+        } \
+    } \
+    while(0)
+
+#endif /* TREEREADER_H */

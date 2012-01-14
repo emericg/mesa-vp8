@@ -16,7 +16,7 @@
 #include "findnearmv.h"
 #include "entropymode.h"
 
-extern void vp8_init_scan_order_mask();
+//extern void vp8_init_scan_order_mask();
 
 static void update_mode_info_border(MODE_INFO *mi, int rows, int cols)
 {

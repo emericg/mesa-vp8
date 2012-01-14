@@ -170,13 +170,13 @@ C_SOURCES := \
 	vl/vp8/common/reconintra4x4.c \
 	vl/vp8/common/treecoder.c \
 	vl/vp8/common/yv12utils.c \
-	vl/vp8/decoder/dboolhuff.c \
 	vl/vp8/decoder/decodeframe.c \
 	vl/vp8/decoder/decodemv.c \
 	vl/vp8/decoder/dequantize.c \
 	vl/vp8/decoder/detokenize.c \
 	vl/vp8/decoder/idct_blk.c \
-	vl/vp8/decoder/onyxd_if.c
+	vl/vp8/decoder/onyxd_if.c \
+	vl/vp8/decoder/treereader.c
 
 GENERATED_SOURCES := \
 	indices/u_indices_gen.c \

@@ -21,11 +21,12 @@
 #include "../common/entropymode.h"
 #include "../common/quant_common.h"
 #include "../common/yv12utils.h"
+#include "../common/idct.h"
 
 #include "decodemv.h"
+#include "treereader.h"
+
 #include "../vp8_mem.h"
-#include "../common/idct.h"
-#include "dboolhuff.h"
 
 #include <assert.h>
 #include <stdio.h>

@@ -99,7 +99,6 @@ static vp8_tree_index cat1[2], cat2[4], cat3[6], cat4[8], cat5[10], cat6[22];
 void vp8_init_scan_order_mask()
 {
     int i;
-
     for (i = 0; i < 16; i++)
     {
         vp8_default_zig_zag_mask[vp8_default_zig_zag1d[i]] = 1 << i;
@@ -109,7 +108,6 @@ void vp8_init_scan_order_mask()
 static void init_bit_tree(vp8_tree_index *p, int n)
 {
     int i = 0;
-
     while (++i < n)
     {
         p[0] = p[1] = i << 1;
@@ -132,24 +130,23 @@ static void init_bit_trees()
 void vp8_default_coef_probs(VP8_COMMON *pc)
 {
     int h = 0;
-
     do
     {
         int i = 0;
-
         do
         {
             int k = 0;
-
             do
             {
-                unsigned int branch_ct [ENTROPY_NODES] [2];
-                vp8_tree_probs_from_distribution(
-                    MAX_ENTROPY_TOKENS, vp8_coef_encodings, vp8_coef_tree,
-                    pc->fc.coef_probs[h][i][k],
-                    branch_ct,
-                    vp8_default_coef_counts[h][i][k],
-                    256, 1);
+                unsigned int branch_ct[ENTROPY_NODES][2];
+                vp8_tree_probs_from_distribution(MAX_ENTROPY_TOKENS,
+                                                 vp8_coef_encodings,
+                                                 vp8_coef_tree,
+                                                 pc->fc.coef_probs[h][i][k],
+                                                 branch_ct,
+                                                 vp8_default_coef_counts[h][i][k],
+                                                 256,
+                                                 1);
             }
             while (++k < PREV_COEF_CONTEXTS);
         }
