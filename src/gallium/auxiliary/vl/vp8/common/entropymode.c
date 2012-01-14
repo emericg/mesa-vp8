@@ -8,21 +8,11 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-
-#include "entropymode.h"
-#include "entropy.h"
 #include "../vp8_mem.h"
 
-static const unsigned int kf_y_mode_cts[VP8_YMODES] = {1607, 915, 812, 811, 5455};
-static const unsigned int y_mode_cts   [VP8_YMODES] = {8080, 1908, 1582, 1007, 5874};
-
-static const unsigned int uv_mode_cts   [VP8_UV_MODES] = {59483, 13605, 16492, 4230};
-static const unsigned int kf_uv_mode_cts[VP8_UV_MODES] = {5319, 1904, 1703, 674};
-
-static const unsigned int bmode_cts[VP8_BINTRAMODES] =
-{
-    43891, 17694, 10036, 3920, 3363, 2546, 5119, 3221, 2471, 1723
-};
+#include "entropy.h"
+#include "entropymode.h"
+#include "modecounts.h"
 
 typedef enum
 {
@@ -232,7 +222,7 @@ void vp8_kf_default_bmode_probs(vp8_prob p [VP8_BINTRAMODES] [VP8_BINTRAMODES] [
         {
             intra_bmode_probs_from_distribution(p[i][j],
                                                 branch_ct,
-                                                vp8_kf_default_bmode_counts[i][j]);
+                                                kf_default_bmode_cts[i][j]);
         }
         while (++j < VP8_BINTRAMODES);
     }

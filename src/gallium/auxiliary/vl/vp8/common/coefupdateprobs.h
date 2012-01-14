@@ -8,6 +8,10 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
+#ifndef COEFUPDATEPROBS_H
+#define COEFUPDATEPROBS_H
+
+#include "entropy.h"
 
 /* Update probabilities for the nodes in the token entropy tree.
    Generated file included by entropy.c */
@@ -183,3 +187,5 @@ const vp8_prob vp8_coef_update_probs [BLOCK_TYPES] [COEF_BANDS] [PREV_COEF_CONTE
         },
     },
 };
+
+#endif /* COEFUPDATEPROBS_H */

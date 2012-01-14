@@ -156,7 +156,6 @@ C_SOURCES := \
 	vl/vp8/vp8_mem.c \
 	vl/vp8/common/alloccommon.c \
 	vl/vp8/common/blockd.c \
-	vl/vp8/common/defaultcoefcounts.c \
 	vl/vp8/common/entropy.c \
 	vl/vp8/common/entropymode.c \
 	vl/vp8/common/entropymv.c \
@@ -164,7 +163,6 @@ C_SOURCES := \
 	vl/vp8/common/findnearmv.c \
 	vl/vp8/common/idctllm.c \
 	vl/vp8/common/invtrans.c \
-	vl/vp8/common/modecontext.c \
 	vl/vp8/common/quant_common.c \
 	vl/vp8/common/recon.c \
 	vl/vp8/common/reconinter.c \

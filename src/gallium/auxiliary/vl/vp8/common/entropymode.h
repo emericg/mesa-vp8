@@ -30,11 +30,6 @@ extern int vp8_mv_cont(const int_mv *l, const int_mv *a);
 
 extern const vp8_prob vp8_sub_mv_ref_prob2 [SUBMVREF_COUNT][VP8_SUBMVREFS-1];
 
-extern const int vp8_mode_contexts[6][4];
-
-extern const unsigned int vp8_kf_default_bmode_counts [VP8_BINTRAMODES] [VP8_BINTRAMODES] [VP8_BINTRAMODES];
-
-
 extern const vp8_tree_index vp8_bmode_tree[];
 
 extern const vp8_tree_index vp8_ymode_tree[];

@@ -17,6 +17,7 @@
 #include "onyxc_int.h"
 
 #include "coefupdateprobs.h"
+#include "defaultcoefcounts.h"
 
 DECLARE_ALIGNED(16, const unsigned char, vp8_norm[256]) =
 {
@@ -127,8 +128,6 @@ static void init_bit_trees()
     init_bit_tree(cat5, 5);
     init_bit_tree(cat6, 11);
 }
-
-#include "defaultcoefcounts.h"
 
 void vp8_default_coef_probs(VP8_COMMON *pc)
 {

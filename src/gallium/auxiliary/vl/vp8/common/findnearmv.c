@@ -11,6 +11,16 @@
 
 #include "findnearmv.h"
 
+const int vp8_mode_contexts[6][4] =
+{
+    {  7,   1,   1, 143},
+    { 14,  18,  14, 107},
+    {135,  64,  57,  68},
+    { 60,  56, 128,  65},
+    {159, 134, 128,  34},
+    {234, 188, 128,  28},
+};
+
 /**
  * Predict motion vectors using those from already-decoded nearby blocks.
  * Note that we only consider one 4x4 subblock from each candidate 16x16
