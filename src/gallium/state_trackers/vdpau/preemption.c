@@ -28,6 +28,8 @@
 #include <vdpau/vdpau.h>
 #include "vdpau_private.h"
 
+#include "vdpau_private.h"
+
 /**
  * A callback to notify the client application that a device's display has
  * been preempted.
