@@ -40,24 +40,33 @@
 #define SCALE_FACTOR_SSCALED (1.0f / 256.0f)
 
 struct format_config {
-    enum pipe_format zscan_source_format;
-    enum pipe_format idct_source_format;
     enum pipe_format mc_source_format;
     enum pipe_format loopfilter_source_format;
 
-    float idct_scale;
     float mc_scale;
 };
 
 static const struct format_config bitstream_format_config[] = {
-   { PIPE_FORMAT_R16_SNORM, PIPE_FORMAT_R16G16B16A16_SNORM, PIPE_FORMAT_R16G16B16A16_SNORM, PIPE_FORMAT_R16G16B16A16_SNORM, 1.0f, SCALE_FACTOR_SNORM }
+//   { PIPE_FORMAT_R16G16B16A16_FLOAT, PIPE_FORMAT_R16G16B16A16_FLOAT, SCALE_FACTOR_SSCALED },
+//   { PIPE_FORMAT_R16G16B16A16_SSCALED, PIPE_FORMAT_R16G16B16A16_SSCALED, SCALE_FACTOR_SSCALED },
+   { PIPE_FORMAT_R16G16B16A16_FLOAT, PIPE_FORMAT_R16G16B16A16_FLOAT, SCALE_FACTOR_SNORM },
+   { PIPE_FORMAT_R16G16B16A16_SNORM, PIPE_FORMAT_R16G16B16A16_SNORM, SCALE_FACTOR_SNORM }
 };
 
 static const unsigned num_bitstream_format_configs =
    sizeof(bitstream_format_config) / sizeof(struct format_config);
 
+static const struct format_config mc_format_config[] = {
+   //{ PIPE_FORMAT_R16_SSCALED, PIPE_FORMAT_R16_SSCALED, SCALE_FACTOR_SSCALED },
+   { PIPE_FORMAT_R16_SNORM, PIPE_FORMAT_R16_SNORM, SCALE_FACTOR_SNORM }
+};
+
+static const unsigned num_mc_format_configs =
+   sizeof(mc_format_config) / sizeof(struct format_config);
+
 static const struct format_config loopfilter_format_config[] = {
-   { PIPE_FORMAT_R16_SNORM, PIPE_FORMAT_R16G16B16A16_SNORM, PIPE_FORMAT_R16G16B16A16_SNORM, PIPE_FORMAT_R16G16B16A16_SNORM, 1.0f, SCALE_FACTOR_SNORM }
+    //{ PIPE_FORMAT_R16G16B16A16_SSCALED, PIPE_FORMAT_R16G16B16A16_SSCALED, SCALE_FACTOR_SSCALED },
+    { PIPE_FORMAT_R16G16B16A16_SNORM, PIPE_FORMAT_R16G16B16A16_SNORM, SCALE_FACTOR_SNORM }
 };
 
 static const unsigned num_loopfilter_format_configs =
@@ -103,13 +112,14 @@ vl_vp8_destroy(struct pipe_video_decoder *decoder)
 }
 
 static struct vl_vp8_buffer *
-vl_vp8_get_decode_buffer(struct vl_vp8_decoder *dec)
+vl_vp8_get_decode_buffer(struct vl_vp8_decoder *dec, struct pipe_video_buffer *target)
 {
    struct vl_vp8_buffer *buffer;
 
    assert(dec);
 
-   buffer = vl_video_buffer_get_associated_data(dec->target, &dec->base);
+   buffer = vl_video_buffer_get_associated_data(target, &dec->base);
+
    if (buffer)
       return buffer;
 
@@ -130,7 +140,7 @@ vl_vp8_get_decode_buffer(struct vl_vp8_decoder *dec)
       vl_vp8_bs_init(&buffer->bs, &dec->base);
 
    if (dec->expect_chunked_decode)
-      vl_video_buffer_set_associated_data(dec->target, &dec->base,
+      vl_video_buffer_set_associated_data(target, &dec->base,
                                           buffer, vl_vp8_destroy_buffer);
    else
       dec->dec_buffers[dec->current_buffer] = buffer;
@@ -143,79 +153,23 @@ error_vertex_buffer:
 }
 
 static void
-vl_vp8_set_picture_parameters(struct pipe_video_decoder *decoder,
-                              struct pipe_picture_desc *picture)
+vl_vp8_begin_frame(struct pipe_video_decoder *decoder,
+                   struct pipe_video_buffer *target,
+                   struct pipe_picture_desc *picture)
 {
    struct vl_vp8_decoder *dec = (struct vl_vp8_decoder *)decoder;
-   struct pipe_vp8_picture_desc *pic = (struct pipe_vp8_picture_desc *)picture;
-
-   assert(dec && pic);
-
-   dec->picture_desc = *pic;
-}
-
-static void
-vl_vp8_set_quant_matrix(struct pipe_video_decoder *decoder,
-                        const struct pipe_quant_matrix *matrix)
-{
-   struct vl_vp8_decoder *dec = (struct vl_vp8_decoder *)decoder;
-   assert(dec);
-}
-
-static void
-vl_vp8_set_decode_target(struct pipe_video_decoder *decoder,
-                         struct pipe_video_buffer *target)
-{
-   struct vl_vp8_decoder *dec = (struct vl_vp8_decoder *)decoder;
-   struct pipe_surface **surfaces;
-   unsigned i;
-
-   assert(dec);
-
-   dec->target = target;
-   surfaces = target->get_surfaces(target);
-   for (i = 0; i < VL_MAX_PLANES; ++i)
-      pipe_surface_reference(&dec->target_surfaces[i], surfaces[i]);
-}
-
-static void
-vl_vp8_set_reference_frames(struct pipe_video_decoder *decoder,
-                            struct pipe_video_buffer **ref_frames,
-                            unsigned num_ref_frames)
-{
-   struct vl_vp8_decoder *dec = (struct vl_vp8_decoder *)decoder;
-   struct pipe_sampler_view **sv;
-   unsigned i,j;
-
-   assert(dec);
-   assert(num_ref_frames <= VL_MAX_REF_FRAMES);
-
-   for (i = 0; i < num_ref_frames; ++i) {
-      sv = ref_frames[i]->get_sampler_view_planes(ref_frames[i]);
-      for (j = 0; j < VL_MAX_PLANES; ++j)
-         pipe_sampler_view_reference(&dec->ref_frames[i][j], sv[j]);
-   }
-
-   for (; i < VL_MAX_REF_FRAMES; ++i)
-      for (j = 0; j < VL_MAX_PLANES; ++j)
-         pipe_sampler_view_reference(&dec->ref_frames[i][j], NULL);
-}
-
-static void
-vl_vp8_begin_frame(struct pipe_video_decoder *decoder)
-{
-   struct vl_vp8_decoder *dec = (struct vl_vp8_decoder *)decoder;
+   struct pipe_vp8_picture_desc *desc = (struct pipe_vp8_picture_desc *)picture;
    struct vl_vp8_buffer *buf;
 
-   assert(dec && dec->target);
+   assert(dec && target && picture);
 
-   buf = vl_vp8_get_decode_buffer(dec);
+   buf = vl_vp8_get_decode_buffer(dec, target);
    assert(buf);
 
    vl_vb_map(&buf->vertex_stream, dec->base.context);
 
    if (dec->base.entrypoint == PIPE_VIDEO_ENTRYPOINT_BITSTREAM) {
-      vl_vp8_bs_set_picture_desc(&buf->bs, &dec->picture_desc);
+      //
    }
 
    dec->current_buffer = 0;
@@ -224,32 +178,38 @@ vl_vp8_begin_frame(struct pipe_video_decoder *decoder)
 
 static void
 vl_vp8_decode_macroblock(struct pipe_video_decoder *decoder,
+                         struct pipe_video_buffer *target,
+                         struct pipe_picture_desc *picture,
                          const struct pipe_macroblock *macroblocks,
                          unsigned num_macroblocks)
 {
    struct vl_vp8_decoder *dec = (struct vl_vp8_decoder *)decoder;
+   struct pipe_vp8_picture_desc *desc = (struct pipe_vp8_picture_desc *)picture;
    const struct pipe_vp8_macroblock *mb = (const struct pipe_vp8_macroblock *)macroblocks;
    struct vl_vp8_buffer *buf;
 
-   assert(dec && dec->target);
+   assert(dec && target && picture);
    assert(macroblocks && macroblocks->codec == PIPE_VIDEO_CODEC_VP8);
 
-   buf = vl_vp8_get_decode_buffer(dec);
+   buf = vl_vp8_get_decode_buffer(dec, target);
    assert(buf);
 }
 
 static void
 vl_vp8_decode_bitstream(struct pipe_video_decoder *decoder,
+                        struct pipe_video_buffer *target,
+                        struct pipe_picture_desc *picture,
                         unsigned num_buffers,
                         const void * const *buffers,
                         const unsigned *sizes)
 {
    struct vl_vp8_decoder *dec = (struct vl_vp8_decoder *)decoder;
+   struct pipe_vp8_picture_desc *desc = (struct pipe_vp8_picture_desc *)picture;
    struct vl_vp8_buffer *buf;
 
-   assert(dec && dec->target);
+   assert(dec && target && picture);
 
-   buf = vl_vp8_get_decode_buffer(dec);
+   buf = vl_vp8_get_decode_buffer(dec, target);
    assert(buf);
 
    // Try and detect start_code from the first data buffer
@@ -272,9 +232,9 @@ vl_vp8_decode_bitstream(struct pipe_video_decoder *decoder,
       }
 
       // Start bitstream decoding
-      //vl_vp8_bs_decode(&buf->bs, num_buffers, buffers, sizes);
+      //vl_vp8_bs_decode(&buf->bs, target, desc, num_buffers, buffers, sizes);
 
-      if (vp8_decoder_start(dec->vp8_dec, &dec->picture_desc, (const uint8_t *)buffers[dec->current_buffer], sizes[dec->current_buffer], 0))
+      if (vp8_decoder_start(dec->vp8_dec, desc, (const uint8_t *)buffers[dec->current_buffer], sizes[dec->current_buffer], 0))
       {
          printf("[G3DVL] Error : decoding error, not a valid VP8 VDPAU frame !\n");
          dec->img_ready = 0;
@@ -291,30 +251,83 @@ vl_vp8_decode_bitstream(struct pipe_video_decoder *decoder,
 }
 
 static void
-vl_vp8_end_frame(struct pipe_video_decoder *decoder)
+vl_vp8_end_frame(struct pipe_video_decoder *decoder,
+                 struct pipe_video_buffer *target,
+                 struct pipe_picture_desc *picture)
 {
    struct vl_vp8_decoder *dec = (struct vl_vp8_decoder*)decoder;
    struct vl_vp8_buffer *buf;
+   struct pipe_vp8_picture_desc *desc = (struct pipe_vp8_picture_desc *)picture;
+   struct pipe_sampler_view **ref_frames[VL_MAX_REF_FRAMES];
+   struct pipe_sampler_view **mc_source_sv;
+   struct pipe_surface **target_surfaces;
+   struct pipe_vertex_buffer vb[3];
+
+   const unsigned *plane_order;
+   unsigned i, j, component;
+   unsigned nr_components;
 
    struct pipe_sampler_view **sampler_views;
-   struct pipe_vertex_buffer vb[3];
    struct pipe_context *pipe;
-
    int64_t timestamp = 0, timestamp_end = 0;
-   unsigned i;
 
-   assert(dec && dec->target);
+   assert(dec && target && picture);
 
-   buf = vl_vp8_get_decode_buffer(dec);
+   buf = vl_vp8_get_decode_buffer(dec, target);
    assert(buf);
 
+   vl_vb_unmap(&buf->vertex_stream, dec->base.context);
+
+   vb[0] = dec->quads;
+   vb[1] = dec->pos;
+
+   target_surfaces = target->get_surfaces(target);
+
+   for (i = 0; i < VL_MAX_REF_FRAMES; ++i) {
+      if (desc->ref[i])
+         ref_frames[i] = desc->ref[i]->get_sampler_view_planes(desc->ref[i]);
+      else
+         ref_frames[i] = NULL;
+   }
+
+   // VP8 bypass transfert frame
    pipe = buf->bs.decoder->context;
    if (!pipe) {
       printf("[end_frame] No pipe\n");
       return;
    }
+/*
+   if (target->buffer_format != PIPE_FORMAT_YV12) {
+      printf("[end_frame] bad format ? current is %i\n", target->buffer_format);
 
-   sampler_views = dec->target->get_sampler_view_planes(dec->target);
+      // destroy the old one
+      if (target)
+         target->destroy(target);
+
+      // adjust the template parameters
+      struct pipe_video_buffer templat;
+      memset(&templat, 0, sizeof(templat));
+      templat.chroma_format = PIPE_VIDEO_CHROMA_FORMAT_420;
+      templat.width = target->width;
+      templat.height = target->height;
+      templat.buffer_format = PIPE_FORMAT_YV12;
+      templat.interlaced = false;
+
+      // and try to create the video buffer with the new format
+      target = pipe->create_video_buffer(pipe, &templat);
+
+      // stil no luck? ok forget it we don't support it
+      if (!target)
+         return;
+
+      if (target->buffer_format != PIPE_FORMAT_YV12) {
+         printf("[end_frame] bad format ? current is %i\n", target->buffer_format);
+      } else {
+          printf("[end_frame] bad format ? nope, allright than\n");
+      }
+   }
+*/
+   sampler_views = target->get_sampler_view_planes(target);
    if (!sampler_views) {
       printf("[end_frame] No sampler_views\n");
       return;
@@ -329,38 +342,37 @@ vl_vp8_end_frame(struct pipe_video_decoder *decoder)
    // Load YCbCr planes into a GPU texture
    for (i = 0; i < 3; ++i)
    {
-      struct pipe_sampler_view *sv = sampler_views[i ? i ^ 3 : 0];
+      struct pipe_sampler_view *sv = sampler_views[i];
       struct pipe_box dst_box = { 0, 0, 0, sv->texture->width0, sv->texture->height0, 1 };
+      struct pipe_transfer *dst_transfer = pipe->get_transfer(pipe, sv->texture, 0, PIPE_TRANSFER_WRITE, &dst_box);;
 
-      struct pipe_transfer *transfer;
-      void *map;
-
-      transfer = pipe->get_transfer(pipe, sv->texture, 0, PIPE_TRANSFER_WRITE, &dst_box);
-      if (!transfer)
-      {
+      if (!dst_transfer) {
          printf("[end_frame] No transfer\n");
          return;
       }
 
-      ubyte *dst = dec->img_yv12.y_buffer;
+      void *dst = pipe->transfer_map(pipe, dst_transfer);
+      ubyte *src = dec->img_yv12.y_buffer;
 
       if (i == 1)
-         dst = dec->img_yv12.v_buffer;
+         src = dec->img_yv12.v_buffer;
       else if (i == 2)
-         dst = dec->img_yv12.u_buffer;
+         src = dec->img_yv12.u_buffer;
 
-      map = pipe->transfer_map(pipe, transfer);
-      if (map)
-      {
-         util_copy_rect(map, sv->texture->format, transfer->stride, 0, 0,
-                        dst_box.width, dst_box.height, dst,
+      if (dst) {
+         util_copy_rect(dst,
+                        sv->texture->format,
+                        dst_transfer->stride,
+                        dst_box.x, dst_box.y,
+                        dst_box.width, dst_box.height,
+                        src,
                         (i ? dec->img_yv12.uv_stride : dec->img_yv12.y_stride),
                         0, 0);
 
-         pipe->transfer_unmap(pipe, transfer);
+         pipe->transfer_unmap(pipe, dst_transfer);
       }
 
-      pipe->transfer_destroy(pipe, transfer);
+      pipe->transfer_destroy(pipe, dst_transfer);
    }
 }
 
@@ -418,9 +430,7 @@ init_pipe_state(struct vl_vp8_decoder *dec)
 }
 
 static const struct format_config*
-find_format_config(struct vl_vp8_decoder *dec,
-                   const struct format_config configs[],
-                   unsigned num_configs)
+find_format_config(struct vl_vp8_decoder *dec, const struct format_config configs[], unsigned num_configs)
 {
    struct pipe_screen *screen;
    unsigned i;
@@ -430,9 +440,12 @@ find_format_config(struct vl_vp8_decoder *dec,
    screen = dec->base.context->screen;
 
    for (i = 0; i < num_configs; ++i) {
+      if (!screen->is_format_supported(screen, configs[i].mc_source_format, PIPE_TEXTURE_2D,
+                                       1, PIPE_BIND_SAMPLER_VIEW | PIPE_BIND_RENDER_TARGET))
+         continue;
+
       if (!screen->is_format_supported(screen,
-                                       configs[i].loopfilter_source_format,
-                                       PIPE_TEXTURE_2D,
+                                       configs[i].loopfilter_source_format, PIPE_TEXTURE_2D,
                                        1, PIPE_BIND_SAMPLER_VIEW))
          continue;
 
@@ -473,10 +486,6 @@ vl_create_vp8_decoder(struct pipe_context *context,
    dec->base.max_references = max_references;
 
    dec->base.destroy = vl_vp8_destroy;
-   dec->base.set_picture_parameters = vl_vp8_set_picture_parameters;
-   dec->base.set_quant_matrix = vl_vp8_set_quant_matrix;
-   dec->base.set_decode_target = vl_vp8_set_decode_target;
-   dec->base.set_reference_frames = vl_vp8_set_reference_frames;
    dec->base.begin_frame = vl_vp8_begin_frame;
    dec->base.decode_macroblock = vl_vp8_decode_macroblock;
    dec->base.decode_bitstream = vl_vp8_decode_bitstream;
@@ -484,17 +493,30 @@ vl_create_vp8_decoder(struct pipe_context *context,
    dec->base.flush = vl_vp8_flush;
 
    dec->blocks_per_line = MAX2(util_next_power_of_two(dec->base.width) / block_size_pixels, 4);
-   dec->num_blocks = (dec->base.width * dec->base.height) / block_size_pixels;
+   dec->num_blocks = ((dec->base.width * dec->base.height) / block_size_pixels) * 2;
+   dec->width_in_macroblocks = align(dec->base.width, MACROBLOCK_WIDTH) / MACROBLOCK_WIDTH;
+   dec->expect_chunked_decode = expect_chunked_decode;
 
+   // VP8 only support 4:2:0 chroma subsampling
    assert(dec->base.chroma_format == PIPE_VIDEO_CHROMA_FORMAT_420);
    dec->chroma_width = dec->base.width / 2;
    dec->chroma_height = dec->base.height / 2;
-   dec->width_in_macroblocks = align(dec->base.width, MACROBLOCK_WIDTH) / MACROBLOCK_WIDTH;
-   dec->expect_chunked_decode = expect_chunked_decode;
+
+   dec->quads = vl_vb_upload_quads(dec->base.context);
+   dec->pos = vl_vb_upload_pos(dec->base.context,
+                               dec->base.width / MACROBLOCK_WIDTH,
+                               dec->base.height / MACROBLOCK_HEIGHT);
+
+   dec->ves_ycbcr = vl_vb_get_ves_ycbcr(dec->base.context);
+   dec->ves_mv = vl_vb_get_ves_mv(dec->base.context);
 
    switch (entrypoint) {
    case PIPE_VIDEO_ENTRYPOINT_BITSTREAM:
       format_config = find_format_config(dec, bitstream_format_config, num_bitstream_format_configs);
+      break;
+
+   case PIPE_VIDEO_ENTRYPOINT_MC:
+      format_config = find_format_config(dec, mc_format_config, num_mc_format_configs);
       break;
 
    case PIPE_VIDEO_ENTRYPOINT_LOOPFILTER:

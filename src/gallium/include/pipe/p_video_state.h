@@ -341,6 +341,8 @@ struct pipe_vp8_picture_desc
    unsigned intra_chroma_prob[3];
 
    unsigned mv_prob[2][19];
+
+   struct pipe_video_buffer *ref[3];
 };
 
 struct pipe_vp8_macroblock

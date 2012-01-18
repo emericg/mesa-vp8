@@ -54,17 +54,29 @@ struct vl_vp8_decoder
    unsigned width_in_macroblocks;
    bool expect_chunked_decode;
 
-   void *sampler_ycbcr;
+   struct pipe_vertex_buffer quads;
+   struct pipe_vertex_buffer pos;
 
+   void *ves_ycbcr;
+   void *ves_mv;
+
+   void *sampler_ycbcr;
+/*
+   struct pipe_sampler_view *zscan_linear;
+   struct pipe_sampler_view *zscan_normal;
+   struct pipe_sampler_view *zscan_alternate;
+
+   struct pipe_video_buffer *idct_source;
+   struct pipe_video_buffer *mc_source;
+
+   struct vl_zscan zscan_y, zscan_c;
+   struct vl_idct idct_y, idct_c;
+   struct vl_mc mc_y, mc_c;
+*/
    void *dsa;
 
    unsigned current_buffer;
    struct vl_vp8_buffer *dec_buffers[4];
-
-   struct pipe_vp8_picture_desc picture_desc;
-   struct pipe_sampler_view *ref_frames[VL_MAX_REF_FRAMES][VL_MAX_PLANES];
-   struct pipe_video_buffer *target;
-   struct pipe_surface *target_surfaces[VL_MAX_PLANES];
 
    // VP8 decoder context
    VP8D_PTR vp8_dec;

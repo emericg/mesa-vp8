@@ -411,124 +411,88 @@ vlVdpDecoderFixVC1Startcode(uint32_t *num_buffers, const void *buffers[], unsign
 }
 
 static VdpStatus
-vlVdpDecoderRenderVP8(struct pipe_video_decoder *decoder,
+vlVdpDecoderRenderVP8(struct pipe_vp8_picture_desc *picture,
                       VdpPictureInfoVP8 *picture_info)
 {
-   struct pipe_vp8_picture_desc picture;
-   struct pipe_video_buffer *ref_frames[3] = {};
-   unsigned i = 0, j, k, l;
+   VdpStatus r;
+   unsigned i, j, k, l;
 
    VDPAU_MSG(VDPAU_TRACE, "[VDPAU] Decoding VP8\n");
 
-   /* Get back reference pictures.
-    * If reference surfaces equals VDP_INVALID_HANDLE, they are not used. */
-   ref_frames[0] = NULL;
-   ref_frames[1] = NULL;
-   ref_frames[2] = NULL;
+   /* Get back reference frames */
+   r = vlVdpGetReferenceFrame(picture_info->previous_frame, &picture->ref[0]);
+   if (r != VDP_STATUS_OK)
+      return r;
 
-   if (picture_info->previous_frame != VDP_INVALID_HANDLE) {
-      ref_frames[0] = ((vlVdpSurface *)vlGetDataHTAB(picture_info->previous_frame))->video_buffer;
-      if (!ref_frames[0])
-         return VDP_STATUS_INVALID_HANDLE;
-      ++i;
-   }
-
-   if (picture_info->golden_frame != VDP_INVALID_HANDLE) {
-      ref_frames[1] = ((vlVdpSurface *)vlGetDataHTAB(picture_info->golden_frame))->video_buffer;
-      if (!ref_frames[1])
-         return VDP_STATUS_INVALID_HANDLE;
-      ++i;
-   }
+   r = vlVdpGetReferenceFrame(picture_info->golden_frame, &picture->ref[1]);
+   if (r != VDP_STATUS_OK)
+      return r;
 /*
-   // Disable altref frames as reference for now, as it causes segfault inside vl_vp8_set_reference_frames()
-   if (picture_info->altref_frame != VDP_INVALID_HANDLE) {
-      ref_frames[2] = ((vlVdpSurface *)vlGetDataHTAB(picture_info->altref_frame))->video_buffer;
-      if (!ref_frames[2])
-         return VDP_STATUS_INVALID_HANDLE;
-      ++i;
-   }
+   // Note: altref frames needs to be disabled, as it currently causes segfault inside vl_vp8_set_reference_frames()
+   r = vlVdpGetReferenceFrame(picture_info->altref_frame, &picture->ref[1]);
+   if (r != VDP_STATUS_OK)
+      return r;
 */
-   decoder->set_reference_frames(decoder, ref_frames, i);
-
    /* Get back picture parameters */
-   memset(&picture, 0, sizeof(picture));
-   picture.base.profile = picture_info->version;
-   picture.key_frame = picture_info->key_frame;
-   picture.show_frame = picture_info->show_frame;
-   picture.first_partition_size = picture_info->first_partition_size;
-   picture.horizontal_scale = picture_info->horizontal_scale;
-   picture.width = picture_info->width;
-   picture.vertical_scale = picture_info->vertical_scale;
-   picture.height = picture_info->height;
-   picture.color_space = picture_info->color_space;
-   picture.clamping_type = picture_info->clamping_type;
-   picture.segmentation_enable = picture_info->segmentation_enable;
-   picture.segment_map_update = picture_info->segment_map_update;
-   picture.segment_data_update = picture_info->segment_data_update;
-   picture.segment_data_mode = picture_info->segment_data_mode;
+   picture->key_frame = picture_info->key_frame;
+   picture->show_frame = picture_info->show_frame;
+   picture->first_partition_size = picture_info->first_partition_size;
+   picture->horizontal_scale = picture_info->horizontal_scale;
+   picture->width = picture_info->width;
+   picture->vertical_scale = picture_info->vertical_scale;
+   picture->height = picture_info->height;
+   picture->color_space = picture_info->color_space;
+   picture->clamping_type = picture_info->clamping_type;
+   picture->segmentation_enable = picture_info->segmentation_enable;
+   picture->segment_map_update = picture_info->segment_map_update;
+   picture->segment_data_update = picture_info->segment_data_update;
+   picture->segment_data_mode = picture_info->segment_data_mode;
    for (i = 0; i < 4; i++) {
-      picture.segment_base_quant[i] = picture_info->segment_base_quant[i];
-      picture.segment_filter_level[i] = picture_info->segment_filter_level[i];
+      picture->segment_base_quant[i] = picture_info->segment_base_quant[i];
+      picture->segment_filter_level[i] = picture_info->segment_filter_level[i];
    }
    for (i = 0; i < 3; i++) {
-      picture.segment_id[i] = picture_info->segment_id[i];
+      picture->segment_id[i] = picture_info->segment_id[i];
    }
-   picture.filter_type = picture_info->filter_type;
-   picture.filter_level = picture_info->filter_level;
-   picture.filter_sharpness_level = picture_info->filter_sharpness_level;
-   picture.filter_update = picture_info->filter_update;
+   picture->filter_type = picture_info->filter_type;
+   picture->filter_level = picture_info->filter_level;
+   picture->filter_sharpness_level = picture_info->filter_sharpness_level;
+   picture->filter_update = picture_info->filter_update;
    for (i = 0; i < 4; i++) {
-      picture.filter_update_value[i] = picture_info->filter_update_value[i];
-      picture.filter_update_sign[i] = picture_info->filter_update_sign[i];
+      picture->filter_update_value[i] = picture_info->filter_update_value[i];
+      picture->filter_update_sign[i] = picture_info->filter_update_sign[i];
    }
-   picture.num_coeff_partitions = picture_info->num_coeff_partitions;
+   picture->num_coeff_partitions = picture_info->num_coeff_partitions;
    for (i = 0; i < 4; i++) {
        for (j = 0; j < 2; j++) {
-           picture.dquant[i].luma_qi[j] = picture_info->dquant[i].luma_qi[j];
-           picture.dquant[i].luma_dc_qi[j] = picture_info->dquant[i].luma_dc_qi[j];
-           picture.dquant[i].chroma_qi[j] = picture_info->dquant[i].chroma_qi[j];
+           picture->dquant[i].luma_qi[j] = picture_info->dquant[i].luma_qi[j];
+           picture->dquant[i].luma_dc_qi[j] = picture_info->dquant[i].luma_dc_qi[j];
+           picture->dquant[i].chroma_qi[j] = picture_info->dquant[i].chroma_qi[j];
        }
    }
-   picture.refresh_golden = picture_info->refresh_golden;
-   picture.refresh_altref = picture_info->refresh_altref;
-   picture.sign_bias_flag[0] = picture_info->sign_bias_flag[0];
-   picture.sign_bias_flag[1] = picture_info->sign_bias_flag[1];
-   picture.refresh_probabilities = picture_info->refresh_probabilities;
-   picture.refresh_last = picture_info->refresh_last;
+   picture->refresh_golden = picture_info->refresh_golden;
+   picture->refresh_altref = picture_info->refresh_altref;
+   picture->sign_bias_flag[0] = picture_info->sign_bias_flag[0];
+   picture->sign_bias_flag[1] = picture_info->sign_bias_flag[1];
+   picture->refresh_probabilities = picture_info->refresh_probabilities;
+   picture->refresh_last = picture_info->refresh_last;
    for (i = 0; i < 4; i++)
       for (j = 0; j < 8; j++)
          for (k = 0; k < 3; k++)
             for (l = 0; l < 11; l++)
-               picture.token_prob[i][j][k][l] = picture_info->token_prob[i][j][k][l];
-   picture.mb_no_coeff_skip = picture_info->mb_no_coeff_skip;
-   picture.prob_skip_false = picture_info->prob_skip_false;
-   picture.prob_intra = picture_info->prob_intra;
-   picture.prob_last = picture_info->prob_last;
-   picture.prob_golden = picture_info->prob_golden;
+               picture->token_prob[i][j][k][l] = picture_info->token_prob[i][j][k][l];
+   picture->mb_no_coeff_skip = picture_info->mb_no_coeff_skip;
+   picture->prob_skip_false = picture_info->prob_skip_false;
+   picture->prob_intra = picture_info->prob_intra;
+   picture->prob_last = picture_info->prob_last;
+   picture->prob_golden = picture_info->prob_golden;
    for (i = 0; i < 4; i++)
-       picture.intra_16x16_prob[i] = picture_info->intra_16x16_prob[i];
+       picture->intra_16x16_prob[i] = picture_info->intra_16x16_prob[i];
    for (i = 0; i < 3; i++)
-       picture.intra_chroma_prob[i] = picture_info->intra_chroma_prob[i];
+       picture->intra_chroma_prob[i] = picture_info->intra_chroma_prob[i];
    for (i = 0; i < 2; i++)
       for (j = 0; j < 19; j++)
-         picture.mv_prob[i][j] = picture_info->mv_prob[i][j];
-
-   decoder->set_picture_parameters(decoder, &picture.base);
-/*
-   memset(&quant, 0, sizeof(quant));
-   quant.base.codec = PIPE_VIDEO_CODEC_VP8;
-   quant.intra_matrix = picture_info->intra_quantizer_matrix;
-   quant.non_intra_matrix = picture_info->non_intra_quantizer_matrix;
-
-   decoder->set_quant_matrix(decoder, &quant.base);
-*/
-   decoder->begin_frame(decoder);
-
-   for (i = 0; i < bitstream_buffer_count; ++i)
-      decoder->decode_bitstream(decoder, bitstream_buffers[i].bitstream_bytes,
-                                bitstream_buffers[i].bitstream);
-
-   decoder->end_frame(decoder);
+         picture->mv_prob[i][j] = picture_info->mv_prob[i][j];
 
    return VDP_STATUS_OK;
 }
@@ -558,6 +522,7 @@ vlVdpDecoderRender(VdpDecoder decoder,
       struct pipe_mpeg4_picture_desc mpeg4;
       struct pipe_vc1_picture_desc vc1;
       struct pipe_h264_picture_desc h264;
+      struct pipe_vp8_picture_desc vp8;
    } desc;
 
    if (!(picture_info && bitstream_buffers))
@@ -633,7 +598,7 @@ vlVdpDecoderRender(VdpDecoder decoder,
       ret = vlVdpDecoderRenderH264(&desc.h264, (VdpPictureInfoH264 *)picture_info);
       break;
    case PIPE_VIDEO_CODEC_VP8:
-      ret= vlVdpDecoderRenderVP8(dec, (VdpPictureInfoVP8 *)picture_info);
+      ret= vlVdpDecoderRenderVP8(&desc.vp8, (VdpPictureInfoVP8 *)picture_info);
       break;
    default:
       pipe_mutex_unlock(vlsurf->device->mutex);

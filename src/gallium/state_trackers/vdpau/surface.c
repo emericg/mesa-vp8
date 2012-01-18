@@ -76,12 +76,15 @@ vlVdpVideoSurfaceCreate(VdpDevice device, VdpChromaType chroma_type,
 
    pipe_mutex_lock(dev->mutex);
    memset(&p_surf->templat, 0, sizeof(p_surf->templat));
+   p_surf->templat.buffer_format = PIPE_FORMAT_YV12; // temporarly needed to keep the VP8 decoder working
+/*
    p_surf->templat.buffer_format = pipe->screen->get_video_param
    (
       pipe->screen,
       PIPE_VIDEO_PROFILE_UNKNOWN,
       PIPE_VIDEO_CAP_PREFERED_FORMAT
    );
+*/
    p_surf->templat.chroma_format = ChromaToPipe(chroma_type);
    p_surf->templat.width = width;
    p_surf->templat.height = height;

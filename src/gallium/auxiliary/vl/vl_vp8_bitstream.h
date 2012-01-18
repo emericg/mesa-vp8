@@ -34,17 +34,18 @@ struct vl_vp8_bs
 {
    struct pipe_video_decoder *decoder;
 
-   struct pipe_vp8_picture_desc desc;
+   struct pipe_vp8_picture_desc *desc;
 };
 
 void
 vl_vp8_bs_init(struct vl_vp8_bs *bs, struct pipe_video_decoder *decoder);
 
 void
-vl_vp8_bs_set_picture_desc(struct vl_vp8_bs *bs, struct pipe_vp8_picture_desc *picture);
-
-void
-vl_vp8_bs_decode(struct vl_vp8_bs *bs, unsigned num_buffers,
-                 const void * const *buffers, const unsigned *sizes);
+vl_vp8_bs_decode(struct vl_vp8_bs *bs,
+                 struct pipe_video_buffer *target,
+                 struct pipe_vp8_picture_desc *picture,
+                 unsigned num_buffers,
+                 const void * const *buffers,
+                 const unsigned *sizes);
 
 #endif /* vl_vp8_bitstream_h */
