@@ -10,7 +10,7 @@
 
 
 #include "recon.h"
-#include "subpixel.h"
+#include "filter_dispatch.h"
 #include "blockd.h"
 #include "reconinter.h"
 
@@ -106,7 +106,7 @@ void vp8_copy_mem8x4_c(unsigned char *src, int src_stride,
     }
 }
 
-void vp8_build_inter_predictors_b(BLOCKD *d, int pitch, vp8_subpix_fn_t sppf)
+void vp8_build_inter_predictors_b(BLOCKD *d, int pitch, vp8_filter_fn_t sppf)
 {
     int r;
     unsigned char *ptr_base;
@@ -152,7 +152,7 @@ static void build_inter_predictors4b(MACROBLOCKD *x, BLOCKD *d, int pitch)
 
     if (d->bmi.mv.as_mv.row & 7 || d->bmi.mv.as_mv.col & 7)
     {
-        x->subpixel_predict8x8(ptr, d->pre_stride, d->bmi.mv.as_mv.col & 7, d->bmi.mv.as_mv.row & 7, pred_ptr, pitch);
+        x->filter_predict8x8(ptr, d->pre_stride, d->bmi.mv.as_mv.col & 7, d->bmi.mv.as_mv.row & 7, pred_ptr, pitch);
     }
     else
     {
@@ -171,7 +171,7 @@ static void build_inter_predictors2b(MACROBLOCKD *x, BLOCKD *d, int pitch)
 
     if (d->bmi.mv.as_mv.row & 7 || d->bmi.mv.as_mv.col & 7)
     {
-        x->subpixel_predict8x4(ptr, d->pre_stride, d->bmi.mv.as_mv.col & 7, d->bmi.mv.as_mv.row & 7, pred_ptr, pitch);
+        x->filter_predict8x4(ptr, d->pre_stride, d->bmi.mv.as_mv.col & 7, d->bmi.mv.as_mv.row & 7, pred_ptr, pitch);
     }
     else
     {
@@ -200,7 +200,7 @@ void vp8_build_inter16x16_predictors_mb(MACROBLOCKD *x,
 
     if ((mv_row | mv_col) & 7)
     {
-        x->subpixel_predict16x16(ptr, pre_stride, mv_col & 7, mv_row & 7, dst_y, dst_ystride);
+        x->filter_predict16x16(ptr, pre_stride, mv_col & 7, mv_row & 7, dst_y, dst_ystride);
     }
     else
     {
@@ -216,8 +216,8 @@ void vp8_build_inter16x16_predictors_mb(MACROBLOCKD *x,
 
     if ((mv_row | mv_col) & 7)
     {
-        x->subpixel_predict8x8(uptr, pre_stride, mv_col & 7, mv_row & 7, dst_u, dst_uvstride);
-        x->subpixel_predict8x8(vptr, pre_stride, mv_col & 7, mv_row & 7, dst_v, dst_uvstride);
+        x->filter_predict8x8(uptr, pre_stride, mv_col & 7, mv_row & 7, dst_u, dst_uvstride);
+        x->filter_predict8x8(vptr, pre_stride, mv_col & 7, mv_row & 7, dst_v, dst_uvstride);
     }
     else
     {
@@ -249,8 +249,8 @@ void vp8_build_inter4x4_predictors_mb(MACROBLOCKD *x)
                 build_inter_predictors2b(x, d0, 16);
             else
             {
-                vp8_build_inter_predictors_b(d0, 16, x->subpixel_predict);
-                vp8_build_inter_predictors_b(d1, 16, x->subpixel_predict);
+                vp8_build_inter_predictors_b(d0, 16, x->filter_predict4x4);
+                vp8_build_inter_predictors_b(d1, 16, x->filter_predict4x4);
             }
         }
     }
@@ -264,8 +264,8 @@ void vp8_build_inter4x4_predictors_mb(MACROBLOCKD *x)
             build_inter_predictors2b(x, d0, 8);
         else
         {
-            vp8_build_inter_predictors_b(d0, 8, x->subpixel_predict);
-            vp8_build_inter_predictors_b(d1, 8, x->subpixel_predict);
+            vp8_build_inter_predictors_b(d0, 8, x->filter_predict4x4);
+            vp8_build_inter_predictors_b(d1, 8, x->filter_predict4x4);
         }
     }
 }

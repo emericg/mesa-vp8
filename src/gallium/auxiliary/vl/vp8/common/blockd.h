@@ -17,7 +17,7 @@
 
 #include "mv.h"
 #include "treecoder.h"
-#include "subpixel.h"
+#include "filter_dispatch.h"
 
 #define MB_FEATURE_TREE_PROBS 3
 #define MAX_MB_SEGMENTS       4
@@ -229,10 +229,10 @@ typedef struct
 
     unsigned int frames_since_golden;
     unsigned int frames_till_alt_ref_frame;
-    vp8_subpix_fn_t subpixel_predict;
-    vp8_subpix_fn_t subpixel_predict8x4;
-    vp8_subpix_fn_t subpixel_predict8x8;
-    vp8_subpix_fn_t subpixel_predict16x16;
+    vp8_filter_fn_t filter_predict4x4;
+    vp8_filter_fn_t filter_predict8x4;
+    vp8_filter_fn_t filter_predict8x8;
+    vp8_filter_fn_t filter_predict16x16;
 
     void *current_bd;
 

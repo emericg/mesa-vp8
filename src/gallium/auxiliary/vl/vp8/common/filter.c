@@ -14,7 +14,10 @@
 #include "filter.h"
 #include "../vp8_mem.h"
 
-DECLARE_ALIGNED(16, const short, vp8_bilinear_filters[8][2]) =
+#define VP8_FILTER_WEIGHT 128
+#define VP8_FILTER_SHIFT  7
+
+DECLARE_ALIGNED(16, const short, vp8_filters_bilinear[8][2]) =
 {
     { 128,   0 },
     { 112,  16 },
@@ -26,26 +29,26 @@ DECLARE_ALIGNED(16, const short, vp8_bilinear_filters[8][2]) =
     {  16, 112 }
 };
 
-DECLARE_ALIGNED(16, const short, vp8_sub_pel_filters[8][6]) =
+DECLARE_ALIGNED(16, const short, vp8_filters_sixtap[8][6]) =
 {
 
-    { 0,  0,  128,    0,   0,  0 },         /* note that 1/8 pel positions are just as per alpha -0.5 bicubic */
+    { 0,  0,  128,    0,   0,  0 },   /* note that 1/8 pel positions are just as per alpha -0.5 bicubic */
     { 0, -6,  123,   12,  -1,  0 },
-    { 2, -11, 108,   36,  -8,  1 },         /* New 1/4 pel 6 tap filter */
+    { 2, -11, 108,   36,  -8,  1 },   /* New 1/4 pel 6 tap filter */
     { 0, -9,   93,   50,  -6,  0 },
-    { 3, -16,  77,   77, -16,  3 },         /* New 1/2 pel 6 tap filter */
+    { 3, -16,  77,   77, -16,  3 },   /* New 1/2 pel 6 tap filter */
     { 0, -6,   50,   93,  -9,  0 },
-    { 1, -8,   36,  108, -11,  2 },         /* New 1/4 pel 6 tap filter */
+    { 1, -8,   36,  108, -11,  2 },   /* New 1/4 pel 6 tap filter */
     { 0, -1,   12,  123,  -6,  0 },
 };
 
-static void filter_block2d_first_pass(unsigned char *src_ptr,
-                                      int *output_ptr,
-                                      unsigned int src_pixels_per_line,
-                                      unsigned int pixel_step,
-                                      unsigned int output_height,
-                                      unsigned int output_width,
-                                      const short *vp8_filter)
+static void filter_sixtap_block2d_first_pass(unsigned char *src_ptr,
+                                             int *output_ptr,
+                                             unsigned int src_pixels_per_line,
+                                             unsigned int pixel_step,
+                                             unsigned int output_height,
+                                             unsigned int output_width,
+                                             const short *vp8_filter)
 {
     unsigned int i, j;
     int temp;
@@ -60,10 +63,10 @@ static void filter_block2d_first_pass(unsigned char *src_ptr,
                    ((int)src_ptr[pixel_step]           * vp8_filter[3]) +
                    ((int)src_ptr[2*pixel_step]         * vp8_filter[4]) +
                    ((int)src_ptr[3*pixel_step]         * vp8_filter[5]) +
-                   (VP8_FILTER_WEIGHT >> 1);      /* Rounding */
+                   (VP8_FILTER_WEIGHT >> 1);   /* Rounding */
 
             /* Normalize back to 0-255 */
-            temp = temp >> VP8_FILTER_SHIFT;
+            temp >>= VP8_FILTER_SHIFT;
 
             if (temp < 0)
                 temp = 0;
@@ -80,14 +83,14 @@ static void filter_block2d_first_pass(unsigned char *src_ptr,
     }
 }
 
-static void filter_block2d_second_pass(int *src_ptr,
-                                       unsigned char *output_ptr,
-                                       int output_pitch,
-                                       unsigned int src_pixels_per_line,
-                                       unsigned int pixel_step,
-                                       unsigned int output_height,
-                                       unsigned int output_width,
-                                       const short *vp8_filter)
+static void filter_sixtap_block2d_second_pass(int *src_ptr,
+                                              unsigned char *output_ptr,
+                                              int output_pitch,
+                                              unsigned int src_pixels_per_line,
+                                              unsigned int pixel_step,
+                                              unsigned int output_height,
+                                              unsigned int output_width,
+                                              const short *vp8_filter)
 {
     unsigned int i, j;
     int temp;
@@ -103,10 +106,10 @@ static void filter_block2d_second_pass(int *src_ptr,
                    ((int)src_ptr[pixel_step]           * vp8_filter[3]) +
                    ((int)src_ptr[2*pixel_step]         * vp8_filter[4]) +
                    ((int)src_ptr[3*pixel_step]         * vp8_filter[5]) +
-                   (VP8_FILTER_WEIGHT >> 1); /* Rounding */
+                   (VP8_FILTER_WEIGHT >> 1);   /* Rounding */
 
             /* Normalize back to 0-255 */
-            temp = temp >> VP8_FILTER_SHIFT;
+            temp >>= VP8_FILTER_SHIFT;
 
             if (temp < 0)
                 temp = 0;
@@ -123,38 +126,34 @@ static void filter_block2d_second_pass(int *src_ptr,
     }
 }
 
-
-static void filter_block2d(unsigned char *src_ptr,
-                           unsigned char *output_ptr,
-                           unsigned int src_pixels_per_line,
-                           int output_pitch,
-                           const short *HFilter,
-                           const short *VFilter)
+static void filter_sixtap_block2d(unsigned char *src_ptr,
+                                  unsigned char *output_ptr,
+                                  unsigned int src_pixels_per_line,
+                                  int output_pitch,
+                                  const short *HFilter,
+                                  const short *VFilter)
 {
     int FData[9*4]; /* Temp data buffer used in filtering */
 
     /* First filter 1-D horizontally... */
-    filter_block2d_first_pass(src_ptr - (2 * src_pixels_per_line), FData, src_pixels_per_line, 1, 9, 4, HFilter);
+    filter_sixtap_block2d_first_pass(src_ptr - (2 * src_pixels_per_line), FData, src_pixels_per_line, 1, 9, 4, HFilter);
 
-    /* then filter verticaly... */
-    filter_block2d_second_pass(FData + 8, output_ptr, output_pitch, 4, 4, 4, 4, VFilter);
+    /* Then filter verticaly... */
+    filter_sixtap_block2d_second_pass(FData + 8, output_ptr, output_pitch, 4, 4, 4, 4, VFilter);
 }
 
 
-void vp8_sixtap_predict_c(unsigned char *src_ptr,
-                          int src_pixels_per_line,
-                          int xoffset,
-                          int yoffset,
-                          unsigned char *dst_ptr,
-                          int dst_pitch)
+void vp8_sixtap_predict4x4_c(unsigned char *src_ptr,
+                             int src_pixels_per_line,
+                             int xoffset,
+                             int yoffset,
+                             unsigned char *dst_ptr,
+                             int dst_pitch)
 {
-    const short *HFilter;
-    const short *VFilter;
+    const short *HFilter = vp8_filters_sixtap[xoffset];
+    const short *VFilter = vp8_filters_sixtap[yoffset];
 
-    HFilter = vp8_sub_pel_filters[xoffset];   /* 6 tap */
-    VFilter = vp8_sub_pel_filters[yoffset];   /* 6 tap */
-
-    filter_block2d(src_ptr, dst_ptr, src_pixels_per_line, dst_pitch, HFilter, VFilter);
+    filter_sixtap_block2d(src_ptr, dst_ptr, src_pixels_per_line, dst_pitch, HFilter, VFilter);
 }
 
 void vp8_sixtap_predict8x8_c(unsigned char *src_ptr,
@@ -164,18 +163,15 @@ void vp8_sixtap_predict8x8_c(unsigned char *src_ptr,
                              unsigned char *dst_ptr,
                              int dst_pitch)
 {
-    const short *HFilter;
-    const short *VFilter;
+    const short *HFilter = vp8_filters_sixtap[xoffset];
+    const short *VFilter = vp8_filters_sixtap[yoffset];
     int FData[13*16];   /* Temp data buffer used in filtering */
 
-    HFilter = vp8_sub_pel_filters[xoffset];   /* 6 tap */
-    VFilter = vp8_sub_pel_filters[yoffset];   /* 6 tap */
-
     /* First filter 1-D horizontally... */
-    filter_block2d_first_pass(src_ptr - (2 * src_pixels_per_line), FData, src_pixels_per_line, 1, 13, 8, HFilter);
+    filter_sixtap_block2d_first_pass(src_ptr - (2 * src_pixels_per_line), FData, src_pixels_per_line, 1, 13, 8, HFilter);
 
-    /* then filter verticaly... */
-    filter_block2d_second_pass(FData + 16, dst_ptr, dst_pitch, 8, 8, 8, 8, VFilter);
+    /* Then filter verticaly... */
+    filter_sixtap_block2d_second_pass(FData + 16, dst_ptr, dst_pitch, 8, 8, 8, 8, VFilter);
 }
 
 void vp8_sixtap_predict8x4_c(unsigned char *src_ptr,
@@ -185,18 +181,15 @@ void vp8_sixtap_predict8x4_c(unsigned char *src_ptr,
                              unsigned char *dst_ptr,
                              int dst_pitch)
 {
-    const short *HFilter;
-    const short *VFilter;
+    const short *HFilter = vp8_filters_sixtap[xoffset];
+    const short *VFilter = vp8_filters_sixtap[yoffset];
     int FData[13*16];   /* Temp data buffer used in filtering */
 
-    HFilter = vp8_sub_pel_filters[xoffset];   /* 6 tap */
-    VFilter = vp8_sub_pel_filters[yoffset];   /* 6 tap */
-
     /* First filter 1-D horizontally... */
-    filter_block2d_first_pass(src_ptr - (2 * src_pixels_per_line), FData, src_pixels_per_line, 1, 9, 8, HFilter);
+    filter_sixtap_block2d_first_pass(src_ptr - (2 * src_pixels_per_line), FData, src_pixels_per_line, 1, 9, 8, HFilter);
 
-    /* then filter verticaly... */
-    filter_block2d_second_pass(FData + 16, dst_ptr, dst_pitch, 8, 8, 4, 8, VFilter);
+    /* Then filter verticaly... */
+    filter_sixtap_block2d_second_pass(FData + 16, dst_ptr, dst_pitch, 8, 8, 4, 8, VFilter);
 }
 
 void vp8_sixtap_predict16x16_c(unsigned char *src_ptr,
@@ -206,50 +199,40 @@ void vp8_sixtap_predict16x16_c(unsigned char *src_ptr,
                                unsigned char *dst_ptr,
                                int dst_pitch)
 {
-    const short *HFilter;
-    const short *VFilter;
+    const short *HFilter = vp8_filters_sixtap[xoffset];
+    const short *VFilter = vp8_filters_sixtap[yoffset];
     int FData[21*24];   /* Temp data buffer used in filtering */
 
-    HFilter = vp8_sub_pel_filters[xoffset];   /* 6 tap */
-    VFilter = vp8_sub_pel_filters[yoffset];   /* 6 tap */
-
     /* First filter 1-D horizontally... */
-    filter_block2d_first_pass(src_ptr - (2 * src_pixels_per_line), FData, src_pixels_per_line, 1, 21, 16, HFilter);
+    filter_sixtap_block2d_first_pass(src_ptr - (2 * src_pixels_per_line), FData, src_pixels_per_line, 1, 21, 16, HFilter);
 
-    /* then filter verticaly... */
-    filter_block2d_second_pass(FData + 32, dst_ptr, dst_pitch, 16, 16, 16, 16, VFilter);
+    /* Then filter verticaly... */
+    filter_sixtap_block2d_second_pass(FData + 32, dst_ptr, dst_pitch, 16, 16, 16, 16, VFilter);
 }
 
+/* ************************************************************************** */
 
-/****************************************************************************
+/**
+ * \param[in] *src_ptr Pointer to source block.
+ * \param[out] *dst_ptr Pointer to destination (filtered) block.
+ * \param[in] src_stride Stride of source block.
+ * \param[in] width Block width.
+ * \param[in] height Block height.
+ * \param[in] *vp8_filter Array of 2 bilinear filter taps.
  *
- *  ROUTINE       : filter_block2d_bil_first_pass
+ * \note Produces INT32 output to retain precision for next pass. Two filter
+ *       taps should sum to VP8_FILTER_WEIGHT.
  *
- *  INPUTS        : uint8_t  *src_ptr    : Pointer to source block.
- *                  uint16_t *dst_ptr    : Pointer to destination block.
- *                  uint32_t  src_stride : Stride of source block.
- *                  uint32_t  height     : Block height.
- *                  uint32_t  width      : Block width.
- *                  const short  *vp8_filter : Array of 2 bi-linear filter taps.
- *
- *  OUTPUTS       : int32_t  *dst_ptr    : Pointer to filtered block.
- *
- *  RETURNS       : void
- *
- *  FUNCTION      : Applies a 1-D 2-tap bi-linear filter to the source block
- *                  in the horizontal direction to produce the filtered output
- *                  block. Used to implement first-pass of 2-D separable filter.
- *
- *  SPECIAL NOTES : Produces INT32 output to retain precision for next pass.
- *                  Two filter taps should sum to VP8_FILTER_WEIGHT.
- *
- ****************************************************************************/
-static void filter_block2d_bil_first_pass(unsigned char  *src_ptr,
-                                          unsigned short *dst_ptr,
-                                          unsigned int    src_stride,
-                                          unsigned int    height,
-                                          unsigned int    width,
-                                          const short    *vp8_filter)
+ * Applies a 1-D 2-tap bilinear filter to the source block in the horizontal
+ * direction to produce the filtered output block. Used to implement first-pass
+ * of 2-D separable filter.
+ */
+static void filter_bilinear_block2d_first_pass(unsigned char  *src_ptr,
+                                               unsigned short *dst_ptr,
+                                               unsigned int    src_stride,
+                                               unsigned int    width,
+                                               unsigned int    height,
+                                               const short    *vp8_filter)
 {
     unsigned int i, j;
 
@@ -270,35 +253,27 @@ static void filter_block2d_bil_first_pass(unsigned char  *src_ptr,
     }
 }
 
-/****************************************************************************
+/**
+ * \param[in] *src_ptr Pointer to source block.
+ * \param[out] *dst_ptr Pointer to destination (filtered) block.
+ * \param[in] dst_pitch Destination block pitch.
+ * \param[in] width Block width.
+ * \param[in] height Block height.
+ * \param[in] *vp8_filter Array of 2 bilinear filter taps.
  *
- *  ROUTINE       : filter_block2d_bil_second_pass
+ * \note Requires 32-bit input as produced by filter_block2d_bil_first_pass.
+ *       Two filter taps should sum to VP8_FILTER_WEIGHT.
  *
- *  INPUTS        : int32_t  *src_ptr    : Pointer to source block.
- *                  int32_t  *dst_ptr    : Pointer to destination block.
- *                  uint32_t  dst_pitch  : Destination block pitch.
- *                  uint32_t  height     : Block height.
- *                  uint32_t  width      : Block width.
- *                  int32_t  *vp8_filter : Array of 2 bi-linear filter taps.
- *
- *  OUTPUTS       : uint16_t *dst_ptr    : Pointer to filtered block.
- *
- *  RETURNS       : void
- *
- *  FUNCTION      : Applies a 1-D 2-tap bi-linear filter to the source block
- *                  in the vertical direction to produce the filtered output
- *                  block. Used to implement second-pass of 2-D separable filter.
- *
- *  SPECIAL NOTES : Requires 32-bit input as produced by filter_block2d_bil_first_pass.
- *                  Two filter taps should sum to VP8_FILTER_WEIGHT.
- *
- ****************************************************************************/
-static void filter_block2d_bil_second_pass(unsigned short *src_ptr,
-                                           unsigned char  *dst_ptr,
-                                           int             dst_pitch,
-                                           unsigned int    height,
-                                           unsigned int    width,
-                                           const short    *vp8_filter)
+ * Applies a 1-D 2-tap bilinear filter to the source block in the vertical
+ * direction to produce the filtered output block. Used to implement second-pass
+ * of 2-D separable filter.
+ */
+static void filter_bilinear_block2d_second_pass(unsigned short *src_ptr,
+                                                unsigned char  *dst_ptr,
+                                                int             dst_pitch,
+                                                unsigned int    width,
+                                                unsigned int    height,
+                                                const short    *vp8_filter)
 {
     unsigned int i, j;
     int temp;
@@ -320,47 +295,37 @@ static void filter_block2d_bil_second_pass(unsigned short *src_ptr,
     }
 }
 
-
-/****************************************************************************
+/**
+ * \param[in] *src_ptr Pointer to source block.
+ * \param[out] *dst_ptr Pointer to destination (filtered) block.
+ * \param[in] src_pitch Stride of source block.
+ * \param[in] dst_pitch Stride of destination block.
+ * \param[in] *HFilter Array of 2 horizontal filter taps.
+ * \param[in] *VFilter Array of 2 vertical filter taps.
+ * \param[in] width Block width.
+ * \param[in] height Block height.
  *
- *  ROUTINE       : filter_block2d_bil
+ * \note The largest block size can be handled here is 16x16.
  *
- *  INPUTS        : unsigned char *src_ptr          : Pointer to source block.
- *                  unsigned char *dst_ptr          : Pointer to destination block.
- *                  unsigned int   src_pitch        : Stride of source block.
- *                  unsigned int   dst_pitch        : Stride of destination block.
- *                  const short   *HFilter          : Array of 2 horizontal filter taps.
- *                  const short   *VFilter          : Array of 2 vertical filter taps.
- *                  int  Width                      : Block width
- *                  int  Height                     : Block height
- *
- *  OUTPUTS       : uint16_t *dst_ptr       : Pointer to filtered block.
- *
- *  RETURNS       : void
- *
- *  FUNCTION      : 2-D filters an input block by applying a 2-tap
- *                  bi-linear filter horizontally followed by a 2-tap
- *                  bi-linear filter vertically on the result.
- *
- *  SPECIAL NOTES : The largest block size can be handled here is 16x16
- *
- ****************************************************************************/
-static void filter_block2d_bil(unsigned char *src_ptr,
-                               unsigned char *dst_ptr,
-                               unsigned int   src_pitch,
-                               unsigned int   dst_pitch,
-                               const short   *HFilter,
-                               const short   *VFilter,
-                               int            Width,
-                               int            Height)
+ * 2-D filters an input block by applying a 2-tap bilinear filter horizontally
+ * followed by a 2-tap bilinear filter vertically on the result.
+ */
+static void filter_bilinear_block2d(unsigned char *src_ptr,
+                                    unsigned char *dst_ptr,
+                                    unsigned int   src_pitch,
+                                    unsigned int   dst_pitch,
+                                    const short   *HFilter,
+                                    const short   *VFilter,
+                                    int            width,
+                                    int            height)
 {
     unsigned short FData[17*16];    /* Temp data buffer used in filtering */
 
     /* First filter 1-D horizontally... */
-    filter_block2d_bil_first_pass(src_ptr, FData, src_pitch, Height + 1, Width, HFilter);
+    filter_bilinear_block2d_first_pass(src_ptr, FData, src_pitch, width, height + 1, HFilter);
 
     /* then 1-D vertically... */
-    filter_block2d_bil_second_pass(FData, dst_ptr, dst_pitch, Height, Width, VFilter);
+    filter_bilinear_block2d_second_pass(FData, dst_ptr, dst_pitch, width, height, VFilter);
 }
 
 void vp8_bilinear_predict4x4_c(unsigned char *src_ptr,
@@ -370,13 +335,10 @@ void vp8_bilinear_predict4x4_c(unsigned char *src_ptr,
                                unsigned char *dst_ptr,
                                int dst_pitch)
 {
-    const short *HFilter;
-    const short *VFilter;
+    const short *HFilter = vp8_filters_bilinear[xoffset];
+    const short *VFilter = vp8_filters_bilinear[yoffset];
 
-    HFilter = vp8_bilinear_filters[xoffset];
-    VFilter = vp8_bilinear_filters[yoffset];
-
-    filter_block2d_bil(src_ptr, dst_ptr, src_pixels_per_line, dst_pitch, HFilter, VFilter, 4, 4);
+    filter_bilinear_block2d(src_ptr, dst_ptr, src_pixels_per_line, dst_pitch, HFilter, VFilter, 4, 4);
 }
 
 void vp8_bilinear_predict8x8_c(unsigned char *src_ptr,
@@ -386,13 +348,10 @@ void vp8_bilinear_predict8x8_c(unsigned char *src_ptr,
                                unsigned char *dst_ptr,
                                int dst_pitch)
 {
-    const short *HFilter;
-    const short *VFilter;
+    const short *HFilter = vp8_filters_bilinear[xoffset];
+    const short *VFilter = vp8_filters_bilinear[yoffset];
 
-    HFilter = vp8_bilinear_filters[xoffset];
-    VFilter = vp8_bilinear_filters[yoffset];
-
-    filter_block2d_bil(src_ptr, dst_ptr, src_pixels_per_line, dst_pitch, HFilter, VFilter, 8, 8);
+    filter_bilinear_block2d(src_ptr, dst_ptr, src_pixels_per_line, dst_pitch, HFilter, VFilter, 8, 8);
 }
 
 void vp8_bilinear_predict8x4_c(unsigned char *src_ptr,
@@ -402,26 +361,21 @@ void vp8_bilinear_predict8x4_c(unsigned char *src_ptr,
                                unsigned char *dst_ptr,
                                int dst_pitch)
 {
-    const short *HFilter;
-    const short *VFilter;
+    const short *HFilter = vp8_filters_bilinear[xoffset];
+    const short *VFilter = vp8_filters_bilinear[yoffset];
 
-    HFilter = vp8_bilinear_filters[xoffset];
-    VFilter = vp8_bilinear_filters[yoffset];
-
-    filter_block2d_bil(src_ptr, dst_ptr, src_pixels_per_line, dst_pitch, HFilter, VFilter, 8, 4);
+    filter_bilinear_block2d(src_ptr, dst_ptr, src_pixels_per_line, dst_pitch, HFilter, VFilter, 8, 4);
 }
 
-void vp8_bilinear_predict16x16_c(unsigned char  *src_ptr,
+void vp8_bilinear_predict16x16_c(unsigned char *src_ptr,
                                  int src_pixels_per_line,
                                  int xoffset,
-                                 int yoffset,unsigned char *dst_ptr,
+                                 int yoffset,
+                                 unsigned char *dst_ptr,
                                  int dst_pitch)
 {
-    const short *HFilter;
-    const short *VFilter;
+    const short *HFilter = vp8_filters_bilinear[xoffset];
+    const short *VFilter = vp8_filters_bilinear[yoffset];
 
-    HFilter = vp8_bilinear_filters[xoffset];
-    VFilter = vp8_bilinear_filters[yoffset];
-
-    filter_block2d_bil(src_ptr, dst_ptr, src_pixels_per_line, dst_pitch, HFilter, VFilter, 16, 16);
+    filter_bilinear_block2d(src_ptr, dst_ptr, src_pixels_per_line, dst_pitch, HFilter, VFilter, 16, 16);
 }

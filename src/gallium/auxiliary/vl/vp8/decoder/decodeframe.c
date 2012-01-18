@@ -522,19 +522,19 @@ static void vp8_frame_init(VP8D_COMP *pbi)
     {
         if (pc->use_bilinear_mc_filter)
         {
-            pc->mcomp_filter_type     = BILINEAR;
-            xd->subpixel_predict      = SUBPIX_INVOKE(RTCD_VTABLE(subpix), bilinear4x4);
-            xd->subpixel_predict8x4   = SUBPIX_INVOKE(RTCD_VTABLE(subpix), bilinear8x4);
-            xd->subpixel_predict8x8   = SUBPIX_INVOKE(RTCD_VTABLE(subpix), bilinear8x8);
-            xd->subpixel_predict16x16 = SUBPIX_INVOKE(RTCD_VTABLE(subpix), bilinear16x16);
+            pc->mcomp_filter_type   = BILINEAR;
+            xd->filter_predict4x4   = FILTER_INVOKE(RTCD_VTABLE(filter), bilinear4x4);
+            xd->filter_predict8x4   = FILTER_INVOKE(RTCD_VTABLE(filter), bilinear8x4);
+            xd->filter_predict8x8   = FILTER_INVOKE(RTCD_VTABLE(filter), bilinear8x8);
+            xd->filter_predict16x16 = FILTER_INVOKE(RTCD_VTABLE(filter), bilinear16x16);
         }
         else
         {
-            pc->mcomp_filter_type     = SIXTAP;
-            xd->subpixel_predict      = SUBPIX_INVOKE(RTCD_VTABLE(subpix), sixtap4x4);
-            xd->subpixel_predict8x4   = SUBPIX_INVOKE(RTCD_VTABLE(subpix), sixtap8x4);
-            xd->subpixel_predict8x8   = SUBPIX_INVOKE(RTCD_VTABLE(subpix), sixtap8x8);
-            xd->subpixel_predict16x16 = SUBPIX_INVOKE(RTCD_VTABLE(subpix), sixtap16x16);
+            pc->mcomp_filter_type   = SIXTAP;
+            xd->filter_predict4x4   = FILTER_INVOKE(RTCD_VTABLE(filter), sixtap4x4);
+            xd->filter_predict8x4   = FILTER_INVOKE(RTCD_VTABLE(filter), sixtap8x4);
+            xd->filter_predict8x8   = FILTER_INVOKE(RTCD_VTABLE(filter), sixtap8x8);
+            xd->filter_predict16x16 = FILTER_INVOKE(RTCD_VTABLE(filter), sixtap16x16);
         }
     }
 
