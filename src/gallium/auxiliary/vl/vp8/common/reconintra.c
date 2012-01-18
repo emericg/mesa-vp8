@@ -9,7 +9,7 @@
  */
 
 
-#include "recon.h"
+#include "recon_dispatch.h"
 #include "reconintra.h"
 #include "../vp8_mem.h"
 

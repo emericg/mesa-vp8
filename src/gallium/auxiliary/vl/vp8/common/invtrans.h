@@ -12,7 +12,7 @@
 #ifndef INVTRANS_H
 #define INVTRANS_H
 
-#include "idct.h"
+#include "../decoder/idct_dispatch.h"
 #include "blockd.h"
 
 extern void vp8_inverse_transform_b(const vp8_idct_rtcd_vtable_t *rtcd, BLOCKD *b, int pitch);

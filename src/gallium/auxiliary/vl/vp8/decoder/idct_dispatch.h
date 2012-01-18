@@ -59,8 +59,8 @@ typedef struct
     vp8_idct_fn_t            idct16;
     vp8_idct_scalar_add_fn_t idct1_scalar_add;
 
-    vp8_second_order_fn_t iwalsh1;
-    vp8_second_order_fn_t iwalsh16;
+    vp8_second_order_fn_t    iwalsh1;
+    vp8_second_order_fn_t    iwalsh16;
 } vp8_idct_rtcd_vtable_t;
 
 #define IDCT_INVOKE(ctx,fn) vp8_idct_##fn

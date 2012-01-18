@@ -9,8 +9,7 @@
  */
 
 
-#include "../vp8_mem.h"
-#include "recon.h"
+#include "recon_dispatch.h"
 #include "reconintra.h"
 
 void vp8_intra4x4_predict(BLOCKD *x, int b_mode, unsigned char *predictor)
@@ -87,7 +86,6 @@ void vp8_intra4x4_predict(BLOCKD *x, int b_mode, unsigned char *predictor)
         {
             for (c = 0; c < 4; c++)
             {
-
                 predictor[c] = ap[c];
             }
 

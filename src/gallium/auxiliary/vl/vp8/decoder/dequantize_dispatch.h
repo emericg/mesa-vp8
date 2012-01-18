@@ -9,10 +9,8 @@
  */
 
 
-#ifndef DEQUANTIZE_H
-#define DEQUANTIZE_H
-
-#include "../common/blockd.h"
+#ifndef DEQUANTIZE_DISPATCH_H
+#define DEQUANTIZE_DISPATCH_H
 
 #define prototype_dequant_block(sym) \
     void sym(BLOCKD *x)
@@ -44,7 +42,7 @@
              unsigned char *dst_v, int stride, char *eobs)
 
 #ifndef vp8_dequant_block
-#define vp8_dequant_block vp8_dequantize_b_c
+#define vp8_dequant_block vp8_dequant_b_c
 #endif
 extern prototype_dequant_block(vp8_dequant_block);
 
@@ -73,17 +71,11 @@ extern prototype_dequant_idct_add_y_block(vp8_dequant_idct_add_y_block);
 #endif
 extern prototype_dequant_idct_add_uv_block(vp8_dequant_idct_add_uv_block);
 
-
 typedef prototype_dequant_block((*vp8_dequant_block_fn_t));
-
 typedef prototype_dequant_idct_add((*vp8_dequant_idct_add_fn_t));
-
 typedef prototype_dequant_dc_idct_add((*vp8_dequant_dc_idct_add_fn_t));
-
 typedef prototype_dequant_dc_idct_add_y_block((*vp8_dequant_dc_idct_add_y_block_fn_t));
-
 typedef prototype_dequant_idct_add_y_block((*vp8_dequant_idct_add_y_block_fn_t));
-
 typedef prototype_dequant_idct_add_uv_block((*vp8_dequant_idct_add_uv_block_fn_t));
 
 typedef struct
@@ -98,4 +90,4 @@ typedef struct
 
 #define DEQUANT_INVOKE(ctx,fn) vp8_dequant_##fn
 
-#endif /* DEQUANTIZE_H */
+#endif /* DEQUANTIZE_DISPATCH_H */

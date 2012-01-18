@@ -291,7 +291,8 @@ static void read_mb_modes_mv(VP8D_COMP *pbi, MODE_INFO *mi, MB_MODE_INFO *mbmi,
         vp8_mv_ref_probs(mv_ref_p, rct);
 
         mbmi->uv_mode = DC_PRED;
-        switch (mbmi->mode = read_mv_ref(bd, mv_ref_p))
+        mbmi->mode = read_mv_ref(bd, mv_ref_p);
+        switch (mbmi->mode)
         {
         case SPLITMV:
         {
@@ -392,6 +393,9 @@ static void read_mb_modes_mv(VP8D_COMP *pbi, MODE_INFO *mi, MB_MODE_INFO *mbmi,
 #if ENABLE_DEBUG
         default:
             assert(0);
+#else
+        default:
+            break;
 #endif
         }
     }

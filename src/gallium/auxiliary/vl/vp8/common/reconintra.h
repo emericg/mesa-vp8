@@ -15,4 +15,7 @@
 
 extern void vp8_setup_intra_recon(YV12_BUFFER_CONFIG *ybf);
 
+void vp8_recon_intra_mbuv(const vp8_recon_rtcd_vtable_t *rtcd,
+                          MACROBLOCKD *x);
+
 #endif /* RECONINTRA_H */

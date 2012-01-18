@@ -10,7 +10,6 @@
 
 
 #include "recon.h"
-#include "blockd.h"
 
 void vp8_recon_b_c(unsigned char *pred_ptr,
                    short *diff_ptr,

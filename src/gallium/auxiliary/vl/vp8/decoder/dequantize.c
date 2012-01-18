@@ -10,10 +10,9 @@
 
 
 #include "dequantize.h"
-#include "../common/idct.h"
-#include "../vp8_mem.h"
+#include "idct.h"
 
-void vp8_dequantize_b_c(BLOCKD *d)
+void vp8_dequant_b_c(BLOCKD *d)
 {
     int i;
     short *DQ  = d->dqcoeff;
@@ -67,14 +66,14 @@ void vp8_dequant_idct_add_c(short *input, short *dq, unsigned char *pred,
 
 void vp8_dequant_dc_idct_add_c(short *input, short *dq, unsigned char *pred,
                                unsigned char *dest, int pitch, int stride,
-                               int Dc)
+                               int dc)
 {
     int i;
     short output[16];
     short *diff_ptr = output;
     int r, c;
 
-    input[0] = (short)Dc;
+    input[0] = (short)dc;
 
     for (i = 1; i < 16; i++)
     {

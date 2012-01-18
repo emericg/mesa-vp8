@@ -8,6 +8,8 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
+#include "idct.h"
+#include "dequantize.h"
 
 /****************************************************************************
  * Notes:
@@ -129,7 +131,6 @@ void vp8_dc_only_idct_add_c(short input_dc, unsigned char *pred_ptr,
         dst_ptr += stride;
         pred_ptr += pitch;
     }
-
 }
 
 void vp8_short_inv_walsh4x4_c(short *input, short *output)
@@ -195,5 +196,109 @@ void vp8_short_inv_walsh4x4_1_c(short *input, short *output)
         op[2] = a1;
         op[3] = a1;
         op += 4;
+    }
+}
+
+/* ************************************************************************** */
+
+void vp8_dequant_dc_idct_add_y_block_c(short *q, short *dq, unsigned char *pre,
+                                       unsigned char *dst, int stride,
+                                       char *eobs, short *dc)
+{
+    int i, j;
+
+    for (i = 0; i < 4; i++)
+    {
+        for (j = 0; j < 4; j++)
+        {
+            if (*eobs++ > 1)
+                vp8_dequant_dc_idct_add_c(q, dq, pre, dst, 16, stride, dc[0]);
+            else
+                vp8_dc_only_idct_add_c(dc[0], pre, dst, 16, stride);
+
+            q   += 16;
+            pre += 4;
+            dst += 4;
+            dc  ++;
+        }
+
+        pre += 64 - 16;
+        dst += 4*stride - 16;
+    }
+}
+
+void vp8_dequant_idct_add_y_block_c(short *q, short *dq, unsigned char *pre,
+                                    unsigned char *dst, int stride, char *eobs)
+{
+    int i, j;
+
+    for (i = 0; i < 4; i++)
+    {
+        for (j = 0; j < 4; j++)
+        {
+            if (*eobs++ > 1)
+                vp8_dequant_idct_add_c(q, dq, pre, dst, 16, stride);
+            else
+            {
+                vp8_dc_only_idct_add_c(q[0]*dq[0], pre, dst, 16, stride);
+                ((int *)q)[0] = 0;
+            }
+
+            q   += 16;
+            pre += 4;
+            dst += 4;
+        }
+
+        pre += 64 - 16;
+        dst += 4*stride - 16;
+    }
+}
+
+void vp8_dequant_idct_add_uv_block_c(short *q, short *dq, unsigned char *pre,
+                                     unsigned char *dstu, unsigned char *dstv,
+                                     int stride, char *eobs)
+{
+    int i, j;
+
+    for (i = 0; i < 2; i++)
+    {
+        for (j = 0; j < 2; j++)
+        {
+            if (*eobs++ > 1)
+                vp8_dequant_idct_add_c(q, dq, pre, dstu, 8, stride);
+            else
+            {
+                vp8_dc_only_idct_add_c(q[0]*dq[0], pre, dstu, 8, stride);
+                ((int *)q)[0] = 0;
+            }
+
+            q    += 16;
+            pre  += 4;
+            dstu += 4;
+        }
+
+        pre  += 32 - 8;
+        dstu += 4*stride - 8;
+    }
+
+    for (i = 0; i < 2; i++)
+    {
+        for (j = 0; j < 2; j++)
+        {
+            if (*eobs++ > 1)
+                vp8_dequant_idct_add_c(q, dq, pre, dstv, 8, stride);
+            else
+            {
+                vp8_dc_only_idct_add_c(q[0]*dq[0], pre, dstv, 8, stride);
+                ((int *)q)[0] = 0;
+            }
+
+            q    += 16;
+            pre  += 4;
+            dstv += 4;
+        }
+
+        pre  += 32 - 8;
+        dstv += 4*stride - 8;
     }
 }

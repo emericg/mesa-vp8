@@ -15,8 +15,8 @@
 #include "../vp8_debug.h"
 #include "entropymv.h"
 #include "entropy.h"
-#include "idct.h"
-#include "recon.h"
+#include "../decoder/idct_dispatch.h"
+#include "recon_dispatch.h"
 
 #define MINQ 0
 #define MAXQ 127

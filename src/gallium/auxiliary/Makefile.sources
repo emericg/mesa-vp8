@@ -161,7 +161,6 @@ C_SOURCES := \
 	vl/vp8/common/entropymv.c \
 	vl/vp8/common/filter.c \
 	vl/vp8/common/findnearmv.c \
-	vl/vp8/common/idctllm.c \
 	vl/vp8/common/invtrans.c \
 	vl/vp8/common/quant_common.c \
 	vl/vp8/common/recon.c \
@@ -174,7 +173,7 @@ C_SOURCES := \
 	vl/vp8/decoder/decodemv.c \
 	vl/vp8/decoder/dequantize.c \
 	vl/vp8/decoder/detokenize.c \
-	vl/vp8/decoder/idct_blk.c \
+	vl/vp8/decoder/idct.c \
 	vl/vp8/decoder/onyxd_if.c \
 	vl/vp8/decoder/treereader.c
 

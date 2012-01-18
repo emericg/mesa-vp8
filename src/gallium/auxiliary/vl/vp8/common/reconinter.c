@@ -9,7 +9,7 @@
  */
 
 
-#include "recon.h"
+#include "recon_dispatch.h"
 #include "filter_dispatch.h"
 #include "blockd.h"
 #include "reconinter.h"
