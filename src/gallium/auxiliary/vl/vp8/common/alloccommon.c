@@ -16,8 +16,6 @@
 #include "findnearmv.h"
 #include "entropymode.h"
 
-//extern void vp8_init_scan_order_mask();
-
 static void update_mode_info_border(MODE_INFO *mi, int rows, int cols)
 {
     int i;
@@ -107,6 +105,10 @@ int vp8_alloc_frame_buffers(VP8_COMMON *oci, int width, int height)
     return 0;
 }
 
+/**
+ * Initialize version specific parameters.
+ * The VP8 "version" field is the equivalent of the mpeg "profile".
+ */
 void vp8_setup_version(VP8_COMMON *cm)
 {
     switch (cm->version)

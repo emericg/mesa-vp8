@@ -56,7 +56,7 @@ static void setup_macroblock(MACROBLOCKD *x, BLOCKSET bs)
         v = &x->pre.v_buffer;
     }
 
-    for (block = 0; block < 16; block++) /* y blocks */
+    for (block = 0; block < 16; block++) /* Y blocks */
     {
         setup_block(&x->block[block], x->dst.y_stride, y, x->dst.y_stride,
                     (block >> 2) * 4 * x->dst.y_stride + (block & 3) * 4, bs);
@@ -112,7 +112,7 @@ void vp8_setup_block_dptrs(MACROBLOCKD *x)
     }
 }
 
-void vp8_build_block_doffsets(MACROBLOCKD *x)
+void vp8_setup_block_doffsets(MACROBLOCKD *x)
 {
     /* handle the destination pitch features */
     setup_macroblock(x, DEST);

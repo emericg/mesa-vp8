@@ -240,7 +240,7 @@ typedef struct
 
 } MACROBLOCKD;
 
-void vp8_build_block_doffsets(MACROBLOCKD *x);
+void vp8_setup_block_doffsets(MACROBLOCKD *x);
 void vp8_setup_block_dptrs(MACROBLOCKD *x);
 void update_blockd_bmi(MACROBLOCKD *xd);
 

@@ -14,6 +14,9 @@
 #include <stddef.h>
 #include <limits.h>
 
+/**
+ * Initialize the treereader.
+ */
 int vp8dx_start_decode(BOOL_DECODER *bd,
                        const unsigned char *data,
                        unsigned int data_size)

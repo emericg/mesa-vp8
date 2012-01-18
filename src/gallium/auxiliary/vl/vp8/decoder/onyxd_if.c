@@ -105,6 +105,9 @@ static int swap_frame_buffers(VP8_COMMON *cm)
     return err;
 }
 
+/**
+ * Create a VP8 decoder instance.
+ */
 VP8D_PTR vp8_decoder_create()
 {
     VP8D_COMP *pbi = vpx_memalign(32, sizeof(VP8D_COMP));
@@ -139,6 +142,9 @@ VP8D_PTR vp8_decoder_create()
     return (VP8D_PTR)pbi;
 }
 
+/**
+ * Decode one VP8 frame.
+ */
 int vp8_decoder_start(VP8D_PTR ptr, struct pipe_vp8_picture_desc *frame_header,
                       const unsigned char *data, unsigned data_size,
                       int64_t timestamp_deadline)
@@ -216,6 +222,9 @@ int vp8_decoder_start(VP8D_PTR ptr, struct pipe_vp8_picture_desc *frame_header,
     return retcode;
 }
 
+/**
+ * Return a decoded VP8 frame in a YV12 framebuffer.
+ */
 int vp8_decoder_getframe(VP8D_PTR ptr,
                          YV12_BUFFER_CONFIG *sd,
                          int64_t *timestamp,
@@ -249,6 +258,9 @@ int vp8_decoder_getframe(VP8D_PTR ptr,
     return ret;
 }
 
+/**
+ * Destroy a VP8 decoder instance.
+ */
 void vp8_decoder_remove(VP8D_PTR ptr)
 {
     VP8D_COMP *pbi = (VP8D_COMP *)ptr;

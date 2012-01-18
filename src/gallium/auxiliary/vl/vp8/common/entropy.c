@@ -96,15 +96,6 @@ static const vp8_prob Pcat6[] = {254, 254, 243, 230, 196, 177, 153, 140, 133, 13
 
 static vp8_tree_index cat1[2], cat2[4], cat3[6], cat4[8], cat5[10], cat6[22];
 
-void vp8_init_scan_order_mask()
-{
-    int i;
-    for (i = 0; i < 16; i++)
-    {
-        vp8_default_zig_zag_mask[vp8_default_zig_zag1d[i]] = 1 << i;
-    }
-}
-
 static void init_bit_tree(vp8_tree_index *p, int n)
 {
     int i = 0;
@@ -125,6 +116,15 @@ static void init_bit_trees()
     init_bit_tree(cat4, 4);
     init_bit_tree(cat5, 5);
     init_bit_tree(cat6, 11);
+}
+
+void vp8_init_scan_order_mask()
+{
+    int i;
+    for (i = 0; i < 16; i++)
+    {
+        vp8_default_zig_zag_mask[vp8_default_zig_zag1d[i]] = 1 << i;
+    }
 }
 
 void vp8_default_coef_probs(VP8_COMMON *pc)

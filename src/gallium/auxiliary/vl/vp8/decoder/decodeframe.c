@@ -443,8 +443,7 @@ static void token_decoder_setup(VP8D_COMP *pbi,
         const unsigned char *partition_size_ptr = cx_data + i * 3;
         ptrdiff_t            partition_size;
 
-        /* Calculate the length of this partition. The last partition
-         * size is implicit. */
+        /* Calculate the length of this partition. The last partition size is implicit. */
         if (i < num_part - 1)
         {
             partition_size = token_decoder_readpartitionsize(partition_size_ptr);
@@ -772,7 +771,7 @@ int vp8_frame_decode(VP8D_COMP *pbi, struct pipe_vp8_picture_desc *frame_header)
 
     vp8_setup_block_dptrs(xd);
 
-    vp8_build_block_doffsets(xd);
+    vp8_setup_block_doffsets(xd);
 
     /* clear out the coeff buffer */
     memset(xd->qcoeff, 0, sizeof(xd->qcoeff));
