@@ -9,6 +9,11 @@
  */
 
 
+#ifndef DECODEMV_H
+#define DECODEMV_H
+
 #include "onyxd_int.h"
 
 void vp8_decode_mode_mvs(VP8D_COMP *);
+
+#endif /* DECODEMV_H */

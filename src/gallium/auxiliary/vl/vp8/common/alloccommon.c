@@ -30,7 +30,7 @@ static void update_mode_info_border(MODE_INFO *mi, int rows, int cols)
     }
 }
 
-void vp8_de_alloc_frame_buffers(VP8_COMMON *oci)
+static void vp8_de_alloc_frame_buffers(VP8_COMMON *oci)
 {
     int i;
 

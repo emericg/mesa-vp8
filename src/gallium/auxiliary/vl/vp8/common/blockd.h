@@ -26,8 +26,8 @@
 #define MAX_MODE_LF_DELTAS    4
 
 /* Segment Feature Masks */
-#define SEGMENT_DELTADATA 0
-#define SEGMENT_ABSDATA   1
+#define SEGMENT_DELTADATA     0
+#define SEGMENT_ABSDATA       1
 
 typedef char ENTROPY_CONTEXT;
 
@@ -47,11 +47,11 @@ typedef enum
 
 typedef enum
 {
-    DC_PRED,        /* average of above and left pixels */
-    V_PRED,         /* vertical prediction */
-    H_PRED,         /* horizontal prediction */
-    TM_PRED,        /* Truemotion prediction */
-    B_PRED,         /* block based prediction, each block has its own prediction mode */
+    DC_PRED,   /* average of above and left pixels */
+    V_PRED,    /* vertical prediction */
+    H_PRED,    /* horizontal prediction */
+    TM_PRED,   /* Truemotion prediction */
+    B_PRED,    /* block based prediction, each block has its own prediction mode */
 
     NEARESTMV,
     NEARMV,
@@ -81,11 +81,11 @@ typedef enum
 
 typedef enum
 {
-    B_DC_PRED,           /* average of above and left pixels */
+    B_DC_PRED,   /* average of above and left pixels */
     B_TM_PRED,
 
-    B_VE_PRED,           /* vertical prediction */
-    B_HE_PRED,           /* horizontal prediction */
+    B_VE_PRED,   /* vertical prediction */
+    B_HE_PRED,   /* horizontal prediction */
 
     B_LD_PRED,
     B_RD_PRED,

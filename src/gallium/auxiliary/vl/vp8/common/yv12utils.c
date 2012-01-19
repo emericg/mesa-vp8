@@ -19,8 +19,8 @@ int vp8_yv12_de_alloc_frame_buffer(YV12_BUFFER_CONFIG *ybf)
         vpx_free(ybf->buffer_alloc);
 
         /* buffer_alloc isn't accessed by most functions.  Rather y_buffer,
-          u_buffer and v_buffer point to buffer_alloc and are used.  Clear out
-          all of this so that a freed pointer isn't inadvertently used */
+           u_buffer and v_buffer point to buffer_alloc and are used. Clear out
+           all of this so that a freed pointer isn't inadvertently used */
         memset (ybf, 0, sizeof(YV12_BUFFER_CONFIG));
     }
     else
@@ -75,7 +75,7 @@ int vp8_yv12_alloc_frame_buffer(YV12_BUFFER_CONFIG *ybf,
         ybf->u_buffer = ybf->buffer_alloc + yplane_size + (border / 2  * uv_stride) + border / 2;
         ybf->v_buffer = ybf->buffer_alloc + yplane_size + uvplane_size + (border / 2  * uv_stride) + border / 2;
 
-        ybf->corrupted = 0; /* assume not currupted by errors */
+        ybf->corrupted = 0; /* Assume not currupted by errors */
     }
     else
     {

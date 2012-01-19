@@ -31,6 +31,8 @@
 #include <assert.h>
 #include <stdio.h>
 
+#define RTCD_VTABLE(x) NULL
+
 void mb_init_dequantizer(VP8D_COMP *pbi, MACROBLOCKD *xd)
 {
     int i;
@@ -71,8 +73,6 @@ void mb_init_dequantizer(VP8D_COMP *pbi, MACROBLOCKD *xd)
 
     xd->block[24].dequant = pc->Y2dequant[QIndex];
 }
-
-#define RTCD_VTABLE(x) NULL
 
 /**
  * skip_recon_mb() is Modified: Instead of writing the result to predictor
@@ -130,7 +130,7 @@ static void clamp_uvmv_to_umv_border(MV *mv, const MACROBLOCKD *xd)
     mv->row = (2*mv->row > xd->mb_to_bottom_edge + (18 << 3)) ? (xd->mb_to_bottom_edge + (16 << 3)) >> 1 : mv->row;
 }
 
-void clamp_mvs(MACROBLOCKD *xd)
+static void clamp_mvs(MACROBLOCKD *xd)
 {
     if (xd->mode_info_context->mbmi.mode == SPLITMV)
     {
@@ -698,11 +698,10 @@ int vp8_frame_decode(VP8D_COMP *pbi, struct pipe_vp8_picture_desc *frame_header)
 
     /* Read the default quantizers. */
     {
-        int Q, q_update;
+        int Q = vp8_read_literal(bd, 7); /* AC 1st order Q = default */
+        int q_update = 0;
 
-        Q = vp8_read_literal(bd, 7); /* AC 1st order Q = default */
         pc->base_qindex = Q;
-        q_update = 0;
         pc->y1dc_delta_q = get_delta_q(bd, pc->y1dc_delta_q, &q_update);
         pc->y2dc_delta_q = get_delta_q(bd, pc->y2dc_delta_q, &q_update);
         pc->y2ac_delta_q = get_delta_q(bd, pc->y2ac_delta_q, &q_update);
@@ -723,16 +722,14 @@ int vp8_frame_decode(VP8D_COMP *pbi, struct pipe_vp8_picture_desc *frame_header)
     {
         /* Should the GF or ARF be updated from the current frame. */
         pc->refresh_golden_frame = vp8_read_bit(bd);
-
         pc->refresh_alt_ref_frame = vp8_read_bit(bd);
 
         /* Buffer to buffer copy flags. */
         pc->copy_buffer_to_gf = 0;
+        pc->copy_buffer_to_arf = 0;
 
         if (!pc->refresh_golden_frame)
             pc->copy_buffer_to_gf = vp8_read_literal(bd, 2);
-
-        pc->copy_buffer_to_arf = 0;
 
         if (!pc->refresh_alt_ref_frame)
             pc->copy_buffer_to_arf = vp8_read_literal(bd, 2);
