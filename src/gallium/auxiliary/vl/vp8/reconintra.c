@@ -9,9 +9,8 @@
  */
 
 
-#include "recon_dispatch.h"
 #include "reconintra.h"
-#include "../vp8_mem.h"
+#include "vp8_mem.h"
 
 /**
  * Set up frame new frame for intra coded blocks.

@@ -12,15 +12,11 @@
 #include <stdio.h>
 #include <assert.h>
 
-#include "../vp8_mem.h"
+#include "vp8_mem.h"
+#include "vp8_decoder.h"
 
-#include "../common/onyxc_int.h"
-#include "onyxd_int.h"
-#include "../common/onyxd.h"
-#include "../common/alloccommon.h"
-#include "../common/yv12utils.h"
-
-#include "../common/quant_common.h"
+#include "alloccommon.h"
+#include "dequantize_common.h"
 #include "detokenize.h"
 
 static int get_free_fb(VP8_COMMON *cm)

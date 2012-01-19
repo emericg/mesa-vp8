@@ -9,7 +9,7 @@
  */
 
 
-#include "quant_common.h"
+#include "dequantize_common.h"
 
 static const int dc_qlookup[QINDEX_RANGE] =
 {

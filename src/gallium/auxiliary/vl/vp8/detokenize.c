@@ -11,10 +11,11 @@
 
 #include <stdint.h>
 
-#include "../vp8_mem.h"
-#include "onyxd_int.h"
+#include "vp8_mem.h"
+#include "vp8_decoder.h"
+
 #include "detokenize.h"
-#include "../common/blockd.h"
+#include "blockd.h"
 
 #define OCB_X PREV_COEF_CONTEXTS * ENTROPY_NODES
 

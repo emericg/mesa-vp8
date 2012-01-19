@@ -12,7 +12,7 @@
 #include <stdlib.h>
 
 #include "filter.h"
-#include "../vp8_mem.h"
+#include "vp8_mem.h"
 
 #define VP8_FILTER_WEIGHT 128
 #define VP8_FILTER_SHIFT  7

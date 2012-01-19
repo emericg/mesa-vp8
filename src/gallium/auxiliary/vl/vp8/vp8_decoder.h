@@ -9,14 +9,26 @@
  */
 
 
-#ifndef VP8C_INT_H
-#define VP8C_INT_H
+#ifndef VP8_DECODER_H
+#define VP8_DECODER_H
 
-#include "../vp8_debug.h"
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+#include <stdint.h>
+
+#include "pipe/p_video_decoder.h"
+
+#include "vp8_debug.h"
 #include "entropymv.h"
 #include "entropy.h"
+#include "yv12utils.h"
+#include "treereader.h"
+#include "dequantize.h"
 #include "recon_dispatch.h"
-#include "../decoder/idct_dispatch.h"
+#include "idct_dispatch.h"
 
 #define MINQ 0
 #define MAXQ 127
@@ -154,4 +166,62 @@ typedef struct VP8Common
 
 } VP8_COMMON;
 
-#endif /* VP8C_INT_H */
+
+typedef void* VP8D_PTR;
+
+typedef struct
+{
+    MACROBLOCKD mbd;
+    int mb_row;
+    int current_mb_col;
+    short *coef_ptr;
+} MB_ROW_DEC;
+
+typedef struct
+{
+    int16_t min_val;
+    int16_t Length;
+    uint8_t Probs[12];
+} TOKENEXTRABITS;
+
+typedef struct
+{
+    DECLARE_ALIGNED(16, MACROBLOCKD, mb);
+    DECLARE_ALIGNED(16, VP8_COMMON, common);
+
+    BOOL_DECODER bd, bd2;
+
+    const unsigned char *data;
+    unsigned int         data_size;
+
+    BOOL_DECODER *mbd;
+    int64_t       last_time_stamp;
+    int           ready_for_new_data;
+
+    vp8_prob prob_intra;
+    vp8_prob prob_last;
+    vp8_prob prob_gf;
+    vp8_prob prob_skip_false;
+
+} VP8D_COMP;
+
+/* ************************************************************************** */
+
+VP8D_PTR vp8_decoder_create();
+
+int vp8_decoder_start(VP8D_PTR comp, struct pipe_vp8_picture_desc *frame_header,
+                      const unsigned char *data, unsigned data_size,
+                      int64_t timestamp_deadline);
+
+int vp8_decoder_getframe(VP8D_PTR comp, YV12_BUFFER_CONFIG *sd,
+                         int64_t *timestamp, int64_t *timestamp_end);
+
+void vp8_decoder_remove(VP8D_PTR comp);
+
+int vp8_frame_decode(VP8D_COMP *cpi, struct pipe_vp8_picture_desc *frame_header);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* VP8_DECODER_H */

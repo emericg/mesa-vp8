@@ -9,15 +9,12 @@
  */
 
 
-#ifndef ALLOCCOMMON_H
-#define ALLOCCOMMON_H
+#ifndef DEQUANTIZE_COMMON_H
+#define DEQUANTIZE_COMMON_H
 
-#include "onyxc_int.h"
+#include "blockd.h"
+#include "vp8_decoder.h"
 
-void vp8_create_common(VP8_COMMON *oci);
-void vp8_remove_common(VP8_COMMON *oci);
-int vp8_alloc_frame_buffers(VP8_COMMON *oci, int width, int height);
-void vp8_setup_version(VP8_COMMON *oci);
-void vp8_initialize_common();
+void vp8_initialize_dequantizer(VP8_COMMON *pc);
 
-#endif /* ALLOCCOMMON_H */
+#endif /* DEQUANTIZE_COMMON_H */

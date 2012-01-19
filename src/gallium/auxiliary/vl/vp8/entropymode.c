@@ -8,7 +8,7 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#include "../vp8_mem.h"
+#include "vp8_mem.h"
 
 #include "entropy.h"
 #include "entropymode.h"

@@ -152,30 +152,30 @@ C_SOURCES := \
 	vl/vl_video_buffer.c \
 	vl/vl_vp8_decoder.c \
 	vl/vl_vp8_bitstream.c \
+	vl/vp8/vp8_decoder.c \
 	vl/vp8/vp8_debug.c \
 	vl/vp8/vp8_mem.c \
-	vl/vp8/common/alloccommon.c \
-	vl/vp8/common/blockd.c \
-	vl/vp8/common/entropy.c \
-	vl/vp8/common/entropymode.c \
-	vl/vp8/common/entropymv.c \
-	vl/vp8/common/filter.c \
-	vl/vp8/common/findnearmv.c \
-	vl/vp8/common/invtrans.c \
-	vl/vp8/common/quant_common.c \
-	vl/vp8/common/recon.c \
-	vl/vp8/common/reconinter.c \
-	vl/vp8/common/reconintra.c \
-	vl/vp8/common/reconintra4x4.c \
-	vl/vp8/common/treecoder.c \
-	vl/vp8/common/yv12utils.c \
-	vl/vp8/decoder/decodeframe.c \
-	vl/vp8/decoder/decodemv.c \
-	vl/vp8/decoder/dequantize.c \
-	vl/vp8/decoder/detokenize.c \
-	vl/vp8/decoder/idct.c \
-	vl/vp8/decoder/onyxd_if.c \
-	vl/vp8/decoder/treereader.c
+	vl/vp8/alloccommon.c \
+	vl/vp8/blockd.c \
+	vl/vp8/decodeframe.c \
+	vl/vp8/decodemv.c \
+	vl/vp8/dequantize.c \
+	vl/vp8/dequantize_common.c \
+	vl/vp8/detokenize.c \
+	vl/vp8/entropy.c \
+	vl/vp8/entropymode.c \
+	vl/vp8/entropymv.c \
+	vl/vp8/invtrans.c \
+	vl/vp8/idct.c \
+	vl/vp8/filter.c \
+	vl/vp8/findnearmv.c \
+	vl/vp8/recon.c \
+	vl/vp8/reconinter.c \
+	vl/vp8/reconintra.c \
+	vl/vp8/reconintra4x4.c \
+	vl/vp8/treereader.c \
+	vl/vp8/treereader_common.c \
+    vl/vp8/yv12utils.c
 
 GENERATED_SOURCES := \
 	indices/u_indices_gen.c \

@@ -15,7 +15,7 @@
 #include "mv.h"
 #include "blockd.h"
 #include "entropymode.h"
-#include "treecoder.h"
+#include "treereader_common.h"
 
 #define LEFT_TOP_MARGIN (16 << 3)
 #define RIGHT_BOTTOM_MARGIN (16 << 3)

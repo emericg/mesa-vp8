@@ -12,12 +12,13 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "entropy.h"
-#include "blockd.h"
-#include "onyxc_int.h"
-
 #include "coefupdateprobs.h"
 #include "defaultcoefcounts.h"
+
+#include "entropy.h"
+#include "blockd.h"
+#include "vp8_decoder.h"
+
 
 DECLARE_ALIGNED(16, const unsigned char, vp8_norm[256]) =
 {

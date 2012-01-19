@@ -9,24 +9,23 @@
  */
 
 
-#include "onyxd_int.h"
-#include "../common/reconintra.h"
-#include "../common/reconintra4x4.h"
-#include "../common/recon.h"
-#include "../common/reconinter.h"
+#include "reconintra.h"
+#include "reconintra4x4.h"
+#include "recon.h"
+#include "reconinter.h"
 #include "dequantize_dispatch.h"
 #include "idct_dispatch.h"
 #include "detokenize.h"
-#include "../common/invtrans.h"
-#include "../common/alloccommon.h"
-#include "../common/entropymode.h"
-#include "../common/quant_common.h"
-#include "../common/yv12utils.h"
-
+#include "invtrans.h"
+#include "alloccommon.h"
+#include "entropymode.h"
+#include "dequantize_common.h"
+#include "yv12utils.h"
 #include "decodemv.h"
 #include "treereader.h"
 
-#include "../vp8_mem.h"
+#include "vp8_decoder.h".h"
+#include "vp8_mem.h"
 
 #include <assert.h>
 #include <stdio.h>

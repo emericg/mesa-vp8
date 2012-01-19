@@ -12,11 +12,11 @@
 #ifndef BLOCKD_H
 #define BLOCKD_H
 
-#include "../vp8_mem.h"
+#include "vp8_mem.h"
 #include "yv12utils.h"
 
 #include "mv.h"
-#include "treecoder.h"
+#include "treereader_common.h"
 #include "filter_dispatch.h"
 
 #define MB_FEATURE_TREE_PROBS 3

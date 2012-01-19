@@ -12,8 +12,8 @@
 #ifndef TREEREADER_H
 #define TREEREADER_H
 
-#include "../common/treecoder.h"
-#include "../vp8_mem.h"
+#include "treereader_common.h"
+#include "vp8_mem.h"
 
 #define vp8_read vp8dx_decode_bool
 #define vp8_read_literal vp8_decode_value

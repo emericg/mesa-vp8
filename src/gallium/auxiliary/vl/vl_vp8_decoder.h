@@ -36,9 +36,8 @@
 #include "vl_vertex_buffers.h"
 #include "vl_video_buffer.h"
 
-#include "vp8/common/onyxd.h"
-#include "vp8/common/yv12utils.h"
-#include "vp8/decoder/onyxd_int.h"
+#include "vp8/vp8_decoder.h"
+#include "vp8/yv12utils.h"
 
 struct pipe_screen;
 struct pipe_context;

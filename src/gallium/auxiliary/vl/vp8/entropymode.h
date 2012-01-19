@@ -12,8 +12,8 @@
 #ifndef ENTROPYMODE_H
 #define ENTROPYMODE_H
 
-#include "onyxc_int.h"
-#include "treecoder.h"
+#include "vp8_decoder.h"
+#include "treereader_common.h"
 
 typedef const int vp8_mbsplit[16];
 

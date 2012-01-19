@@ -12,6 +12,8 @@
 #define RECONINTRA_H
 
 #include "yv12utils.h"
+#include "blockd.h"
+#include "recon_dispatch.h"
 
 extern void vp8_setup_intra_recon(YV12_BUFFER_CONFIG *ybf);
 

@@ -9,7 +9,7 @@
  */
 
 
-#include "../vp8_mem.h"
+#include "vp8_mem.h"
 #include "yv12utils.h"
 
 int vp8_yv12_de_alloc_frame_buffer(YV12_BUFFER_CONFIG *ybf)

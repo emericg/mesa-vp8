@@ -14,7 +14,7 @@
 #endif
 #include <stdio.h>
 
-#include "treecoder.h"
+#include "treereader_common.h"
 
 static void tree2tok(struct vp8_token_struct *const p, vp8_tree t, int i, int v, int L)
 {

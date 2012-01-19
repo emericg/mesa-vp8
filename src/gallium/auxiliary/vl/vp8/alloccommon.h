@@ -9,11 +9,15 @@
  */
 
 
-#ifndef DECODEMV_H
-#define DECODEMV_H
+#ifndef ALLOCCOMMON_H
+#define ALLOCCOMMON_H
 
-#include "onyxd_int.h"
+#include "vp8_decoder.h"
 
-void vp8_decode_mode_mvs(VP8D_COMP *);
+void vp8_create_common(VP8_COMMON *oci);
+void vp8_remove_common(VP8_COMMON *oci);
+int vp8_alloc_frame_buffers(VP8_COMMON *oci, int width, int height);
+void vp8_setup_version(VP8_COMMON *oci);
+void vp8_initialize_common();
 
-#endif /* DECODEMV_H */
+#endif /* ALLOCCOMMON_H */

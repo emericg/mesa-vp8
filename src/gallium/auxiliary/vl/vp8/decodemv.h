@@ -9,12 +9,11 @@
  */
 
 
-#ifndef QUANT_COMMON_H
-#define QUANT_COMMON_H
+#ifndef DECODEMV_H
+#define DECODEMV_H
 
-#include "blockd.h"
-#include "onyxc_int.h"
+#include "vp8_decoder.h"
 
-void vp8_initialize_dequantizer(VP8_COMMON *pc);
+void vp8_decode_mode_mvs(VP8D_COMP *);
 
-#endif /* QUANT_COMMON_H */
+#endif /* DECODEMV_H */

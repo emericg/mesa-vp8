@@ -12,7 +12,7 @@
 #ifndef ENTROPY_H
 #define ENTROPY_H
 
-#include "treecoder.h"
+#include "treereader_common.h"
 #include "blockd.h"
 
 /* Coefficient token alphabet */

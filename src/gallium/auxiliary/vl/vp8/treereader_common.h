@@ -9,8 +9,8 @@
  */
 
 
-#ifndef TREECODER_H
-#define TREECODER_H
+#ifndef TREEREADER_COMMON_H
+#define TREEREADER_COMMON_H
 
 #define vp8_prob_half ((vp8_prob) 128)
 
@@ -46,4 +46,4 @@ void vp8_tree_probs_from_distribution(int n, /* n = size of alphabet */
                                       unsigned int Pfactor,
                                       int Round);
 
-#endif /* TREECODER_H */
+#endif /* TREEREADER_COMMON_H */

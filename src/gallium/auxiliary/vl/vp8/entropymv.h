@@ -12,7 +12,7 @@
 #ifndef ENTROPYMV_H
 #define ENTROPYMV_H
 
-#include "treecoder.h"
+#include "treereader_common.h"
 
 enum
 {

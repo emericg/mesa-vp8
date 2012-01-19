@@ -12,7 +12,7 @@
 #ifndef DEQUANTIZE_H
 #define DEQUANTIZE_H
 
-#include "../common/blockd.h"
+#include "blockd.h"
 
 void vp8_dequant_b_c(BLOCKD *d);
 

@@ -9,12 +9,13 @@
  */
 
 
-#include "../vp8_mem.h"
 #include "blockd.h"
 #include "alloccommon.h"
-#include "onyxc_int.h"
 #include "findnearmv.h"
 #include "entropymode.h"
+
+#include "vp8_decoder.h"
+#include "vp8_mem.h"
 
 static void update_mode_info_border(MODE_INFO *mi, int rows, int cols)
 {
