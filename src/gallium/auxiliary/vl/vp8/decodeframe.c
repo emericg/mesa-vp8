@@ -9,28 +9,23 @@
  */
 
 
-#include "reconintra.h"
-#include "reconintra4x4.h"
 #include "recon.h"
-#include "reconinter.h"
-#include "dequantize_dispatch.h"
 #include "idct_dispatch.h"
 #include "detokenize.h"
 #include "invtrans.h"
 #include "alloccommon.h"
 #include "entropymode.h"
 #include "dequantize_common.h"
-#include "yv12utils.h"
+#include "dequantize_dispatch.h"
 #include "decodemv.h"
 #include "treereader.h"
+#include "yv12utils.h"
 
-#include "vp8_decoder.h".h"
+#include "vp8_decoder.h"
 #include "vp8_mem.h"
 
 #include <assert.h>
 #include <stdio.h>
-
-#define RTCD_VTABLE(x) NULL
 
 void mb_init_dequantizer(VP8D_COMP *pbi, MACROBLOCKD *xd)
 {
@@ -432,7 +427,13 @@ static void token_decoder_setup(VP8D_COMP *pbi,
 
     if (num_part > 1)
     {
-        CHECK_MEM_ERROR(pbi->mbd, vpx_malloc(num_part * sizeof(BOOL_DECODER)));
+        pbi->mbd = vpx_memalign(32, num_part * sizeof(BOOL_DECODER));
+        if (!pbi->mbd)
+        {
+            // Memory allocation failed
+            assert(0);
+        }
+
         bool_decoder = pbi->mbd;
         partition += 3 * (num_part - 1);
     }

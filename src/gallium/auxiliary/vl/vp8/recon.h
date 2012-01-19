@@ -13,6 +13,9 @@
 #define RECON_H
 
 #include "blockd.h"
+#include "reconinter.h"
+#include "reconintra.h"
+#include "reconintra4x4.h"
 #include "recon_dispatch.h"
 
 void vp8_recon_b_c(unsigned char *pred_ptr,
@@ -30,10 +33,8 @@ void vp8_recon2b_c(unsigned char *pred_ptr,
                    unsigned char *dst_ptr,
                    int stride);
 
-void vp8_recon_mby_c(const vp8_recon_rtcd_vtable_t *rtcd,
-                     MACROBLOCKD *x);
+void vp8_recon_mby_c(const vp8_recon_rtcd_vtable_t *rtcd, MACROBLOCKD *x);
 
-void vp8_recon_mb_c(const vp8_recon_rtcd_vtable_t *rtcd,
-                    MACROBLOCKD *x);
+void vp8_recon_mb_c(const vp8_recon_rtcd_vtable_t *rtcd, MACROBLOCKD *x);
 
 #endif /* RECON_H */

@@ -13,11 +13,7 @@
 #include "filter_dispatch.h"
 #include "blockd.h"
 #include "reconinter.h"
-
-/* Use this define on systems where unaligned int reads and writes are
- * not allowed, i.e. ARM architectures.
- */
-/*#define MUST_BE_ALIGNED*/
+#include "vp8_mem.h"
 
 static const int bbb[4] = {0, 2, 8, 10};
 
@@ -46,10 +42,10 @@ void vp8_copy_mem16x16_c(unsigned char *src, int src_stride,
         dst[14] = src[14];
         dst[15] = src[15];
 #else
-        ((int *)dst)[0] = ((int *)src)[0] ;
-        ((int *)dst)[1] = ((int *)src)[1] ;
-        ((int *)dst)[2] = ((int *)src)[2] ;
-        ((int *)dst)[3] = ((int *)src)[3] ;
+        ((int *)dst)[0] = ((int *)src)[0];
+        ((int *)dst)[1] = ((int *)src)[1];
+        ((int *)dst)[2] = ((int *)src)[2];
+        ((int *)dst)[3] = ((int *)src)[3];
 #endif /* MUST_BE_ALIGNED */
         src += src_stride;
         dst += dst_stride;
@@ -73,8 +69,8 @@ void vp8_copy_mem8x8_c(unsigned char *src, int src_stride,
         dst[6] = src[6];
         dst[7] = src[7];
 #else
-        ((int *)dst)[0] = ((int *)src)[0] ;
-        ((int *)dst)[1] = ((int *)src)[1] ;
+        ((int *)dst)[0] = ((int *)src)[0];
+        ((int *)dst)[1] = ((int *)src)[1];
 #endif /* MUST_BE_ALIGNED */
         src += src_stride;
         dst += dst_stride;
@@ -98,8 +94,8 @@ void vp8_copy_mem8x4_c(unsigned char *src, int src_stride,
         dst[6] = src[6];
         dst[7] = src[7];
 #else
-        ((int *)dst)[0] = ((int *)src)[0] ;
-        ((int *)dst)[1] = ((int *)src)[1] ;
+        ((int *)dst)[0] = ((int *)src)[0];
+        ((int *)dst)[1] = ((int *)src)[1];
 #endif /* MUST_BE_ALIGNED */
         src += src_stride;
         dst += dst_stride;
@@ -109,11 +105,9 @@ void vp8_copy_mem8x4_c(unsigned char *src, int src_stride,
 void vp8_build_inter_predictors_b(BLOCKD *d, int pitch, vp8_filter_fn_t sppf)
 {
     int r;
-    unsigned char *ptr_base;
+    unsigned char *ptr_base = *(d->base_pre);
     unsigned char *ptr;
     unsigned char *pred_ptr = d->predictor;
-
-    ptr_base = *(d->base_pre);
 
     if (d->bmi.mv.as_mv.row & 7 || d->bmi.mv.as_mv.col & 7)
     {
@@ -133,22 +127,19 @@ void vp8_build_inter_predictors_b(BLOCKD *d, int pitch, vp8_filter_fn_t sppf)
             pred_ptr[2]  = ptr[2];
             pred_ptr[3]  = ptr[3];
 #else
-            *(int *)pred_ptr = *(int *)ptr ;
+            *(int *)pred_ptr = *(int *)ptr;
 #endif /* MUST_BE_ALIGNED */
-            pred_ptr     += pitch;
-            ptr          += d->pre_stride;
+            pred_ptr    += pitch;
+            ptr         += d->pre_stride;
         }
     }
 }
 
 static void build_inter_predictors4b(MACROBLOCKD *x, BLOCKD *d, int pitch)
 {
-    unsigned char *ptr_base;
-    unsigned char *ptr;
+    unsigned char *ptr_base = *(d->base_pre);
+    unsigned char *ptr = ptr_base + d->pre + (d->bmi.mv.as_mv.row >> 3) * d->pre_stride + (d->bmi.mv.as_mv.col >> 3);
     unsigned char *pred_ptr = d->predictor;
-
-    ptr_base = *(d->base_pre);
-    ptr = ptr_base + d->pre + (d->bmi.mv.as_mv.row >> 3) * d->pre_stride + (d->bmi.mv.as_mv.col >> 3);
 
     if (d->bmi.mv.as_mv.row & 7 || d->bmi.mv.as_mv.col & 7)
     {
@@ -162,12 +153,9 @@ static void build_inter_predictors4b(MACROBLOCKD *x, BLOCKD *d, int pitch)
 
 static void build_inter_predictors2b(MACROBLOCKD *x, BLOCKD *d, int pitch)
 {
-    unsigned char *ptr_base;
-    unsigned char *ptr;
+    unsigned char *ptr_base = *(d->base_pre);
+    unsigned char *ptr = ptr_base + d->pre + (d->bmi.mv.as_mv.row >> 3) * d->pre_stride + (d->bmi.mv.as_mv.col >> 3);
     unsigned char *pred_ptr = d->predictor;
-
-    ptr_base = *(d->base_pre);
-    ptr = ptr_base + d->pre + (d->bmi.mv.as_mv.row >> 3) * d->pre_stride + (d->bmi.mv.as_mv.col >> 3);
 
     if (d->bmi.mv.as_mv.row & 7 || d->bmi.mv.as_mv.col & 7)
     {
@@ -187,8 +175,6 @@ void vp8_build_inter16x16_predictors_mb(MACROBLOCKD *x,
                                         int dst_uvstride)
 {
     int offset;
-    unsigned char *ptr;
-    unsigned char *uptr, *vptr;
 
     int mv_row = x->mode_info_context->mbmi.mv.as_mv.row;
     int mv_col = x->mode_info_context->mbmi.mv.as_mv.col;
@@ -196,7 +182,8 @@ void vp8_build_inter16x16_predictors_mb(MACROBLOCKD *x,
     unsigned char *ptr_base = x->pre.y_buffer;
     int pre_stride = x->block[0].pre_stride;
 
-    ptr = ptr_base + (mv_row >> 3) * pre_stride + (mv_col >> 3);
+    unsigned char *ptr = ptr_base + (mv_row >> 3) * pre_stride + (mv_col >> 3);
+    unsigned char *uptr, *vptr;
 
     if ((mv_row | mv_col) & 7)
     {
@@ -297,15 +284,15 @@ void vp8_build_uvmvs(MACROBLOCKD *x, int fullpixel)
                 int uoffset = 16 + i * 2 + j;
                 int voffset = 20 + i * 2 + j;
 
-                int temp;
+                int temp = x->block[yoffset].bmi.mv.as_mv.row
+                           + x->block[yoffset+1].bmi.mv.as_mv.row
+                           + x->block[yoffset+4].bmi.mv.as_mv.row
+                           + x->block[yoffset+5].bmi.mv.as_mv.row;
 
-                temp = x->block[yoffset  ].bmi.mv.as_mv.row
-                       + x->block[yoffset+1].bmi.mv.as_mv.row
-                       + x->block[yoffset+4].bmi.mv.as_mv.row
-                       + x->block[yoffset+5].bmi.mv.as_mv.row;
-
-                if (temp < 0) temp -= 4;
-                else temp += 4;
+                if (temp < 0)
+                    temp -= 4;
+                else
+                    temp += 4;
 
                 x->block[uoffset].bmi.mv.as_mv.row = temp / 8;
 
@@ -317,16 +304,18 @@ void vp8_build_uvmvs(MACROBLOCKD *x, int fullpixel)
                        + x->block[yoffset+4].bmi.mv.as_mv.col
                        + x->block[yoffset+5].bmi.mv.as_mv.col;
 
-                if (temp < 0) temp -= 4;
-                else temp += 4;
+                if (temp < 0)
+                    temp -= 4;
+                else
+                    temp += 4;
 
                 x->block[uoffset].bmi.mv.as_mv.col = temp / 8;
 
                 if (fullpixel)
                     x->block[uoffset].bmi.mv.as_mv.col = (temp / 8) & 0xfffffff8;
 
-                x->block[voffset].bmi.mv.as_mv.row = x->block[uoffset].bmi.mv.as_mv.row ;
-                x->block[voffset].bmi.mv.as_mv.col = x->block[uoffset].bmi.mv.as_mv.col ;
+                x->block[voffset].bmi.mv.as_mv.row = x->block[uoffset].bmi.mv.as_mv.row;
+                x->block[voffset].bmi.mv.as_mv.col = x->block[uoffset].bmi.mv.as_mv.col;
             }
         }
     }
@@ -350,13 +339,13 @@ void vp8_build_uvmvs(MACROBLOCKD *x, int fullpixel)
 
         for (i = 0; i < 8; i++)
         {
-            x->block[ 16 + i].bmi.mv.as_mv.row = mvrow;
-            x->block[ 16 + i].bmi.mv.as_mv.col = mvcol;
+            x->block[16 + i].bmi.mv.as_mv.row = mvrow;
+            x->block[16 + i].bmi.mv.as_mv.col = mvcol;
 
             if (fullpixel)
             {
-                x->block[ 16 + i].bmi.mv.as_mv.row = mvrow & 0xfffffff8;
-                x->block[ 16 + i].bmi.mv.as_mv.col = mvcol & 0xfffffff8;
+                x->block[16 + i].bmi.mv.as_mv.row = mvrow & 0xfffffff8;
+                x->block[16 + i].bmi.mv.as_mv.col = mvcol & 0xfffffff8;
             }
         }
     }

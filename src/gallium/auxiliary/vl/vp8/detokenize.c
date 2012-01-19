@@ -39,7 +39,7 @@ DECLARE_ALIGNED(16, static const unsigned char, coef_bands_x[16]) =
     6 * OCB_X, 6 * OCB_X, 6 * OCB_X, 7 * OCB_X
 };
 
-DECLARE_ALIGNED(16, static const TOKENEXTRABITS, vp8d_token_extra_bits2[MAX_ENTROPY_TOKENS]) =
+DECLARE_ALIGNED(16, static const TOKEN_EXTRABITS, vp8d_token_extra_bits2[MAX_ENTROPY_TOKENS]) =
 {
     {  0, -1, { 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0   } },            /* ZERO_TOKEN */
     {  1,  0, { 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0   } },            /* ONE_TOKEN */
@@ -68,22 +68,23 @@ const unsigned char vp8_block2above[25] =
 void vp8_reset_mb_tokens_context(MACROBLOCKD *x)
 {
     /* Clear entropy contexts for Y2 blocks */
-    if (x->mode_info_context->mbmi.mode != B_PRED && x->mode_info_context->mbmi.mode != SPLITMV)
+    if (x->mode_info_context->mbmi.mode != B_PRED &&
+        x->mode_info_context->mbmi.mode != SPLITMV)
     {
         memset(x->above_context, 0, sizeof(ENTROPY_CONTEXT_PLANES));
         memset(x->left_context, 0, sizeof(ENTROPY_CONTEXT_PLANES));
     }
     else
     {
-        memset(x->above_context, 0, sizeof(ENTROPY_CONTEXT_PLANES)-1);
-        memset(x->left_context, 0, sizeof(ENTROPY_CONTEXT_PLANES)-1);
+        memset(x->above_context, 0, sizeof(ENTROPY_CONTEXT_PLANES) - 1);
+        memset(x->left_context, 0, sizeof(ENTROPY_CONTEXT_PLANES) - 1);
     }
 }
 
 DECLARE_ALIGNED(16, extern const unsigned char, vp8_norm[256]);
 
 #define FILL \
-    if(count < 0) \
+    if (count < 0) \
         VP8DX_BOOL_DECODER_FILL(count, value, bufptr, bufend);
 
 #define NORMALIZE \
@@ -96,87 +97,88 @@ DECLARE_ALIGNED(16, extern const unsigned char, vp8_norm[256]);
     }
 
 #define DECODE_AND_APPLYSIGN(value_to_sign) \
-    split = (range + 1) >> 1; \
-    bigsplit = (VP8_BD_VALUE)split << (VP8_BD_VALUE_SIZE - 8); \
-    FILL \
-    if ( value < bigsplit ) \
     { \
-        range = split; \
-        v= value_to_sign; \
-    } \
-    else \
-    { \
-        range = range-split; \
-        value = value-bigsplit; \
-        v = -value_to_sign; \
-    } \
-    range +=range; \
-    value +=value; \
-    count--;
+        split = (range + 1) >> 1; \
+        bigsplit = (VP8_BD_VALUE)split << (VP8_BD_VALUE_SIZE - 8); \
+        FILL \
+        if (value < bigsplit) { \
+            range = split; \
+            v = value_to_sign; \
+        } \
+        else { \
+            range = range - split; \
+            value = value - bigsplit; \
+            v = -value_to_sign; \
+        } \
+        range += range; \
+        value += value; \
+        count--; \
+    }
 
 #define DECODE_AND_BRANCH_IF_ZERO(probability,branch) \
     { \
-        split = 1 + (((probability*(range-1))) >> 8); \
+        split = 1 + (((probability*(range - 1))) >> 8); \
         bigsplit = (VP8_BD_VALUE)split << (VP8_BD_VALUE_SIZE - 8); \
         FILL \
-        if (value < bigsplit) \
-        { \
+        if (value < bigsplit) { \
             range = split; \
             NORMALIZE \
             goto branch; \
         } \
         value -= bigsplit; \
-        range = range - split; \
+        range -= split; \
         NORMALIZE \
     }
 
 #define DECODE_AND_LOOP_IF_ZERO(probability,branch) \
     { \
-        split = 1 + (((probability*(range-1))) >> 8); \
+        split = 1 + (((probability*(range - 1))) >> 8); \
         bigsplit = (VP8_BD_VALUE)split << (VP8_BD_VALUE_SIZE - 8); \
         FILL \
-        if ( value < bigsplit ) \
-        { \
+        if (value < bigsplit ) { \
             range = split; \
             NORMALIZE \
             Prob = coef_probs; \
             if (c < 15) { \
-            ++c; \
-            Prob += coef_bands_x[c]; \
-            goto branch; \
+                ++c; \
+                Prob += coef_bands_x[c]; \
+                goto branch; \
             } goto BLOCK_FINISHED; /*for malformed input */ \
         } \
         value -= bigsplit; \
-        range = range - split; \
+        range -= split; \
         NORMALIZE \
     }
 
 #define DECODE_SIGN_WRITE_COEFF_AND_CHECK_EXIT(val) \
-    DECODE_AND_APPLYSIGN(val) \
-    Prob = coef_probs + (ENTROPY_NODES*2); \
-    if (c < 15) { \
-        qcoeff_ptr [ scan[c] ] = (int16_t) v; \
-        ++c; \
-        goto DO_WHILE; } \
-    qcoeff_ptr [ scan[15] ] = (int16_t) v; \
-    goto BLOCK_FINISHED;
+    { \
+        DECODE_AND_APPLYSIGN(val) \
+        Prob = coef_probs + (ENTROPY_NODES*2); \
+        if (c < 15) { \
+            qcoeff_ptr[scan[c]] = (int16_t)v; \
+            ++c; \
+            goto DO_WHILE; \
+        } \
+        qcoeff_ptr[scan[15]] = (int16_t)v; \
+        goto BLOCK_FINISHED; \
+    }
 
 
 #define DECODE_EXTRABIT_AND_ADJUST_VAL(t, bits_count) \
-    split = 1 + (((range-1) * vp8d_token_extra_bits2[t].Probs[bits_count]) >> 8); \
-    bigsplit = (VP8_BD_VALUE)split << (VP8_BD_VALUE_SIZE - 8); \
-    FILL \
-    if(value >= bigsplit) \
     { \
-        range = range-split; \
-        value = value-bigsplit; \
-        val += ((uint16_t)1 << bits_count); \
-    } \
-    else \
-    { \
-        range = split; \
-    } \
-    NORMALIZE
+        split = 1 + (((range-1) * vp8d_token_extra_bits2[t].Probs[bits_count]) >> 8); \
+        bigsplit = (VP8_BD_VALUE)split << (VP8_BD_VALUE_SIZE - 8); \
+        FILL \
+        if(value >= bigsplit) { \
+            range = range-split; \
+            value = value-bigsplit; \
+            val += ((uint16_t)1 << bits_count); \
+        } \
+        else { \
+            range = split; \
+        } \
+        NORMALIZE \
+    }
 
 #define VP8_COMBINEENTROPYCONTEXTS(Dest, A, B) \
     Dest = ((A) != 0) + ((B) != 0);
@@ -194,8 +196,8 @@ int vp8_decode_mb_tokens(VP8D_COMP *dx, MACROBLOCKD *x)
 
     ENTROPY_CONTEXT *a;
     ENTROPY_CONTEXT *l;
-    int i;
 
+    int i = 0;
     int eobtotal = 0;
 
     register int count;
@@ -210,22 +212,19 @@ int vp8_decode_mb_tokens(VP8D_COMP *dx, MACROBLOCKD *x)
     VP8_BD_VALUE bigsplit;
     int16_t *qcoeff_ptr;
 
-    const vp8_prob *coef_probs;
-    int type;
-    int stop;
+    int type = 3;
+    int stop = 16;
     int16_t val, bits_count;
     int16_t c;
     int16_t v;
     const vp8_prob *Prob;
-
-    type = 3;
-    i = 0;
-    stop = 16;
+    const vp8_prob *coef_probs;
 
     scan = vp8_default_zig_zag1d;
     qcoeff_ptr = &x->qcoeff[0];
 
-    if (x->mode_info_context->mbmi.mode != B_PRED && x->mode_info_context->mbmi.mode != SPLITMV)
+    if (x->mode_info_context->mbmi.mode != B_PRED &&
+        x->mode_info_context->mbmi.mode != SPLITMV)
     {
         i = 24;
         stop = 24;
@@ -240,7 +239,7 @@ int vp8_decode_mb_tokens(VP8D_COMP *dx, MACROBLOCKD *x)
     count  = bd->count;
     range  = bd->range;
 
-    coef_probs = fc->coef_probs [type] [0] [0];
+    coef_probs = fc->coef_probs[type][0][0];
 
 BLOCK_LOOP:
     a = A + vp8_block2above[i];
@@ -270,7 +269,7 @@ CHECK_0_:
     do
     {
         DECODE_EXTRABIT_AND_ADJUST_VAL(DCT_VAL_CATEGORY6, bits_count);
-        bits_count -- ;
+        bits_count --;
     }
     while (bits_count >= 0);
 
@@ -331,12 +330,12 @@ ONE_CONTEXT_NODE_0_:
 
     if (c < 15)
     {
-        qcoeff_ptr [ scan[c] ] = (int16_t)v;
+        qcoeff_ptr[scan[c]] = (int16_t)v;
         ++c;
         goto DO_WHILE;
     }
 
-    qcoeff_ptr [ scan[15] ] = (int16_t)v;
+    qcoeff_ptr[scan[15]] = (int16_t)v;
 
 BLOCK_FINISHED:
     *a = *l = ((eobs[i] = c) != !type); /* any nonzero data ? */
@@ -353,7 +352,7 @@ BLOCK_FINISHED:
         type = 0;
         i = 0;
         stop = 16;
-        coef_probs = fc->coef_probs [type] [0] [0];
+        coef_probs = fc->coef_probs[type][0][0];
         qcoeff_ptr -= (24*16 + 16);
         goto BLOCK_LOOP;
     }
@@ -361,7 +360,7 @@ BLOCK_FINISHED:
     if (i == 16)
     {
         type = 2;
-        coef_probs = fc->coef_probs [type] [0] [0];
+        coef_probs = fc->coef_probs[type][0][0];
         stop = 24;
         goto BLOCK_LOOP;
     }

@@ -50,10 +50,10 @@ void vp8_tokens_from_tree_offset(struct vp8_token_struct *p, vp8_tree t, int off
 }
 
 static void branch_counts(int n, /* n = size of alphabet */
-                          vp8_token tok[ /* n */ ],
+                          vp8_token tok[/* n */],
                           vp8_tree tree,
-                          unsigned int branch_ct[ /* n-1 */ ] [2],
-                          const unsigned int num_events[ /* n */ ])
+                          unsigned int branch_ct[/* n-1 */][2],
+                          const unsigned int num_events[/* n */])
 {
     const int tree_len = n - 1;
     int t = 0;
@@ -85,8 +85,8 @@ static void branch_counts(int n, /* n = size of alphabet */
 #if ENABLE_DEBUG
             assert(j < tree_len  &&  0 <= L);
 #endif
-            branch_ct [j] [b] += ct;
-            i = tree[ i + b];
+            branch_ct[j][b] += ct;
+            i = tree[i + b];
         }
         while (i > 0);
 
@@ -104,11 +104,11 @@ static void branch_counts(int n, /* n = size of alphabet */
  * probability updates.
  */
 void vp8_tree_probs_from_distribution(int n, /* n = size of alphabet */
-                                      vp8_token tok[ /* n */ ],
+                                      vp8_token tok[/* n */],
                                       vp8_tree tree,
-                                      vp8_prob probs[ /* n-1 */ ],
-                                      unsigned int branch_ct[ /* n-1 */ ] [2],
-                                      const unsigned int num_events[ /* n */ ],
+                                      vp8_prob probs[/* n-1 */],
+                                      unsigned int branch_ct[/* n-1 */][2],
+                                      const unsigned int num_events[/* n */],
                                       unsigned int Pfac,
                                       int rd)
 {

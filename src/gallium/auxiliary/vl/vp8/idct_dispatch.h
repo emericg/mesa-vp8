@@ -19,9 +19,8 @@
     void sym(short *input, short *output, int pitch)
 
 #define prototype_idct_scalar_add(sym) \
-    void sym(short input, \
-             unsigned char *pred, unsigned char *output, \
-             int pitch, int stride)
+    void sym(short input, unsigned char *pred, \
+             unsigned char *output, int pitch, int stride)
 
 #ifndef vp8_idct_idct1
 #define vp8_idct_idct1 vp8_short_idct4x4llm_1_c

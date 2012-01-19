@@ -14,8 +14,11 @@
 
 #include "blockd.h"
 
+struct vp8_recon_rtcd_vtable;
+
 #define prototype_copy_block(sym) \
-    void sym(unsigned char *src, int src_pitch, unsigned char *dst, int dst_pitch)
+    void sym(unsigned char *src, int src_pitch, \
+             unsigned char *dst, int dst_pitch)
 
 #define prototype_recon_block(sym) \
     void sym(unsigned char *pred, short *diff, unsigned char *dst, int pitch)
@@ -23,12 +26,11 @@
 #define prototype_recon_macroblock(sym) \
     void sym(const struct vp8_recon_rtcd_vtable *rtcd, MACROBLOCKD *x)
 
-#define prototype_build_intra_predictors(sym) void sym(MACROBLOCKD *x)
+#define prototype_build_intra_predictors(sym) \
+    void sym(MACROBLOCKD *x)
 
 #define prototype_intra4x4_predict(sym) \
     void sym(BLOCKD *x, int b_mode, unsigned char *predictor)
-
-struct vp8_recon_rtcd_vtable;
 
 #ifndef vp8_recon_copy16x16
 #define vp8_recon_copy16x16 vp8_copy_mem16x16_c

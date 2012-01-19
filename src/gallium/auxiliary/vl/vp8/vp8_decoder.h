@@ -36,6 +36,8 @@ extern "C"
 
 #define NUM_YV12_BUFFERS 4
 
+#define RTCD_VTABLE(x) NULL
+
 typedef struct
 {
     vp8_prob bmode_prob [VP8_BINTRAMODES-1];
@@ -43,8 +45,15 @@ typedef struct
     vp8_prob uv_mode_prob [VP8_UV_MODES-1];
     vp8_prob sub_mv_ref_prob [VP8_SUBMVREFS-1];
     vp8_prob coef_probs [BLOCK_TYPES] [COEF_BANDS] [PREV_COEF_CONTEXTS] [ENTROPY_NODES];
-    MV_CONTEXT mvc [2];
+    MV_CONTEXT mvc[2];
 } FRAME_CONTEXT;
+
+typedef struct
+{
+    int16_t min_val;
+    int16_t Length;
+    uint8_t Probs[12];
+} TOKEN_EXTRABITS;
 
 typedef enum
 {
@@ -158,7 +167,7 @@ typedef struct VP8Common
     vp8_prob kf_uv_mode_prob [VP8_UV_MODES-1];
 
     FRAME_CONTEXT lfc; /**< last frame entropy */
-    FRAME_CONTEXT fc;  /**< this frame entropy */
+    FRAME_CONTEXT fc;  /**< current frame entropy */
 
     unsigned int current_video_frame;
 
@@ -166,23 +175,7 @@ typedef struct VP8Common
 
 } VP8_COMMON;
 
-
 typedef void* VP8D_PTR;
-
-typedef struct
-{
-    MACROBLOCKD mbd;
-    int mb_row;
-    int current_mb_col;
-    short *coef_ptr;
-} MB_ROW_DEC;
-
-typedef struct
-{
-    int16_t min_val;
-    int16_t Length;
-    uint8_t Probs[12];
-} TOKENEXTRABITS;
 
 typedef struct
 {

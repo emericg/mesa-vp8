@@ -11,13 +11,19 @@
 #ifndef RECONINTRA_H
 #define RECONINTRA_H
 
-#include "yv12utils.h"
 #include "blockd.h"
+#include "yv12utils.h"
 #include "recon_dispatch.h"
 
 extern void vp8_setup_intra_recon(YV12_BUFFER_CONFIG *ybf);
 
-void vp8_recon_intra_mbuv(const vp8_recon_rtcd_vtable_t *rtcd,
-                          MACROBLOCKD *x);
+extern void vp8_recon_intra_mbuv(const vp8_recon_rtcd_vtable_t *rtcd,
+                                 MACROBLOCKD *x);
+
+extern void vp8_build_intra_predictors_mby(MACROBLOCKD *x);
+extern void vp8_build_intra_predictors_mby_s(MACROBLOCKD *x);
+
+extern void vp8_build_intra_predictors_mbuv(MACROBLOCKD *x);
+extern void vp8_build_intra_predictors_mbuv_s(MACROBLOCKD *x);
 
 #endif /* RECONINTRA_H */

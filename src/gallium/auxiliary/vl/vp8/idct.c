@@ -92,10 +92,9 @@ void vp8_short_idct4x4llm_c(short *input, short *output, int pitch)
 void vp8_short_idct4x4llm_1_c(short *input, short *output, int pitch)
 {
     int i;
-    int a1;
+    int a1 = ((input[0] + 4) >> 3);
     short *op = output;
     int shortpitch = pitch >> 1;
-    a1 = ((input[0] + 4) >> 3);
 
     for (i = 0; i < 4; i++)
     {
@@ -117,7 +116,7 @@ void vp8_dc_only_idct_add_c(short input_dc, unsigned char *pred_ptr,
     {
         for (c = 0; c < 4; c++)
         {
-            int a = a1 + pred_ptr[c] ;
+            int a = a1 + pred_ptr[c];
 
             if (a < 0)
                 a = 0;
@@ -125,7 +124,7 @@ void vp8_dc_only_idct_add_c(short input_dc, unsigned char *pred_ptr,
             if (a > 255)
                 a = 255;
 
-            dst_ptr[c] = (unsigned char) a ;
+            dst_ptr[c] = (unsigned char)a;
         }
 
         dst_ptr += stride;
@@ -184,10 +183,8 @@ void vp8_short_inv_walsh4x4_c(short *input, short *output)
 void vp8_short_inv_walsh4x4_1_c(short *input, short *output)
 {
     int i;
-    int a1;
+    int a1 = ((input[0] + 3) >> 3);
     short *op = output;
-
-    a1 = ((input[0] + 3) >> 3);
 
     for (i = 0; i < 4; i++)
     {

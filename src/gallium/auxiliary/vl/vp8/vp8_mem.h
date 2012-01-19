@@ -9,8 +9,8 @@
  */
 
 
-#ifndef __VPX_MEM_H__
-#define __VPX_MEM_H__
+#ifndef VP8_MEM_H
+#define VP8_MEM_H
 
 #include <string.h>
 #include <stdlib.h>
@@ -22,44 +22,25 @@
 extern "C" {
 #endif
 
-/* returns an addr aligned to the byte boundary specified by align */
-#define align_addr(addr,align) (void*)(((size_t)(addr) + ((align) - 1)) & (size_t)-(align))
-
-#define ADDRESS_STORAGE_SIZE sizeof(size_t)
-#define DEFAULT_ALIGNMENT    32 // must be >= 1 !
+/**
+ * Use this define on systems where unaligned int reads and writes are
+ * not allowed, i.e. ARM architectures.
+ */
+//#define MUST_BE_ALIGNED
 
 #if defined(__GNUC__) && __GNUC__
-#define DECLARE_ALIGNED(n,typ,val) typ val __attribute__ ((aligned (n)))
+    #define DECLARE_ALIGNED(n,typ,val) typ val __attribute__ ((aligned (n)))
 #else
-#warning No alignment directives known for this compiler.
-#define DECLARE_ALIGNED(n,typ,val) typ val
+    #warning No alignment directives known for this compiler.
+    #define DECLARE_ALIGNED(n,typ,val) typ val
 #endif
 
-#if ENABLE_DEBUG
-#define CHECK_MEM_ERROR(lval,expr) do { \
-        lval = (expr); \
-        if (!lval) \
-            vpx_internal_error(&pbi->common.error, VPX_CODEC_MEM_ERROR, \
-                               "Failed to allocate "#lval" at %s:%d", \
-                               __FILE__,__LINE__); \
-    } while(0)
-#else
-#define CHECK_MEM_ERROR(lval,expr) do { \
-        lval = (expr); \
-        if (!lval) \
-            vpx_internal_error(&pbi->common.error, VPX_CODEC_MEM_ERROR, \
-                               "Failed to allocate "#lval); \
-    } while(0)
-#endif /* ENABLE_DEBUG */
-
 void *vpx_memalign(size_t align, size_t size);
-void *vpx_malloc(size_t size);
 void *vpx_calloc(size_t num, size_t size);
-void *vpx_realloc(void *memblk, size_t size);
 void vpx_free(void *memblk);
 
 #if defined(__cplusplus)
 }
 #endif
 
-#endif /* __VPX_MEM_H__ */
+#endif /* VP8_MEM_H */

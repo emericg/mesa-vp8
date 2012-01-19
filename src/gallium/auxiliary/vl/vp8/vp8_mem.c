@@ -8,7 +8,14 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
+
 #include "vp8_mem.h"
+
+#define ADDRESS_STORAGE_SIZE sizeof(size_t)
+#define DEFAULT_ALIGNMENT    32 // must be >= 1 !
+
+/* returns an addr aligned to the byte boundary specified by align */
+#define align_addr(addr,align) (void*)(((size_t)(addr) + ((align) - 1)) & (size_t)-(align))
 
 void *vpx_memalign(size_t align, size_t size)
 {
@@ -25,11 +32,6 @@ void *vpx_memalign(size_t align, size_t size)
     return x;
 }
 
-void *vpx_malloc(size_t size)
-{
-    return vpx_memalign(DEFAULT_ALIGNMENT, size);
-}
-
 void *vpx_calloc(size_t num, size_t size)
 {
     void *x = vpx_memalign(DEFAULT_ALIGNMENT, num * size);
@@ -38,43 +40,6 @@ void *vpx_calloc(size_t num, size_t size)
         memset(x, 0, num * size);
 
     return x;
-}
-
-/**
- * \note The realloc() function changes the size of the object pointed to by
- *       ptr to the size specified by size, and returns a pointer to the
- *       possibly moved block. The contents are unchanged up to the lesser
- *       of the new and old sizes. If ptr is null, realloc() behaves like
- *       malloc() for the specified size. If size is zero (0) and ptr is
- *       not a null pointer, the object pointed to is freed.
- */
-void *vpx_realloc(void *memblk, size_t size)
-{
-    void *addr, *new_addr = NULL;
-    int align = DEFAULT_ALIGNMENT;
-
-    if (!memblk)
-        new_addr = vpx_malloc(size);
-    else if (!size)
-        vpx_free(memblk);
-    else
-    {
-        addr   = (void *)(((size_t *)memblk)[-1]);
-        memblk = NULL;
-
-        new_addr = realloc(addr, size + align + ADDRESS_STORAGE_SIZE);
-
-        if (new_addr)
-        {
-            addr = new_addr;
-            new_addr = (void *)(((size_t)((unsigned char *)new_addr + ADDRESS_STORAGE_SIZE) + (align - 1)) & (size_t) - align);
-
-            // save the actual malloc address
-            ((size_t *)new_addr)[-1] = (size_t)addr;
-        }
-    }
-
-    return new_addr;
 }
 
 void vpx_free(void *memblk)

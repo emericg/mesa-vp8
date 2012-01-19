@@ -22,7 +22,7 @@ void vp8_recon_b_c(unsigned char *pred_ptr,
     {
         for (c = 0; c < 4; c++)
         {
-            int a = diff_ptr[c] + pred_ptr[c] ;
+            int a = diff_ptr[c] + pred_ptr[c];
 
             if (a < 0)
                 a = 0;
@@ -30,7 +30,7 @@ void vp8_recon_b_c(unsigned char *pred_ptr,
             if (a > 255)
                 a = 255;
 
-            dst_ptr[c] = (unsigned char) a ;
+            dst_ptr[c] = (unsigned char)a;
         }
 
         dst_ptr += stride;
@@ -50,7 +50,7 @@ void vp8_recon4b_c(unsigned char *pred_ptr,
     {
         for (c = 0; c < 16; c++)
         {
-            int a = diff_ptr[c] + pred_ptr[c] ;
+            int a = diff_ptr[c] + pred_ptr[c];
 
             if (a < 0)
                 a = 0;
@@ -58,7 +58,7 @@ void vp8_recon4b_c(unsigned char *pred_ptr,
             if (a > 255)
                 a = 255;
 
-            dst_ptr[c] = (unsigned char) a ;
+            dst_ptr[c] = (unsigned char)a;
         }
 
         dst_ptr += stride;
@@ -78,7 +78,7 @@ void vp8_recon2b_c(unsigned char *pred_ptr,
     {
         for (c = 0; c < 8; c++)
         {
-            int a = diff_ptr[c] + pred_ptr[c] ;
+            int a = diff_ptr[c] + pred_ptr[c];
 
             if (a < 0)
                 a = 0;
@@ -86,7 +86,7 @@ void vp8_recon2b_c(unsigned char *pred_ptr,
             if (a > 255)
                 a = 255;
 
-            dst_ptr[c] = (unsigned char) a ;
+            dst_ptr[c] = (unsigned char)a;
         }
 
         dst_ptr += stride;
@@ -95,8 +95,7 @@ void vp8_recon2b_c(unsigned char *pred_ptr,
     }
 }
 
-void vp8_recon_mby_c(const vp8_recon_rtcd_vtable_t *rtcd,
-                     MACROBLOCKD *x)
+void vp8_recon_mby_c(const vp8_recon_rtcd_vtable_t *rtcd, MACROBLOCKD *x)
 {
     int i;
 
@@ -108,8 +107,7 @@ void vp8_recon_mby_c(const vp8_recon_rtcd_vtable_t *rtcd,
     }
 }
 
-void vp8_recon_mb_c(const vp8_recon_rtcd_vtable_t *rtcd,
-                    MACROBLOCKD *x)
+void vp8_recon_mb_c(const vp8_recon_rtcd_vtable_t *rtcd, MACROBLOCKD *x)
 {
     int i;
 

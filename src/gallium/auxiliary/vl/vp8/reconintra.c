@@ -86,7 +86,6 @@ void vp8_build_intra_predictors_mby(MACROBLOCKD *x)
                 {
                     average += yleft_col[i];
                 }
-
             }
 
             shift = 3 + x->up_available + x->left_available;
@@ -105,7 +104,6 @@ void vp8_build_intra_predictors_mby(MACROBLOCKD *x)
     {
         for (r = 0; r < 16; r++)
         {
-
             ((int *)ypred_ptr)[0] = ((int *)yabove_row)[0];
             ((int *)ypred_ptr)[1] = ((int *)yabove_row)[1];
             ((int *)ypred_ptr)[2] = ((int *)yabove_row)[2];
@@ -119,7 +117,6 @@ void vp8_build_intra_predictors_mby(MACROBLOCKD *x)
     {
         for (r = 0; r < 16; r++)
         {
-
             memset(ypred_ptr, yleft_col[r], 16);
             ypred_ptr += 16;
         }
@@ -132,7 +129,7 @@ void vp8_build_intra_predictors_mby(MACROBLOCKD *x)
         {
             for (c = 0; c < 16; c++)
             {
-                int pred =  yleft_col[r] + yabove_row[ c] - ytop_left;
+                int pred =  yleft_col[r] + yabove_row[c] - ytop_left;
 
                 if (pred < 0)
                     pred = 0;
@@ -250,7 +247,7 @@ void vp8_build_intra_predictors_mby_s(MACROBLOCKD *x)
         {
             for (c = 0; c < 16; c++)
             {
-                int pred =  yleft_col[r] + yabove_row[ c] - ytop_left;
+                int pred =  yleft_col[r] + yabove_row[c] - ytop_left;
 
                 if (pred < 0)
                     pred = 0;

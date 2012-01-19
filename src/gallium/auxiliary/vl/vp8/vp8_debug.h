@@ -8,8 +8,8 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#ifndef VPX_CODEC_H
-#define VPX_CODEC_H
+#ifndef VP8_DEBUG_H
+#define VP8_DEBUG_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -62,4 +62,4 @@ void vpx_internal_error(struct vpx_internal_error_info *info,
 }
 #endif
 
-#endif /* VPX_CODEC_H */
+#endif /* VP8_DEBUG_H */

@@ -55,7 +55,7 @@ void vp8_dequant_idct_add_c(short *input, short *dq, unsigned char *pred,
             if (a > 255)
                 a = 255;
 
-            dest[c] = (unsigned char) a;
+            dest[c] = (unsigned char)a;
         }
 
         dest += stride;
@@ -97,7 +97,7 @@ void vp8_dequant_dc_idct_add_c(short *input, short *dq, unsigned char *pred,
             if (a > 255)
                 a = 255;
 
-            dest[c] = (unsigned char) a;
+            dest[c] = (unsigned char)a;
         }
 
         dest += stride;

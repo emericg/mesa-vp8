@@ -20,7 +20,7 @@ static const int dc_qlookup[QINDEX_RANGE] =
     59,   60,   61,   62,   63,   64,   65,   66,   67,   68,   69,   70,   71,   72,   73,   74,
     75,   76,   76,   77,   78,   79,   80,   81,   82,   83,   84,   85,   86,   87,   88,   89,
     91,   93,   95,   96,   98,  100,  101,  102,  104,  106,  108,  110,  112,  114,  116,  118,
-    122,  124,  126,  128,  130,  132,  134,  136,  138,  140,  143,  145,  148,  151,  154,  157,
+   122,  124,  126,  128,  130,  132,  134,  136,  138,  140,  143,  145,  148,  151,  154,  157,
 };
 
 static const int ac_qlookup[QINDEX_RANGE] =
@@ -30,23 +30,23 @@ static const int ac_qlookup[QINDEX_RANGE] =
     36,   37,   38,   39,   40,   41,   42,   43,   44,   45,   46,   47,   48,   49,   50,   51,
     52,   53,   54,   55,   56,   57,   58,   60,   62,   64,   66,   68,   70,   72,   74,   76,
     78,   80,   82,   84,   86,   88,   90,   92,   94,   96,   98,  100,  102,  104,  106,  108,
-    110,  112,  114,  116,  119,  122,  125,  128,  131,  134,  137,  140,  143,  146,  149,  152,
-    155,  158,  161,  164,  167,  170,  173,  177,  181,  185,  189,  193,  197,  201,  205,  209,
-    213,  217,  221,  225,  229,  234,  239,  245,  249,  254,  259,  264,  269,  274,  279,  284,
+   110,  112,  114,  116,  119,  122,  125,  128,  131,  134,  137,  140,  143,  146,  149,  152,
+   155,  158,  161,  164,  167,  170,  173,  177,  181,  185,  189,  193,  197,  201,  205,  209,
+   213,  217,  221,  225,  229,  234,  239,  245,  249,  254,  259,  264,  269,  274,  279,  284,
 };
 
 static int vp8_dc_quant(int QIndex, int Delta)
 {
     int retval;
 
-    QIndex = QIndex + Delta;
+    QIndex += Delta;
 
     if (QIndex > 127)
         QIndex = 127;
     else if (QIndex < 0)
         QIndex = 0;
 
-    retval = dc_qlookup[ QIndex ];
+    retval = dc_qlookup[QIndex];
 
     return retval;
 }
@@ -55,14 +55,14 @@ static int vp8_dc2quant(int QIndex, int Delta)
 {
     int retval;
 
-    QIndex = QIndex + Delta;
+    QIndex += Delta;
 
     if (QIndex > 127)
         QIndex = 127;
     else if (QIndex < 0)
         QIndex = 0;
 
-    retval = dc_qlookup[ QIndex ] * 2;
+    retval = dc_qlookup[QIndex] * 2;
 
     return retval;
 }
@@ -71,14 +71,14 @@ static int vp8_dc_uv_quant(int QIndex, int Delta)
 {
     int retval;
 
-    QIndex = QIndex + Delta;
+    QIndex += Delta;
 
     if (QIndex > 127)
         QIndex = 127;
     else if (QIndex < 0)
         QIndex = 0;
 
-    retval = dc_qlookup[ QIndex ];
+    retval = dc_qlookup[QIndex];
 
     if (retval > 132)
         retval = 132;
@@ -95,7 +95,7 @@ static int vp8_ac_yquant(int QIndex)
     else if (QIndex < 0)
         QIndex = 0;
 
-    retval = ac_qlookup[ QIndex ];
+    retval = ac_qlookup[QIndex];
 
     return retval;
 }
@@ -104,14 +104,14 @@ static int vp8_ac2quant(int QIndex, int Delta)
 {
     int retval;
 
-    QIndex = QIndex + Delta;
+    QIndex += Delta;
 
     if (QIndex > 127)
         QIndex = 127;
     else if (QIndex < 0)
         QIndex = 0;
 
-    retval = (ac_qlookup[ QIndex ] * 155) / 100;
+    retval = (ac_qlookup[QIndex] * 155) / 100;
 
     if (retval < 8)
         retval = 8;
@@ -123,14 +123,14 @@ static int vp8_ac_uv_quant(int QIndex, int Delta)
 {
     int retval;
 
-    QIndex = QIndex + Delta;
+    QIndex += Delta;
 
     if (QIndex > 127)
         QIndex = 127;
     else if (QIndex < 0)
         QIndex = 0;
 
-    retval = ac_qlookup[ QIndex ];
+    retval = ac_qlookup[QIndex];
 
     return retval;
 }
