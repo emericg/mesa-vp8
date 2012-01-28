@@ -40,11 +40,11 @@ extern "C"
 
 typedef struct
 {
-    vp8_prob bmode_prob [VP8_BINTRAMODES-1];
-    vp8_prob ymode_prob [VP8_YMODES-1];  /**< interframe intra mode probs */
-    vp8_prob uv_mode_prob [VP8_UV_MODES-1];
-    vp8_prob sub_mv_ref_prob [VP8_SUBMVREFS-1];
-    vp8_prob coef_probs [BLOCK_TYPES] [COEF_BANDS] [PREV_COEF_CONTEXTS] [ENTROPY_NODES];
+    vp8_prob bmode_prob[VP8_BINTRAMODES - 1];
+    vp8_prob ymode_prob[VP8_YMODES - 1];     /**< interframe intra mode probs */
+    vp8_prob uv_mode_prob[VP8_UV_MODES - 1];
+    vp8_prob sub_mv_ref_prob[VP8_SUBMVREFS - 1];
+    vp8_prob coef_probs[BLOCK_TYPES][COEF_BANDS][PREV_COEF_CONTEXTS][ENTROPY_NODES];
     MV_CONTEXT mvc[2];
 } FRAME_CONTEXT;
 
@@ -89,7 +89,10 @@ typedef struct VP8Common
     DECLARE_ALIGNED(16, short, Y2dequant[QINDEX_RANGE][16]);
     DECLARE_ALIGNED(16, short, UVdequant[QINDEX_RANGE][16]);
 
+    /* Header content */
+    FRAME_TYPE frame_type;
     int version;
+    int show_frame;
 
     int width;
     int height;
@@ -99,15 +102,22 @@ typedef struct VP8Common
     YUV_TYPE clr_type;
     CLAMP_TYPE clamp_type;
 
-    YV12_BUFFER_CONFIG *frame_to_show;
+    INTERPOLATIONFILTER_TYPE mcomp_filter_type;
+    LOOPFILTER_TYPE filter_type;
 
+    int filter_level;
+    int last_sharpness_level;
+    int sharpness_level;
+
+    int refresh_last_frame;    /**< Two state 0 = NO, 1 = YES */
+    int refresh_golden_frame;  /**< Two state 0 = NO, 1 = YES */
+    int refresh_alt_ref_frame; /**< Two state 0 = NO, 1 = YES */
+
+    /* Frame buffers */
+    YV12_BUFFER_CONFIG *frame_to_show;
     YV12_BUFFER_CONFIG yv12_fb[NUM_YV12_BUFFERS];
     int fb_idx_ref_cnt[NUM_YV12_BUFFERS];
     int new_fb_idx, lst_fb_idx, gld_fb_idx, alt_fb_idx;
-
-    FRAME_TYPE frame_type;
-
-    int show_frame;
 
     int frame_flags;
     int MBs;
@@ -115,7 +125,7 @@ typedef struct VP8Common
     int mb_cols;
     int mode_info_stride;
 
-    /* profile settings */
+    /* Profile settings */
     int mb_no_coeff_skip;
     int no_lpf;
     int use_bilinear_mc_filter;
@@ -139,35 +149,24 @@ typedef struct VP8Common
     MODE_INFO *mip; /**< Base of allocated array */
     MODE_INFO *mi;  /**< Corresponds to upper left visible macroblock */
 
-    INTERPOLATIONFILTER_TYPE mcomp_filter_type;
-    LOOPFILTER_TYPE filter_type;
-
-    int filter_level;
-    int last_sharpness_level;
-    int sharpness_level;
-
-    int refresh_last_frame;    /**< Two state 0 = NO, 1 = YES */
-    int refresh_golden_frame;  /**< Two state 0 = NO, 1 = YES */
-    int refresh_alt_ref_frame; /**< Two state 0 = NO, 1 = YES */
-
     int copy_buffer_to_gf;     /**< 0 none, 1 Last to GF, 2 ARF to GF */
     int copy_buffer_to_arf;    /**< 0 none, 1 Last to ARF, 2 GF to ARF */
 
     int refresh_entropy_probs; /**< Two state 0 = NO, 1 = YES */
 
-    int ref_frame_sign_bias [MAX_REF_FRAMES]; /**< Two state 0, 1 */
+    int ref_frame_sign_bias[MAX_REF_FRAMES]; /**< Two state 0, 1 */
 
     ENTROPY_CONTEXT_PLANES *above_context; /**< Row of context for each plane */
     ENTROPY_CONTEXT_PLANES left_context;   /**< (up to) 4 contexts */
 
     /* keyframe block modes are predicted by their above, left neighbors */
 
-    vp8_prob kf_bmode_prob [VP8_BINTRAMODES] [VP8_BINTRAMODES] [VP8_BINTRAMODES-1];
-    vp8_prob kf_ymode_prob [VP8_YMODES-1];  /**< keyframe */
-    vp8_prob kf_uv_mode_prob [VP8_UV_MODES-1];
+    vp8_prob kf_bmode_prob[VP8_BINTRAMODES][VP8_BINTRAMODES][VP8_BINTRAMODES - 1];
+    vp8_prob kf_ymode_prob[VP8_YMODES - 1];  /**< keyframe */
+    vp8_prob kf_uv_mode_prob[VP8_UV_MODES - 1];
 
-    FRAME_CONTEXT lfc; /**< last frame entropy */
-    FRAME_CONTEXT fc;  /**< current frame entropy */
+    FRAME_CONTEXT lfc; /**< Last frame entropy */
+    FRAME_CONTEXT fc;  /**< Current frame entropy */
 
     unsigned int current_video_frame;
 
@@ -183,13 +182,10 @@ typedef struct
     DECLARE_ALIGNED(16, VP8_COMMON, common);
 
     BOOL_DECODER bd, bd2;
+    BOOL_DECODER *mbd;
 
     const unsigned char *data;
     unsigned int         data_size;
-
-    BOOL_DECODER *mbd;
-    int64_t       last_time_stamp;
-    int           ready_for_new_data;
 
     vp8_prob prob_intra;
     vp8_prob prob_last;
@@ -203,11 +199,9 @@ typedef struct
 VP8D_PTR vp8_decoder_create();
 
 int vp8_decoder_start(VP8D_PTR comp, struct pipe_vp8_picture_desc *frame_header,
-                      const unsigned char *data, unsigned data_size,
-                      int64_t timestamp_deadline);
+                      const unsigned char *data, unsigned data_size);
 
-int vp8_decoder_getframe(VP8D_PTR comp, YV12_BUFFER_CONFIG *sd,
-                         int64_t *timestamp, int64_t *timestamp_end);
+int vp8_decoder_getframe(VP8D_PTR comp, YV12_BUFFER_CONFIG *sd);
 
 void vp8_decoder_remove(VP8D_PTR comp);
 

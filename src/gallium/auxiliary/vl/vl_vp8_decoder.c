@@ -234,7 +234,7 @@ vl_vp8_decode_bitstream(struct pipe_video_decoder *decoder,
       // Start bitstream decoding
       //vl_vp8_bs_decode(&buf->bs, target, desc, num_buffers, buffers, sizes);
 
-      if (vp8_decoder_start(dec->vp8_dec, desc, (const uint8_t *)buffers[dec->current_buffer], sizes[dec->current_buffer], 0))
+      if (vp8_decoder_start(dec->vp8_dec, desc, (const uint8_t *)buffers[dec->current_buffer], sizes[dec->current_buffer]))
       {
          printf("[G3DVL] Error : decoding error, not a valid VP8 VDPAU frame !\n");
          dec->img_ready = 0;
@@ -269,7 +269,6 @@ vl_vp8_end_frame(struct pipe_video_decoder *decoder,
 
    struct pipe_sampler_view **sampler_views;
    struct pipe_context *pipe;
-   int64_t timestamp = 0, timestamp_end = 0;
 
    assert(dec && target && picture);
 
@@ -334,7 +333,7 @@ vl_vp8_end_frame(struct pipe_video_decoder *decoder,
    }
 
    // Get the decoded frame
-   if (vp8_decoder_getframe(dec->vp8_dec, &dec->img_yv12, &timestamp, &timestamp_end)) {
+   if (vp8_decoder_getframe(dec->vp8_dec, &dec->img_yv12)) {
       printf("[end_frame] No image to output !\n");
       return;
    }

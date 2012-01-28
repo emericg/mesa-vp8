@@ -67,6 +67,7 @@ struct vl_vp8_decoder
 
    struct pipe_video_buffer *idct_source;
    struct pipe_video_buffer *mc_source;
+   struct pipe_video_buffer *lf_source;
 
    struct vl_zscan zscan_y, zscan_c;
    struct vl_idct idct_y, idct_c;

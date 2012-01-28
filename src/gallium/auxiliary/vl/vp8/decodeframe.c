@@ -27,25 +27,25 @@
 #include <assert.h>
 #include <stdio.h>
 
-void mb_init_dequantizer(VP8D_COMP *pbi, MACROBLOCKD *xd)
+void mb_init_dequantizer(VP8D_COMP *pbi, MACROBLOCKD *mb)
 {
     int i;
     int QIndex;
-    MB_MODE_INFO *mbmi = &xd->mode_info_context->mbmi;
+    MB_MODE_INFO *mbmi = &mb->mode_info_context->mbmi;
     VP8_COMMON *const pc = &pbi->common;
 
     /* Decide whether to use the default or alternate baseline Q value. */
-    if (xd->segmentation_enabled)
+    if (mb->segmentation_enabled)
     {
-        if (xd->mb_segement_abs_delta == SEGMENT_ABSDATA)
+        if (mb->mb_segement_abs_delta == SEGMENT_ABSDATA)
         {
             /* Abs Value */
-            QIndex = xd->segment_feature_data[MB_LVL_ALT_Q][mbmi->segment_id];
+            QIndex = mb->segment_feature_data[MB_LVL_ALT_Q][mbmi->segment_id];
         }
         else
         {
             /* Delta Value */
-            QIndex = pc->base_qindex + xd->segment_feature_data[MB_LVL_ALT_Q][mbmi->segment_id];
+            QIndex = pc->base_qindex + mb->segment_feature_data[MB_LVL_ALT_Q][mbmi->segment_id];
             QIndex = (QIndex >= 0) ? ((QIndex <= MAXQ) ? QIndex : MAXQ) : 0; /* Clamp to valid range */
         }
     }
@@ -57,15 +57,15 @@ void mb_init_dequantizer(VP8D_COMP *pbi, MACROBLOCKD *xd)
     /* Set up the block level dequant pointers */
     for (i = 0; i < 16; i++)
     {
-        xd->block[i].dequant = pc->Y1dequant[QIndex];
+        mb->block[i].dequant = pc->Y1dequant[QIndex];
     }
 
     for (i = 16; i < 24; i++)
     {
-        xd->block[i].dequant = pc->UVdequant[QIndex];
+        mb->block[i].dequant = pc->UVdequant[QIndex];
     }
 
-    xd->block[24].dequant = pc->Y2dequant[QIndex];
+    mb->block[24].dequant = pc->Y2dequant[QIndex];
 }
 
 /**
@@ -73,18 +73,18 @@ void mb_init_dequantizer(VP8D_COMP *pbi, MACROBLOCKD *xd)
  * buffer and then copying it to dst buffer, we can write the result directly
  * to dst buffer. This eliminates unnecessary copy.
  */
-static void skip_recon_mb(VP8D_COMP *pbi, MACROBLOCKD *xd)
+static void skip_recon_mb(VP8D_COMP *pbi, MACROBLOCKD *mb)
 {
-    if (xd->mode_info_context->mbmi.ref_frame == INTRA_FRAME)
+    if (mb->mode_info_context->mbmi.ref_frame == INTRA_FRAME)
     {
-        RECON_INVOKE(&pbi->common.rtcd.recon, build_intra_predictors_mbuv_s)(xd);
-        RECON_INVOKE(&pbi->common.rtcd.recon, build_intra_predictors_mby_s)(xd);
+        RECON_INVOKE(&pbi->common.rtcd.recon, build_intra_predictors_mbuv_s)(mb);
+        RECON_INVOKE(&pbi->common.rtcd.recon, build_intra_predictors_mby_s)(mb);
     }
     else
     {
-        vp8_build_inter16x16_predictors_mb(xd, xd->dst.y_buffer,
-                                           xd->dst.u_buffer, xd->dst.v_buffer,
-                                           xd->dst.y_stride, xd->dst.uv_stride);
+        vp8_build_inter16x16_predictors_mb(mb, mb->dst.y_buffer,
+                                           mb->dst.u_buffer, mb->dst.v_buffer,
+                                           mb->dst.y_stride, mb->dst.uv_stride);
     }
 }
 
@@ -98,47 +98,47 @@ static void skip_recon_mb(VP8D_COMP *pbi, MACROBLOCKD *xd)
  * filtering. The bottom and right edges use 16 pixels plus 2 pixels
  * left of the central pixel when filtering.
  */
-static void clamp_mv_to_umv_border(MV *mv, const MACROBLOCKD *xd)
+static void clamp_mv_to_umv_border(MV *mv, const MACROBLOCKD *mb)
 {
-    if (mv->col < (xd->mb_to_left_edge - (19 << 3)))
-        mv->col = xd->mb_to_left_edge - (16 << 3);
-    else if (mv->col > xd->mb_to_right_edge + (18 << 3))
-        mv->col = xd->mb_to_right_edge + (16 << 3);
+    if (mv->col < (mb->mb_to_left_edge - (19 << 3)))
+        mv->col = mb->mb_to_left_edge - (16 << 3);
+    else if (mv->col > mb->mb_to_right_edge + (18 << 3))
+        mv->col = mb->mb_to_right_edge + (16 << 3);
 
-    if (mv->row < (xd->mb_to_top_edge - (19 << 3)))
-        mv->row = xd->mb_to_top_edge - (16 << 3);
-    else if (mv->row > xd->mb_to_bottom_edge + (18 << 3))
-        mv->row = xd->mb_to_bottom_edge + (16 << 3);
+    if (mv->row < (mb->mb_to_top_edge - (19 << 3)))
+        mv->row = mb->mb_to_top_edge - (16 << 3);
+    else if (mv->row > mb->mb_to_bottom_edge + (18 << 3))
+        mv->row = mb->mb_to_bottom_edge + (16 << 3);
 }
 
 /**
  * \note clamp_uvmv_to_umv_border() is a chroma block MVs version of the
  *       function clamp_mv_to_umv_border().
  */
-static void clamp_uvmv_to_umv_border(MV *mv, const MACROBLOCKD *xd)
+static void clamp_uvmv_to_umv_border(MV *mv, const MACROBLOCKD *mb)
 {
-    mv->col = (2*mv->col < (xd->mb_to_left_edge - (19 << 3))) ? (xd->mb_to_left_edge - (16 << 3)) >> 1 : mv->col;
-    mv->col = (2*mv->col > xd->mb_to_right_edge + (18 << 3)) ? (xd->mb_to_right_edge + (16 << 3)) >> 1 : mv->col;
+    mv->col = (2*mv->col < (mb->mb_to_left_edge - (19 << 3))) ? (mb->mb_to_left_edge - (16 << 3)) >> 1 : mv->col;
+    mv->col = (2*mv->col > mb->mb_to_right_edge + (18 << 3)) ? (mb->mb_to_right_edge + (16 << 3)) >> 1 : mv->col;
 
-    mv->row = (2*mv->row < (xd->mb_to_top_edge - (19 << 3))) ? (xd->mb_to_top_edge - (16 << 3)) >> 1 : mv->row;
-    mv->row = (2*mv->row > xd->mb_to_bottom_edge + (18 << 3)) ? (xd->mb_to_bottom_edge + (16 << 3)) >> 1 : mv->row;
+    mv->row = (2*mv->row < (mb->mb_to_top_edge - (19 << 3))) ? (mb->mb_to_top_edge - (16 << 3)) >> 1 : mv->row;
+    mv->row = (2*mv->row > mb->mb_to_bottom_edge + (18 << 3)) ? (mb->mb_to_bottom_edge + (16 << 3)) >> 1 : mv->row;
 }
 
-static void clamp_mvs(MACROBLOCKD *xd)
+static void clamp_mvs(MACROBLOCKD *mb)
 {
-    if (xd->mode_info_context->mbmi.mode == SPLITMV)
+    if (mb->mode_info_context->mbmi.mode == SPLITMV)
     {
         int i;
 
         for (i = 0; i < 16; i++)
-            clamp_mv_to_umv_border(&xd->block[i].bmi.mv.as_mv, xd);
+            clamp_mv_to_umv_border(&mb->block[i].bmi.mv.as_mv, mb);
         for (i = 16; i < 24; i++)
-            clamp_uvmv_to_umv_border(&xd->block[i].bmi.mv.as_mv, xd);
+            clamp_uvmv_to_umv_border(&mb->block[i].bmi.mv.as_mv, mb);
     }
     else
     {
-        clamp_mv_to_umv_border(&xd->mode_info_context->mbmi.mv.as_mv, xd);
-        clamp_uvmv_to_umv_border(&xd->block[16].bmi.mv.as_mv, xd);
+        clamp_mv_to_umv_border(&mb->mode_info_context->mbmi.mv.as_mv, mb);
+        clamp_uvmv_to_umv_border(&mb->block[16].bmi.mv.as_mv, mb);
     }
 }
 
@@ -194,59 +194,59 @@ static void vp8_extend_mb_row(YV12_BUFFER_CONFIG *ybf,
     }
 }
 
-static void decode_macroblock(VP8D_COMP *pbi, MACROBLOCKD *xd, unsigned int mb_idx)
+static void decode_macroblock(VP8D_COMP *pbi, MACROBLOCKD *mb, unsigned int mb_idx)
 {
     int eobtotal = 0;
     MB_PREDICTION_MODE mode;
     int i;
 
-    if (xd->mode_info_context->mbmi.mb_skip_coeff)
+    if (mb->mode_info_context->mbmi.mb_skip_coeff)
     {
-        vp8_reset_mb_tokens_context(xd);
+        vp8_reset_mb_tokens_context(mb);
     }
     else
     {
-        eobtotal = vp8_decode_mb_tokens(pbi, xd);
+        eobtotal = vp8_decode_mb_tokens(pbi, mb);
     }
 
     /* Perform temporary clamping of the MV to be used for prediction */
-    if (xd->mode_info_context->mbmi.need_to_clamp_mvs)
+    if (mb->mode_info_context->mbmi.need_to_clamp_mvs)
     {
-        clamp_mvs(xd);
+        clamp_mvs(mb);
     }
 
-    mode = xd->mode_info_context->mbmi.mode;
+    mode = mb->mode_info_context->mbmi.mode;
 
     if (eobtotal == 0 && mode != B_PRED && mode != SPLITMV)
     {
         /* Special case: Force the loopfilter to skip when eobtotal and
          * mb_skip_coeff are zero. */
-        xd->mode_info_context->mbmi.mb_skip_coeff = 1;
+        mb->mode_info_context->mbmi.mb_skip_coeff = 1;
 
-        skip_recon_mb(pbi, xd);
+        skip_recon_mb(pbi, mb);
         return;
     }
 
-    if (xd->segmentation_enabled)
-        mb_init_dequantizer(pbi, xd);
+    if (mb->segmentation_enabled)
+        mb_init_dequantizer(pbi, mb);
 
     /* do prediction */
-    if (xd->mode_info_context->mbmi.ref_frame == INTRA_FRAME)
+    if (mb->mode_info_context->mbmi.ref_frame == INTRA_FRAME)
     {
-        RECON_INVOKE(&pbi->common.rtcd.recon, build_intra_predictors_mbuv)(xd);
+        RECON_INVOKE(&pbi->common.rtcd.recon, build_intra_predictors_mbuv)(mb);
 
         if (mode != B_PRED)
         {
-            RECON_INVOKE(&pbi->common.rtcd.recon, build_intra_predictors_mby)(xd);
+            RECON_INVOKE(&pbi->common.rtcd.recon, build_intra_predictors_mby)(mb);
         }
         else
         {
-            vp8_intra_prediction_down_copy(xd);
+            vp8_intra_prediction_down_copy(mb);
         }
     }
     else
     {
-        vp8_build_inter_predictors_mb(xd);
+        vp8_build_inter_predictors_mb(mb);
     }
 
     /* dequantization and idct */
@@ -254,11 +254,11 @@ static void decode_macroblock(VP8D_COMP *pbi, MACROBLOCKD *xd, unsigned int mb_i
     {
         for (i = 0; i < 16; i++)
         {
-            BLOCKD *b = &xd->block[i];
+            BLOCKD *b = &mb->block[i];
             RECON_INVOKE(RTCD_VTABLE(recon), intra4x4_predict)
                         (b, b->bmi.as_mode, b->predictor);
 
-            if (xd->eobs[i] > 1)
+            if (mb->eobs[i] > 1)
             {
                 DEQUANT_INVOKE(&pbi->dequant, idct_add)
                               (b->qcoeff, b->dequant, b->predictor,
@@ -269,6 +269,7 @@ static void decode_macroblock(VP8D_COMP *pbi, MACROBLOCKD *xd, unsigned int mb_i
                 IDCT_INVOKE(RTCD_VTABLE(idct), idct1_scalar_add)
                            (b->qcoeff[0] * b->dequant[0], b->predictor,
                           *(b->base_dst) + b->dst, 16, b->dst_stride);
+
                 ((int *)b->qcoeff)[0] = 0;
             }
         }
@@ -277,18 +278,18 @@ static void decode_macroblock(VP8D_COMP *pbi, MACROBLOCKD *xd, unsigned int mb_i
     else if (mode == SPLITMV)
     {
         DEQUANT_INVOKE(&pbi->dequant, idct_add_y_block)
-                      (xd->qcoeff, xd->block[0].dequant,
-                       xd->predictor, xd->dst.y_buffer,
-                       xd->dst.y_stride, xd->eobs);
+                      (mb->qcoeff, mb->block[0].dequant,
+                       mb->predictor, mb->dst.y_buffer,
+                       mb->dst.y_stride, mb->eobs);
     }
     else
     {
-        BLOCKD *b = &xd->block[24];
+        BLOCKD *b = &mb->block[24];
 
         DEQUANT_INVOKE(&pbi->dequant, block)(b);
 
         /* do 2nd order transform on the dc block */
-        if (xd->eobs[24] > 1)
+        if (mb->eobs[24] > 1)
         {
             IDCT_INVOKE(RTCD_VTABLE(idct), iwalsh16)(&b->dqcoeff[0], b->diff);
             ((int *)b->qcoeff)[0] = 0;
@@ -307,19 +308,19 @@ static void decode_macroblock(VP8D_COMP *pbi, MACROBLOCKD *xd, unsigned int mb_i
         }
 
         DEQUANT_INVOKE (&pbi->dequant, dc_idct_add_y_block)
-                       (xd->qcoeff, xd->block[0].dequant,
-                        xd->predictor, xd->dst.y_buffer,
-                        xd->dst.y_stride, xd->eobs, xd->block[24].diff);
+                       (mb->qcoeff, mb->block[0].dequant,
+                        mb->predictor, mb->dst.y_buffer,
+                        mb->dst.y_stride, mb->eobs, mb->block[24].diff);
     }
 
     DEQUANT_INVOKE (&pbi->dequant, idct_add_uv_block)
-                   (xd->qcoeff+16*16, xd->block[16].dequant,
-                    xd->predictor+16*16, xd->dst.u_buffer, xd->dst.v_buffer,
-                    xd->dst.uv_stride, xd->eobs+16);
+                   (mb->qcoeff+16*16, mb->block[16].dequant,
+                    mb->predictor+16*16, mb->dst.u_buffer, mb->dst.v_buffer,
+                    mb->dst.uv_stride, mb->eobs+16);
 }
 
 static void
-decode_macroblock_row(VP8D_COMP *pbi, VP8_COMMON *pc, int mb_row, MACROBLOCKD *xd)
+decode_macroblock_row(VP8D_COMP *pbi, VP8_COMMON *pc, int mb_row, MACROBLOCKD *mb)
 {
     int recon_yoffset, recon_uvoffset;
     int mb_col;
@@ -333,69 +334,69 @@ decode_macroblock_row(VP8D_COMP *pbi, VP8_COMMON *pc, int mb_row, MACROBLOCKD *x
     recon_uvoffset = mb_row * recon_uv_stride * 8;
 
     /* Reset above block coeffs */
-    xd->above_context = pc->above_context;
-    xd->up_available = (mb_row != 0);
+    mb->above_context = pc->above_context;
+    mb->up_available = (mb_row != 0);
 
-    xd->mb_to_top_edge = -((mb_row * 16)) << 3;
-    xd->mb_to_bottom_edge = ((pc->mb_rows - 1 - mb_row) * 16) << 3;
+    mb->mb_to_top_edge = -((mb_row * 16)) << 3;
+    mb->mb_to_bottom_edge = ((pc->mb_rows - 1 - mb_row) * 16) << 3;
 
     for (mb_col = 0; mb_col < pc->mb_cols; mb_col++)
     {
         /* Distance of Mb to the various image edges.
          * These are specified to 8th pel as they are always compared to values
          * that are in 1/8th pel units. */
-        xd->mb_to_left_edge = -((mb_col * 16) << 3);
-        xd->mb_to_right_edge = ((pc->mb_cols - 1 - mb_col) * 16) << 3;
+        mb->mb_to_left_edge = -((mb_col * 16) << 3);
+        mb->mb_to_right_edge = ((pc->mb_cols - 1 - mb_col) * 16) << 3;
 
-        update_blockd_bmi(xd);
+        update_blockd_bmi(mb);
 
-        xd->dst.y_buffer = pc->yv12_fb[dst_fb_idx].y_buffer + recon_yoffset;
-        xd->dst.u_buffer = pc->yv12_fb[dst_fb_idx].u_buffer + recon_uvoffset;
-        xd->dst.v_buffer = pc->yv12_fb[dst_fb_idx].v_buffer + recon_uvoffset;
+        mb->dst.y_buffer = pc->yv12_fb[dst_fb_idx].y_buffer + recon_yoffset;
+        mb->dst.u_buffer = pc->yv12_fb[dst_fb_idx].u_buffer + recon_uvoffset;
+        mb->dst.v_buffer = pc->yv12_fb[dst_fb_idx].v_buffer + recon_uvoffset;
 
-        xd->left_available = (mb_col != 0);
+        mb->left_available = (mb_col != 0);
 
         /* Select the appropriate reference frame for this MB */
-        if (xd->mode_info_context->mbmi.ref_frame == LAST_FRAME)
+        if (mb->mode_info_context->mbmi.ref_frame == LAST_FRAME)
             ref_fb_idx = pc->lst_fb_idx;
-        else if (xd->mode_info_context->mbmi.ref_frame == GOLDEN_FRAME)
+        else if (mb->mode_info_context->mbmi.ref_frame == GOLDEN_FRAME)
             ref_fb_idx = pc->gld_fb_idx;
         else
             ref_fb_idx = pc->alt_fb_idx;
 
-        xd->pre.y_buffer = pc->yv12_fb[ref_fb_idx].y_buffer + recon_yoffset;
-        xd->pre.u_buffer = pc->yv12_fb[ref_fb_idx].u_buffer + recon_uvoffset;
-        xd->pre.v_buffer = pc->yv12_fb[ref_fb_idx].v_buffer + recon_uvoffset;
+        mb->pre.y_buffer = pc->yv12_fb[ref_fb_idx].y_buffer + recon_yoffset;
+        mb->pre.u_buffer = pc->yv12_fb[ref_fb_idx].u_buffer + recon_uvoffset;
+        mb->pre.v_buffer = pc->yv12_fb[ref_fb_idx].v_buffer + recon_uvoffset;
 
-        if (xd->mode_info_context->mbmi.ref_frame != INTRA_FRAME)
+        if (mb->mode_info_context->mbmi.ref_frame != INTRA_FRAME)
         {
             /* Propagate errors from reference frames */
-            xd->corrupted |= pc->yv12_fb[ref_fb_idx].corrupted;
+            mb->corrupted |= pc->yv12_fb[ref_fb_idx].corrupted;
         }
 
-        vp8_build_uvmvs(xd, pc->full_pixel);
+        vp8_build_uvmvs(mb, pc->full_pixel);
 
-        decode_macroblock(pbi, xd, mb_row * pc->mb_cols + mb_col);
+        decode_macroblock(pbi, mb, mb_row * pc->mb_cols + mb_col);
 
         /* Check if the boolean decoder has suffered an error */
-        xd->corrupted |= vp8dx_bool_error(xd->current_bd);
+        mb->corrupted |= vp8dx_bool_error(mb->current_bd);
 
         recon_yoffset += 16;
         recon_uvoffset += 8;
 
-        ++xd->mode_info_context; /* next mb */
+        ++mb->mode_info_context; /* next mb */
 
-        xd->above_context++;
+        mb->above_context++;
     }
 
     /* Adjust to the next row of mbs */
     vp8_extend_mb_row(&pc->yv12_fb[dst_fb_idx],
-                      xd->dst.y_buffer + 16,
-                      xd->dst.u_buffer + 8,
-                      xd->dst.v_buffer + 8);
+                      mb->dst.y_buffer + 16,
+                      mb->dst.u_buffer + 8,
+                      mb->dst.v_buffer + 8);
 
     /* Skip prediction column */
-    ++xd->mode_info_context;
+    ++mb->mode_info_context;
 }
 
 static unsigned int token_decoder_readpartitionsize(const unsigned char *cx_size)
@@ -763,14 +764,14 @@ int vp8_frame_decode(VP8D_COMP *pbi, struct pipe_vp8_picture_desc *frame_header)
     memcpy(&xd->pre, &pc->yv12_fb[pc->lst_fb_idx], sizeof(YV12_BUFFER_CONFIG));
     memcpy(&xd->dst, &pc->yv12_fb[pc->new_fb_idx], sizeof(YV12_BUFFER_CONFIG));
 
-    /* set up frame new frame for intra coded blocks */
+    /* Set up frame new frame for intra coded blocks */
     vp8_setup_intra_recon(&pc->yv12_fb[pc->new_fb_idx]);
 
     vp8_setup_block_dptrs(xd);
 
     vp8_setup_block_doffsets(xd);
 
-    /* clear out the coeff buffer */
+    /* Clear out the coeff buffer */
     memset(xd->qcoeff, 0, sizeof(xd->qcoeff));
 
     /* Read the mb_no_coeff_skip flag */

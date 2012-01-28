@@ -49,10 +49,10 @@ static int swap_frame_buffers(VP8_COMMON *cm)
 {
     int err = 0;
 
-    /* The alternate reference frame or golden frame can be updated
-     *  using the new, last, or golden/alt ref frame.  If it
-     *  is updated using the newly decoded frame it is a refresh.
-     *  An update using the last or golden/alt ref frame is a copy. */
+    /* The alternate reference frame or golden frame can be updated using the
+     * new, last, or golden/alt ref frame. If it is updated using the newly
+     * decoded frame it is a refresh. An update using the last or golden/alt
+     * ref frame is a copy. */
     if (cm->copy_buffer_to_arf)
     {
         int new_fb = 0;
@@ -121,16 +121,12 @@ VP8D_PTR vp8_decoder_create()
     }
 
     pbi->common.error.setjmp = 1;
-    vp8_initialize_common();
-
-    vp8_create_common(&pbi->common);
-
     pbi->common.current_video_frame = 0;
     pbi->common.show_frame = 0;
-    pbi->ready_for_new_data = 1;
 
+    vp8_initialize_common();
+    vp8_create_common(&pbi->common);
     vp8_initialize_dequantizer(&pbi->common);
-
     // vp8_loop_filter_init(&pbi->common);
 
     pbi->common.error.setjmp = 0;
@@ -142,8 +138,7 @@ VP8D_PTR vp8_decoder_create()
  * Decode one VP8 frame.
  */
 int vp8_decoder_start(VP8D_PTR ptr, struct pipe_vp8_picture_desc *frame_header,
-                      const unsigned char *data, unsigned data_size,
-                      int64_t timestamp_deadline)
+                      const unsigned char *data, unsigned data_size)
 {
     VP8D_COMP *pbi = (VP8D_COMP *)ptr;
     VP8_COMMON *cm = &pbi->common;
@@ -207,11 +202,6 @@ int vp8_decoder_start(VP8D_PTR ptr, struct pipe_vp8_picture_desc *frame_header,
 
     /* from libvpx : vp8_print_modes_and_motion_vectors(cm->mi, cm->mb_rows, cm->mb_cols, cm->current_video_frame); */
 
-    if (cm->show_frame)
-        cm->current_video_frame++;
-
-    pbi->ready_for_new_data = 0;
-    pbi->last_time_stamp = timestamp_deadline;
     pbi->data_size = 0;
     pbi->common.error.setjmp = 0;
 
@@ -222,23 +212,14 @@ int vp8_decoder_start(VP8D_PTR ptr, struct pipe_vp8_picture_desc *frame_header,
  * Return a decoded VP8 frame in a YV12 framebuffer.
  */
 int vp8_decoder_getframe(VP8D_PTR ptr,
-                         YV12_BUFFER_CONFIG *sd,
-                         int64_t *timestamp,
-                         int64_t *timestamp_end)
+                         YV12_BUFFER_CONFIG *sd)
 {
     int ret = -1;
     VP8D_COMP *pbi = (VP8D_COMP *)ptr;
 
-    if (pbi->ready_for_new_data == 1)
-        return ret;
-
     /* ie no raw frame to show!!! */
     if (pbi->common.show_frame == 0)
         return ret;
-
-    pbi->ready_for_new_data = 1;
-    *timestamp = pbi->last_time_stamp;
-    *timestamp_end = 0;
 
     if (pbi->common.frame_to_show)
     {
