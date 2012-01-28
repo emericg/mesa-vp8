@@ -17,8 +17,6 @@
 #include "detokenize.h"
 #include "blockd.h"
 
-#define OCB_X PREV_COEF_CONTEXTS * ENTROPY_NODES
-
 #define EOB_CONTEXT_NODE            0
 #define ZERO_CONTEXT_NODE           1
 #define ONE_CONTEXT_NODE            2
@@ -30,6 +28,8 @@
 #define CAT_THREEFOUR_CONTEXT_NODE  8
 #define CAT_THREE_CONTEXT_NODE      9
 #define CAT_FIVE_CONTEXT_NODE       10
+
+#define OCB_X PREV_COEF_CONTEXTS * ENTROPY_NODES
 
 DECLARE_ALIGNED(16, static const unsigned char, coef_bands_x[16]) =
 {
@@ -65,19 +65,19 @@ const unsigned char vp8_block2above[25] =
     0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 4, 5, 4, 5, 6, 7, 6, 7, 8
 };
 
-void vp8_reset_mb_tokens_context(MACROBLOCKD *x)
+void vp8_reset_mb_tokens_context(MACROBLOCKD *mb)
 {
     /* Clear entropy contexts for Y2 blocks */
-    if (x->mode_info_context->mbmi.mode != B_PRED &&
-        x->mode_info_context->mbmi.mode != SPLITMV)
+    if (mb->mode_info_context->mbmi.mode != B_PRED &&
+        mb->mode_info_context->mbmi.mode != SPLITMV)
     {
-        memset(x->above_context, 0, sizeof(ENTROPY_CONTEXT_PLANES));
-        memset(x->left_context, 0, sizeof(ENTROPY_CONTEXT_PLANES));
+        memset(mb->above_context, 0, sizeof(ENTROPY_CONTEXT_PLANES));
+        memset(mb->left_context, 0, sizeof(ENTROPY_CONTEXT_PLANES));
     }
     else
     {
-        memset(x->above_context, 0, sizeof(ENTROPY_CONTEXT_PLANES) - 1);
-        memset(x->left_context, 0, sizeof(ENTROPY_CONTEXT_PLANES) - 1);
+        memset(mb->above_context, 0, sizeof(ENTROPY_CONTEXT_PLANES) - 1);
+        memset(mb->left_context, 0, sizeof(ENTROPY_CONTEXT_PLANES) - 1);
     }
 }
 
@@ -166,7 +166,7 @@ DECLARE_ALIGNED(16, extern const unsigned char, vp8_norm[256]);
 
 #define DECODE_EXTRABIT_AND_ADJUST_VAL(t, bits_count) \
     { \
-        split = 1 + (((range-1) * vp8d_token_extra_bits2[t].Probs[bits_count]) >> 8); \
+        split = 1 + (((range - 1) * vp8d_token_extra_bits2[t].Probs[bits_count]) >> 8); \
         bigsplit = (VP8_BD_VALUE)split << (VP8_BD_VALUE_SIZE - 8); \
         FILL \
         if(value >= bigsplit) { \
@@ -184,15 +184,15 @@ DECLARE_ALIGNED(16, extern const unsigned char, vp8_norm[256]);
     Dest = ((A) != 0) + ((B) != 0);
 
 
-int vp8_decode_mb_tokens(VP8D_COMP *dx, MACROBLOCKD *x)
+int vp8_decode_mb_tokens(VP8D_COMP *dx, MACROBLOCKD *mb)
 {
-    ENTROPY_CONTEXT *A = (ENTROPY_CONTEXT *)x->above_context;
-    ENTROPY_CONTEXT *L = (ENTROPY_CONTEXT *)x->left_context;
+    ENTROPY_CONTEXT *A = (ENTROPY_CONTEXT *)mb->above_context;
+    ENTROPY_CONTEXT *L = (ENTROPY_CONTEXT *)mb->left_context;
     const FRAME_CONTEXT * const fc = &dx->common.fc;
 
-    BOOL_DECODER *bd = x->current_bd;
+    BOOL_DECODER *bd = mb->current_bd;
 
-    char *eobs = x->eobs;
+    char *eobs = mb->eobs;
 
     ENTROPY_CONTEXT *a;
     ENTROPY_CONTEXT *l;
@@ -221,10 +221,10 @@ int vp8_decode_mb_tokens(VP8D_COMP *dx, MACROBLOCKD *x)
     const vp8_prob *coef_probs;
 
     scan = vp8_default_zig_zag1d;
-    qcoeff_ptr = &x->qcoeff[0];
+    qcoeff_ptr = &mb->qcoeff[0];
 
-    if (x->mode_info_context->mbmi.mode != B_PRED &&
-        x->mode_info_context->mbmi.mode != SPLITMV)
+    if (mb->mode_info_context->mbmi.mode != B_PRED &&
+        mb->mode_info_context->mbmi.mode != SPLITMV)
     {
         i = 24;
         stop = 24;
@@ -269,7 +269,7 @@ CHECK_0_:
     do
     {
         DECODE_EXTRABIT_AND_ADJUST_VAL(DCT_VAL_CATEGORY6, bits_count);
-        bits_count --;
+        bits_count--;
     }
     while (bits_count >= 0);
 

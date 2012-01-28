@@ -44,9 +44,9 @@ int vp8_mv_cont(const int_mv *l, const int_mv *a)
     return SUBMVREF_NORMAL;
 }
 
-static const vp8_prob sub_mv_ref_prob [VP8_SUBMVREFS-1] = { 180, 162, 25};
+static const vp8_prob sub_mv_ref_prob[VP8_SUBMVREFS - 1] = { 180, 162, 25};
 
-const vp8_prob vp8_sub_mv_ref_prob2 [SUBMVREF_COUNT][VP8_SUBMVREFS-1] =
+const vp8_prob vp8_sub_mv_ref_prob2[SUBMVREF_COUNT][VP8_SUBMVREFS - 1] =
 {
     { 147, 136, 18 },
     { 106, 145, 1  },
@@ -55,7 +55,7 @@ const vp8_prob vp8_sub_mv_ref_prob2 [SUBMVREF_COUNT][VP8_SUBMVREFS-1] =
     { 208, 1  , 1  }
 };
 
-vp8_mbsplit vp8_mbsplits [VP8_NUMMBSPLITS] =
+vp8_mbsplit vp8_mbsplits[VP8_NUMMBSPLITS] =
 {
     {
         0,  0,  0,  0,
@@ -85,7 +85,7 @@ vp8_mbsplit vp8_mbsplits [VP8_NUMMBSPLITS] =
 
 const int vp8_mbsplit_count[VP8_NUMMBSPLITS] = {2, 2, 4, 16};
 
-const vp8_prob vp8_mbsplit_probs[VP8_NUMMBSPLITS-1] = {110, 111, 150};
+const vp8_prob vp8_mbsplit_probs[VP8_NUMMBSPLITS - 1] = {110, 111, 150};
 
 /** Array indices are identical to previously-existing INTRAMODECONTEXTNODES. */
 const vp8_tree_index vp8_bmode_tree[18] =  /* INTRAMODECONTEXTNODE value */
@@ -160,7 +160,7 @@ struct vp8_token_struct vp8_mv_ref_encoding_array     [VP8_MVREFS];
 struct vp8_token_struct vp8_sub_mv_ref_encoding_array [VP8_SUBMVREFS];
 
 
-const vp8_tree_index vp8_small_mvtree [14] =
+const vp8_tree_index vp8_small_mvtree[14] =
 {
     2, 8,
     4, 6,
@@ -171,11 +171,11 @@ const vp8_tree_index vp8_small_mvtree [14] =
     -6, -7
 };
 
-struct vp8_token_struct vp8_small_mvencodings [8];
+struct vp8_token_struct vp8_small_mvencodings[8];
 
 void vp8_init_mbmode_probs(VP8_COMMON *x)
 {
-    unsigned int bct [VP8_YMODES] [2]; /* num Ymodes > num UV modes */
+    unsigned int bct[VP8_YMODES][2]; /* num Ymodes > num UV modes */
 
     vp8_tree_probs_from_distribution(
         VP8_YMODES, vp8_ymode_encodings, vp8_ymode_tree,
@@ -196,23 +196,23 @@ void vp8_init_mbmode_probs(VP8_COMMON *x)
     memcpy(x->fc.sub_mv_ref_prob, sub_mv_ref_prob, sizeof(sub_mv_ref_prob));
 }
 
-static void intra_bmode_probs_from_distribution(vp8_prob p [VP8_BINTRAMODES-1],
-                                                unsigned int branch_ct [VP8_BINTRAMODES-1] [2],
-                                                const unsigned int events [VP8_BINTRAMODES])
+static void intra_bmode_probs_from_distribution(vp8_prob p[VP8_BINTRAMODES - 1],
+                                                unsigned int branch_ct[VP8_BINTRAMODES - 1][2],
+                                                const unsigned int events[VP8_BINTRAMODES])
 {
     vp8_tree_probs_from_distribution(VP8_BINTRAMODES, vp8_bmode_encodings, vp8_bmode_tree,
                                      p, branch_ct, events, 256, 1);
 }
 
-void vp8_default_bmode_probs(vp8_prob p [VP8_BINTRAMODES-1])
+void vp8_default_bmode_probs(vp8_prob p[VP8_BINTRAMODES - 1])
 {
-    unsigned int branch_ct [VP8_BINTRAMODES-1] [2];
+    unsigned int branch_ct[VP8_BINTRAMODES - 1][2];
     intra_bmode_probs_from_distribution(p, branch_ct, bmode_cts);
 }
 
-void vp8_kf_default_bmode_probs(vp8_prob p [VP8_BINTRAMODES] [VP8_BINTRAMODES] [VP8_BINTRAMODES-1])
+void vp8_kf_default_bmode_probs(vp8_prob p[VP8_BINTRAMODES][VP8_BINTRAMODES][VP8_BINTRAMODES - 1])
 {
-    unsigned int branch_ct [VP8_BINTRAMODES-1] [2];
+    unsigned int branch_ct[VP8_BINTRAMODES - 1][2];
     int i = 0, j = 0;
 
     do

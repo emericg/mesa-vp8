@@ -24,10 +24,10 @@ struct vp8_recon_rtcd_vtable;
     void sym(unsigned char *pred, short *diff, unsigned char *dst, int pitch)
 
 #define prototype_recon_macroblock(sym) \
-    void sym(const struct vp8_recon_rtcd_vtable *rtcd, MACROBLOCKD *x)
+    void sym(const struct vp8_recon_rtcd_vtable *rtcd, MACROBLOCKD *mb)
 
 #define prototype_build_intra_predictors(sym) \
-    void sym(MACROBLOCKD *x)
+    void sym(MACROBLOCKD *mb)
 
 #define prototype_intra4x4_predict(sym) \
     void sym(BLOCKD *x, int b_mode, unsigned char *predictor)

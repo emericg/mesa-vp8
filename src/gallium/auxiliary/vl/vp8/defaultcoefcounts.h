@@ -15,7 +15,7 @@
 
 /* Generated file, included by entropy.c */
 
-const unsigned int vp8_default_coef_counts [BLOCK_TYPES] [COEF_BANDS] [PREV_COEF_CONTEXTS] [MAX_ENTROPY_TOKENS] =
+const unsigned int vp8_default_coef_counts[BLOCK_TYPES][COEF_BANDS][PREV_COEF_CONTEXTS][MAX_ENTROPY_TOKENS] =
 {
     {
         /* Block Type ( 0 ) */

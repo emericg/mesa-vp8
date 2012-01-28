@@ -95,32 +95,32 @@ void vp8_recon2b_c(unsigned char *pred_ptr,
     }
 }
 
-void vp8_recon_mby_c(const vp8_recon_rtcd_vtable_t *rtcd, MACROBLOCKD *x)
+void vp8_recon_mby_c(const vp8_recon_rtcd_vtable_t *rtcd, MACROBLOCKD *mb)
 {
     int i;
 
     for (i = 0; i < 16; i += 4)
     {
-        BLOCKD *b = &x->block[i];
+        BLOCKD *b = &mb->block[i];
 
         RECON_INVOKE(rtcd, recon4)(b->predictor, b->diff, *(b->base_dst) + b->dst, b->dst_stride);
     }
 }
 
-void vp8_recon_mb_c(const vp8_recon_rtcd_vtable_t *rtcd, MACROBLOCKD *x)
+void vp8_recon_mb_c(const vp8_recon_rtcd_vtable_t *rtcd, MACROBLOCKD *mb)
 {
     int i;
 
     for (i = 0; i < 16; i += 4)
     {
-        BLOCKD *b = &x->block[i];
+        BLOCKD *b = &mb->block[i];
 
         RECON_INVOKE(rtcd, recon4)(b->predictor, b->diff, *(b->base_dst) + b->dst, b->dst_stride);
     }
 
     for (i = 16; i < 24; i += 2)
     {
-        BLOCKD *b = &x->block[i];
+        BLOCKD *b = &mb->block[i];
 
         RECON_INVOKE(rtcd, recon2)(b->predictor, b->diff, *(b->base_dst) + b->dst, b->dst_stride);
     }

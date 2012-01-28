@@ -33,8 +33,8 @@ void vp8_recon2b_c(unsigned char *pred_ptr,
                    unsigned char *dst_ptr,
                    int stride);
 
-void vp8_recon_mby_c(const vp8_recon_rtcd_vtable_t *rtcd, MACROBLOCKD *x);
+void vp8_recon_mby_c(const vp8_recon_rtcd_vtable_t *rtcd, MACROBLOCKD *mb);
 
-void vp8_recon_mb_c(const vp8_recon_rtcd_vtable_t *rtcd, MACROBLOCKD *x);
+void vp8_recon_mb_c(const vp8_recon_rtcd_vtable_t *rtcd, MACROBLOCKD *mb);
 
 #endif /* RECON_H */

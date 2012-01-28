@@ -20,15 +20,15 @@ typedef const int vp8_mbsplit[16];
 #define VP8_NUMMBSPLITS 4
 #define SUBMVREF_COUNT 5
 
-extern vp8_mbsplit vp8_mbsplits [VP8_NUMMBSPLITS];
+extern vp8_mbsplit vp8_mbsplits[VP8_NUMMBSPLITS];
 
-extern const int vp8_mbsplit_count [VP8_NUMMBSPLITS];    /* # of subsets */
+extern const int vp8_mbsplit_count[VP8_NUMMBSPLITS];    /* # of subsets */
 
-extern const vp8_prob vp8_mbsplit_probs [VP8_NUMMBSPLITS-1];
+extern const vp8_prob vp8_mbsplit_probs[VP8_NUMMBSPLITS - 1];
 
 extern int vp8_mv_cont(const int_mv *l, const int_mv *a);
 
-extern const vp8_prob vp8_sub_mv_ref_prob2 [SUBMVREF_COUNT][VP8_SUBMVREFS-1];
+extern const vp8_prob vp8_sub_mv_ref_prob2[SUBMVREF_COUNT][VP8_SUBMVREFS - 1];
 
 extern const vp8_tree_index vp8_bmode_tree[];
 
@@ -53,13 +53,13 @@ extern struct vp8_token_struct vp8_sub_mv_ref_encoding_array[VP8_SUBMVREFS];
 
 extern const vp8_tree_index vp8_small_mvtree[];
 
-extern struct vp8_token_struct vp8_small_mvencodings [8];
+extern struct vp8_token_struct vp8_small_mvencodings[8];
 
 void vp8_entropy_mode_init();
 
 void vp8_init_mbmode_probs(VP8_COMMON *x);
 
-void vp8_default_bmode_probs(vp8_prob dest [VP8_BINTRAMODES-1]);
-void vp8_kf_default_bmode_probs(vp8_prob dest [VP8_BINTRAMODES] [VP8_BINTRAMODES] [VP8_BINTRAMODES-1]);
+void vp8_default_bmode_probs(vp8_prob dest[VP8_BINTRAMODES - 1]);
+void vp8_kf_default_bmode_probs(vp8_prob dest[VP8_BINTRAMODES][VP8_BINTRAMODES][VP8_BINTRAMODES - 1]);
 
 #endif /* ENTROPYMODE_H */
