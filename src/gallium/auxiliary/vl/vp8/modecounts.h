@@ -13,32 +13,32 @@
 
 #include "blockd.h"
 
-const unsigned int kf_y_mode_cts [VP8_YMODES] =
+const unsigned int kf_y_mode_cts[VP8_YMODES] =
 {
     1607, 915, 812, 811, 5455
 };
 
-const unsigned int y_mode_cts [VP8_YMODES] =
+const unsigned int y_mode_cts[VP8_YMODES] =
 {
     8080, 1908, 1582, 1007, 5874
 };
 
-const unsigned int uv_mode_cts [VP8_UV_MODES] =
+const unsigned int uv_mode_cts[VP8_UV_MODES] =
 {
     59483, 13605, 16492, 4230
 };
 
-const unsigned int kf_uv_mode_cts [VP8_UV_MODES] =
+const unsigned int kf_uv_mode_cts[VP8_UV_MODES] =
 {
     5319, 1904, 1703, 674
 };
 
-const unsigned int bmode_cts [VP8_BINTRAMODES] =
+const unsigned int bmode_cts[VP8_BINTRAMODES] =
 {
     43891, 17694, 10036, 3920, 3363, 2546, 5119, 3221, 2471, 1723
 };
 
-const unsigned int kf_default_bmode_cts [VP8_BINTRAMODES] [VP8_BINTRAMODES] [VP8_BINTRAMODES] =
+const unsigned int kf_default_bmode_cts[VP8_BINTRAMODES][VP8_BINTRAMODES][VP8_BINTRAMODES] =
 {
     {
         /* Above Mode : 0 */

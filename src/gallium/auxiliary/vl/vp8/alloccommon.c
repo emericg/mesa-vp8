@@ -27,7 +27,7 @@ static void update_mode_info_border(MODE_INFO *mi, int rows, int cols)
         /* TODO(holmer): Bug? This updates the last element of each row
          * rather than the border element!
          */
-        memset(&mi[i*cols-1], 0, sizeof(MODE_INFO));
+        memset(&mi[i*cols - 1], 0, sizeof(MODE_INFO));
     }
 }
 

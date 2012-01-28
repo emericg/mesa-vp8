@@ -15,6 +15,7 @@
 #include "blockd.h"
 
 extern void vp8_intra4x4_predict(BLOCKD *x, int b_mode, unsigned char *predictor);
-extern void vp8_intra_prediction_down_copy(MACROBLOCKD *x);
+
+extern void vp8_intra_prediction_down_copy(MACROBLOCKD *mb);
 
 #endif /* RECONINTRA4x4_H */

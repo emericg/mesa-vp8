@@ -12,17 +12,21 @@
 #ifndef RECONINTER_H
 #define RECONINTER_H
 
-extern void vp8_build_inter_predictors_mb(MACROBLOCKD *x);
-extern void vp8_build_inter16x16_predictors_mb(MACROBLOCKD *x,
+extern void vp8_build_inter_predictors_mb(MACROBLOCKD *mb);
+
+extern void vp8_build_inter16x16_predictors_mb(MACROBLOCKD *mb,
                                                unsigned char *dst_y,
                                                unsigned char *dst_u,
                                                unsigned char *dst_v,
                                                int dst_ystride,
                                                int dst_uvstride);
 
-extern void vp8_build_inter16x16_predictors_mby(MACROBLOCKD *x);
-extern void vp8_build_uvmvs(MACROBLOCKD *x, int fullpixel);
+extern void vp8_build_inter16x16_predictors_mby(MACROBLOCKD *mb);
+
+extern void vp8_build_uvmvs(MACROBLOCKD *mb, int fullpixel);
+
 extern void vp8_build_inter_predictors_b(BLOCKD *d, int pitch, vp8_filter_fn_t sppf);
-extern void vp8_build_inter_predictors_mbuv(MACROBLOCKD *x);
+
+extern void vp8_build_inter_predictors_mbuv(MACROBLOCKD *mb);
 
 #endif /* RECONINTER_H */

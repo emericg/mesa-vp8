@@ -18,12 +18,11 @@
 extern void vp8_setup_intra_recon(YV12_BUFFER_CONFIG *ybf);
 
 extern void vp8_recon_intra_mbuv(const vp8_recon_rtcd_vtable_t *rtcd,
-                                 MACROBLOCKD *x);
+                                 MACROBLOCKD *mb);
 
-extern void vp8_build_intra_predictors_mby(MACROBLOCKD *x);
-extern void vp8_build_intra_predictors_mby_s(MACROBLOCKD *x);
-
-extern void vp8_build_intra_predictors_mbuv(MACROBLOCKD *x);
-extern void vp8_build_intra_predictors_mbuv_s(MACROBLOCKD *x);
+extern void vp8_build_intra_predictors_mby(MACROBLOCKD *mb);
+extern void vp8_build_intra_predictors_mby_s(MACROBLOCKD *mb);
+extern void vp8_build_intra_predictors_mbuv(MACROBLOCKD *mb);
+extern void vp8_build_intra_predictors_mbuv_s(MACROBLOCKD *mb);
 
 #endif /* RECONINTRA_H */

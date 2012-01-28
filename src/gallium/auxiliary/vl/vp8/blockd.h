@@ -29,6 +29,18 @@
 #define SEGMENT_DELTADATA     0
 #define SEGMENT_ABSDATA       1
 
+/* Segment Feature Masks */
+#define SEGMENT_ALTQ   0x01
+#define SEGMENT_ALT_LF 0x02
+
+#define VP8_YMODES   (B_PRED + 1)
+#define VP8_UV_MODES (TM_PRED + 1)
+
+#define VP8_MVREFS (1 + SPLITMV - NEARESTMV)
+
+#define VP8_BINTRAMODES (B_HU_PRED + 1) /* 10 */
+#define VP8_SUBMVREFS   (1 + NEW4X4 - LEFT4X4)
+
 typedef char ENTROPY_CONTEXT;
 
 typedef struct
@@ -47,11 +59,11 @@ typedef enum
 
 typedef enum
 {
-    DC_PRED,   /* average of above and left pixels */
-    V_PRED,    /* vertical prediction */
-    H_PRED,    /* horizontal prediction */
-    TM_PRED,   /* Truemotion prediction */
-    B_PRED,    /* block based prediction, each block has its own prediction mode */
+    DC_PRED,   /**< Average of above and left pixels */
+    V_PRED,    /**< Vertical prediction */
+    H_PRED,    /**< Horizontal prediction */
+    TM_PRED,   /**< Truemotion prediction */
+    B_PRED,    /**< Block based prediction, each block has its own prediction mode */
 
     NEARESTMV,
     NEARMV,
@@ -62,30 +74,21 @@ typedef enum
     MB_MODE_COUNT
 } MB_PREDICTION_MODE;
 
-/* Macroblock level features */
+/** Macroblock level features */
 typedef enum
 {
-    MB_LVL_ALT_Q = 0,  /* Use alternate Quantizer .... */
-    MB_LVL_ALT_LF,     /* Use alternate loop filter value... */
-    MB_LVL_MAX         /* Number of MB level features supported */
+    MB_LVL_ALT_Q = 0,  /**< Use alternate Quantizer .... */
+    MB_LVL_ALT_LF,     /**< Use alternate loop filter value... */
+    MB_LVL_MAX         /**< Number of MB level features supported */
 } MB_LVL_FEATURES;
 
-/* Segment Feature Masks */
-#define SEGMENT_ALTQ   0x01
-#define SEGMENT_ALT_LF 0x02
-
-#define VP8_YMODES   (B_PRED + 1)
-#define VP8_UV_MODES (TM_PRED + 1)
-
-#define VP8_MVREFS (1 + SPLITMV - NEARESTMV)
-
 typedef enum
 {
-    B_DC_PRED,   /* average of above and left pixels */
+    B_DC_PRED,   /**< Average of above and left pixels */
     B_TM_PRED,
 
-    B_VE_PRED,   /* vertical prediction */
-    B_HE_PRED,   /* horizontal prediction */
+    B_VE_PRED,   /**< Vertical prediction */
+    B_HE_PRED,   /**< Horizontal prediction */
 
     B_LD_PRED,
     B_RD_PRED,
@@ -103,18 +106,15 @@ typedef enum
     B_MODE_COUNT
 } B_PREDICTION_MODE;
 
-#define VP8_BINTRAMODES (B_HU_PRED + 1) /* 10 */
-#define VP8_SUBMVREFS   (1 + NEW4X4 - LEFT4X4)
-
 /* For keyframes, intra block modes are predicted by the (already decoded)
    modes for the Y blocks to the left and above us; for interframes, there
    is a single probability table. */
 
-union b_mode_info
+typedef union
 {
     B_PREDICTION_MODE as_mode;
     int_mv mv;
-};
+} B_MODE_INFO;
 
 typedef enum
 {
@@ -132,15 +132,15 @@ typedef struct
     int_mv mv;
 
     unsigned char partitioning;
-    unsigned char mb_skip_coeff;     /* does this mb has coefficients at all, 1=no coefficients, 0=need decode tokens */
+    unsigned char mb_skip_coeff;     /**< Does this mb has coefficients at all, 1=no coefficients, 0=need decode tokens */
     unsigned char need_to_clamp_mvs;
-    unsigned char segment_id;        /* Which set of segmentation parameters should be used for this MB */
+    unsigned char segment_id;        /**< Which set of segmentation parameters should be used for this MB */
 } MB_MODE_INFO;
 
 typedef struct
 {
     MB_MODE_INFO mbmi;
-    union b_mode_info bmi[16];
+    B_MODE_INFO bmi[16];
 } MODE_INFO;
 
 typedef struct
@@ -162,7 +162,7 @@ typedef struct
 
     int eob;
 
-    union b_mode_info bmi;
+    B_MODE_INFO bmi;
 } BLOCKD;
 
 typedef struct
@@ -176,7 +176,7 @@ typedef struct
     /* 16 Y blocks, 4 U, 4 V, 1 DC 2nd order block, each with 16 entries. */
     BLOCKD block[25];
 
-    YV12_BUFFER_CONFIG pre; /* Filtered copy of previous frame reconstruction */
+    YV12_BUFFER_CONFIG pre; /**< Filtered copy of previous frame reconstruction */
     YV12_BUFFER_CONFIG dst;
 
     MODE_INFO *mode_info_context;
@@ -225,8 +225,6 @@ typedef struct
     int mb_to_top_edge;
     int mb_to_bottom_edge;
 
-    int ref_frame_cost[MAX_REF_FRAMES];
-
     unsigned int frames_since_golden;
     unsigned int frames_till_alt_ref_frame;
     vp8_filter_fn_t filter_predict4x4;
@@ -240,8 +238,8 @@ typedef struct
 
 } MACROBLOCKD;
 
-void vp8_setup_block_doffsets(MACROBLOCKD *x);
-void vp8_setup_block_dptrs(MACROBLOCKD *x);
-void update_blockd_bmi(MACROBLOCKD *xd);
+void vp8_setup_block_doffsets(MACROBLOCKD *mb);
+void vp8_setup_block_dptrs(MACROBLOCKD *mb);
+void update_blockd_bmi(MACROBLOCKD *mb);
 
 #endif /* BLOCKD_H */

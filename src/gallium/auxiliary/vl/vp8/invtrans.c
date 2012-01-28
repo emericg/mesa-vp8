@@ -11,14 +11,14 @@
 
 #include "invtrans.h"
 
-static void recon_dcblock(MACROBLOCKD *x)
+static void recon_dcblock(MACROBLOCKD *mb)
 {
-    BLOCKD *b = &x->block[24];
+    BLOCKD *b = &mb->block[24];
     int i;
 
     for (i = 0; i < 16; i++)
     {
-        x->block[i].dqcoeff[0] = b->diff[i];
+        mb->block[i].dqcoeff[0] = b->diff[i];
     }
 }
 
@@ -30,50 +30,50 @@ void vp8_inverse_transform_b(const vp8_idct_rtcd_vtable_t *rtcd, BLOCKD *b, int 
         IDCT_INVOKE(rtcd, idct1)(b->dqcoeff, b->diff, pitch);
 }
 
-void vp8_inverse_transform_mby(const vp8_idct_rtcd_vtable_t *rtcd, MACROBLOCKD *x)
+void vp8_inverse_transform_mby(const vp8_idct_rtcd_vtable_t *rtcd, MACROBLOCKD *mb)
 {
     int i;
 
     /* do 2nd order transform on the dc block */
-    IDCT_INVOKE(rtcd, iwalsh16)(x->block[24].dqcoeff, x->block[24].diff);
+    IDCT_INVOKE(rtcd, iwalsh16)(mb->block[24].dqcoeff, mb->block[24].diff);
 
-    recon_dcblock(x);
+    recon_dcblock(mb);
 
     for (i = 0; i < 16; i++)
     {
-        vp8_inverse_transform_b(rtcd, &x->block[i], 32);
+        vp8_inverse_transform_b(rtcd, &mb->block[i], 32);
     }
 }
 
-void vp8_inverse_transform_mbuv(const vp8_idct_rtcd_vtable_t *rtcd, MACROBLOCKD *x)
+void vp8_inverse_transform_mbuv(const vp8_idct_rtcd_vtable_t *rtcd, MACROBLOCKD *mb)
 {
     int i;
 
     for (i = 16; i < 24; i++)
     {
-        vp8_inverse_transform_b(rtcd, &x->block[i], 16);
+        vp8_inverse_transform_b(rtcd, &mb->block[i], 16);
     }
 }
 
-void vp8_inverse_transform_mb(const vp8_idct_rtcd_vtable_t *rtcd, MACROBLOCKD *x)
+void vp8_inverse_transform_mb(const vp8_idct_rtcd_vtable_t *rtcd, MACROBLOCKD *mb)
 {
     int i;
 
-    if (x->mode_info_context->mbmi.mode != B_PRED &&
-        x->mode_info_context->mbmi.mode != SPLITMV)
+    if (mb->mode_info_context->mbmi.mode != B_PRED &&
+        mb->mode_info_context->mbmi.mode != SPLITMV)
     {
         /* do 2nd order transform on the dc block */
-        IDCT_INVOKE(rtcd, iwalsh16)(&x->block[24].dqcoeff[0], x->block[24].diff);
-        recon_dcblock(x);
+        IDCT_INVOKE(rtcd, iwalsh16)(&mb->block[24].dqcoeff[0], mb->block[24].diff);
+        recon_dcblock(mb);
     }
 
     for (i = 0; i < 16; i++)
     {
-        vp8_inverse_transform_b(rtcd, &x->block[i], 32);
+        vp8_inverse_transform_b(rtcd, &mb->block[i], 32);
     }
 
     for (i = 16; i < 24; i++)
     {
-        vp8_inverse_transform_b(rtcd, &x->block[i], 16);
+        vp8_inverse_transform_b(rtcd, &mb->block[i], 16);
     }
 }

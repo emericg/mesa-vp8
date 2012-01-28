@@ -12,9 +12,9 @@
 #include "vp8_mem.h"
 
 #define ADDRESS_STORAGE_SIZE sizeof(size_t)
-#define DEFAULT_ALIGNMENT    32 // must be >= 1 !
+#define DEFAULT_ALIGNMENT 32 /**< Must be superior or equal to 1 ! */
 
-/* returns an addr aligned to the byte boundary specified by align */
+/** Returns an addr aligned to the byte boundary specified by align */
 #define align_addr(addr,align) (void*)(((size_t)(addr) + ((align) - 1)) & (size_t)-(align))
 
 void *vpx_memalign(size_t align, size_t size)
@@ -25,8 +25,7 @@ void *vpx_memalign(size_t align, size_t size)
     if (addr)
     {
         x = align_addr((unsigned char *)addr + ADDRESS_STORAGE_SIZE, (int)align);
-        // save the actual malloc address
-        ((size_t *)x)[-1] = (size_t)addr;
+        ((size_t *)x)[-1] = (size_t)addr; // Save the actual malloc address
     }
 
     return x;

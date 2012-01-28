@@ -61,7 +61,6 @@ typedef struct
 
 int vp8_yv12_alloc_frame_buffer(YV12_BUFFER_CONFIG *ybf, int width, int height, int border);
 int vp8_yv12_de_alloc_frame_buffer(YV12_BUFFER_CONFIG *ybf);
-
 void vp8_yv12_extend_frame_borders(YV12_BUFFER_CONFIG *ybf);
 
 #ifdef __cplusplus

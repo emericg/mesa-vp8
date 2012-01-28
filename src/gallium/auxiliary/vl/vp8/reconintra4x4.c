@@ -285,14 +285,14 @@ void vp8_intra4x4_predict(BLOCKD *x, int b_mode, unsigned char *predictor)
  * Copy 4 bytes from the above right down so that the 4x4 prediction modes using
  * pixels above and to the right prediction have filled in pixels to use.
  */
-void vp8_intra_prediction_down_copy(MACROBLOCKD *x)
+void vp8_intra_prediction_down_copy(MACROBLOCKD *mb)
 {
-    unsigned char *above_right = *(x->block[0].base_dst) + x->block[0].dst - x->block[0].dst_stride + 16;
+    unsigned char *above_right = *(mb->block[0].base_dst) + mb->block[0].dst - mb->block[0].dst_stride + 16;
 
     unsigned int *src_ptr = (unsigned int *)above_right;
-    unsigned int *dst_ptr0 = (unsigned int *)(above_right + 4 * x->block[0].dst_stride);
-    unsigned int *dst_ptr1 = (unsigned int *)(above_right + 8 * x->block[0].dst_stride);
-    unsigned int *dst_ptr2 = (unsigned int *)(above_right + 12 * x->block[0].dst_stride);
+    unsigned int *dst_ptr0 = (unsigned int *)(above_right + 4 * mb->block[0].dst_stride);
+    unsigned int *dst_ptr1 = (unsigned int *)(above_right + 8 * mb->block[0].dst_stride);
+    unsigned int *dst_ptr2 = (unsigned int *)(above_right + 12 * mb->block[0].dst_stride);
 
     *dst_ptr0 = *src_ptr;
     *dst_ptr1 = *src_ptr;

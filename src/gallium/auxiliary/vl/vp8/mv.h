@@ -20,10 +20,11 @@ typedef struct
     short col;
 } MV;
 
+/** Facilitates faster equality tests and copies */
 typedef union
 {
     uint32_t as_int;
     MV       as_mv;
-} int_mv; /* facilitates faster equality tests and copies */
+} int_mv;
 
 #endif /* MV_H */
