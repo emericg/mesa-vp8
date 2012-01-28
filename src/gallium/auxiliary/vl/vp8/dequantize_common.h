@@ -15,6 +15,6 @@
 #include "blockd.h"
 #include "vp8_decoder.h"
 
-void vp8_initialize_dequantizer(VP8_COMMON *pc);
+void vp8_initialize_dequantizer(VP8_COMMON *common);
 
 #endif /* DEQUANTIZE_COMMON_H */

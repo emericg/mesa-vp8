@@ -14,6 +14,6 @@
 
 #include "vp8_decoder.h"
 
-void vp8_decode_mode_mvs(VP8D_COMP *);
+void vp8_decode_mode_mvs(VP8_COMMON *common);
 
 #endif /* DECODEMV_H */

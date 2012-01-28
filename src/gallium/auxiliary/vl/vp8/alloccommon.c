@@ -31,25 +31,25 @@ static void update_mode_info_border(MODE_INFO *mi, int rows, int cols)
     }
 }
 
-static void vp8_de_alloc_frame_buffers(VP8_COMMON *oci)
+void vp8_dealloc_frame_buffers(VP8_COMMON *common)
 {
     int i;
 
     for (i = 0; i < NUM_YV12_BUFFERS; i++)
-        vp8_yv12_de_alloc_frame_buffer(&oci->yv12_fb[i]);
+        vp8_yv12_de_alloc_frame_buffer(&common->yv12_fb[i]);
 
-    vpx_free(oci->above_context);
-    vpx_free(oci->mip);
+    vpx_free(common->above_context);
+    vpx_free(common->mip);
 
-    oci->above_context = 0;
-    oci->mip = 0;
+    common->above_context = 0;
+    common->mip = 0;
 }
 
-int vp8_alloc_frame_buffers(VP8_COMMON *oci, int width, int height)
+int vp8_alloc_frame_buffers(VP8_COMMON *common, int width, int height)
 {
     int i;
 
-    vp8_de_alloc_frame_buffers(oci);
+    vp8_dealloc_frame_buffers(common);
 
     /* our internal buffers are always multiples of 16 */
     if ((width & 0xf) != 0)
@@ -60,48 +60,48 @@ int vp8_alloc_frame_buffers(VP8_COMMON *oci, int width, int height)
 
     for (i = 0; i < NUM_YV12_BUFFERS; i++)
     {
-        oci->fb_idx_ref_cnt[i] = 0;
-        oci->yv12_fb[i].flags = 0;
-        if (vp8_yv12_alloc_frame_buffer(&oci->yv12_fb[i], width, height, VP8BORDERINPIXELS) < 0)
+        common->fb_idx_ref_cnt[i] = 0;
+        common->yv12_fb[i].flags = 0;
+        if (vp8_yv12_alloc_frame_buffer(&common->yv12_fb[i], width, height, VP8BORDERINPIXELS) < 0)
         {
-            vp8_de_alloc_frame_buffers(oci);
+            vp8_dealloc_frame_buffers(common);
             return 1;
         }
     }
 
-    oci->new_fb_idx = 0;
-    oci->lst_fb_idx = 1;
-    oci->gld_fb_idx = 2;
-    oci->alt_fb_idx = 3;
+    common->new_fb_idx = 0;
+    common->lst_fb_idx = 1;
+    common->gld_fb_idx = 2;
+    common->alt_fb_idx = 3;
 
-    oci->fb_idx_ref_cnt[0] = 1;
-    oci->fb_idx_ref_cnt[1] = 1;
-    oci->fb_idx_ref_cnt[2] = 1;
-    oci->fb_idx_ref_cnt[3] = 1;
+    common->fb_idx_ref_cnt[0] = 1;
+    common->fb_idx_ref_cnt[1] = 1;
+    common->fb_idx_ref_cnt[2] = 1;
+    common->fb_idx_ref_cnt[3] = 1;
 
-    oci->mb_rows = height >> 4;
-    oci->mb_cols = width >> 4;
-    oci->MBs = oci->mb_rows * oci->mb_cols;
-    oci->mode_info_stride = oci->mb_cols + 1;
-    oci->mip = vpx_calloc((oci->mb_cols + 1) * (oci->mb_rows + 1), sizeof(MODE_INFO));
+    common->mb_rows = height >> 4;
+    common->mb_cols = width >> 4;
+    common->MBs = common->mb_rows * common->mb_cols;
+    common->mode_info_stride = common->mb_cols + 1;
+    common->mip = vpx_calloc((common->mb_cols + 1) * (common->mb_rows + 1), sizeof(MODE_INFO));
 
-    if (!oci->mip)
+    if (!common->mip)
     {
-        vp8_de_alloc_frame_buffers(oci);
+        vp8_dealloc_frame_buffers(common);
         return 1;
     }
 
-    oci->mi = oci->mip + oci->mode_info_stride + 1;
+    common->mi = common->mip + common->mode_info_stride + 1;
 
-    oci->above_context = vpx_calloc(sizeof(ENTROPY_CONTEXT_PLANES) * oci->mb_cols, 1);
+    common->above_context = vpx_calloc(sizeof(ENTROPY_CONTEXT_PLANES) * common->mb_cols, 1);
 
-    if (!oci->above_context)
+    if (!common->above_context)
     {
-        vp8_de_alloc_frame_buffers(oci);
+        vp8_dealloc_frame_buffers(common);
         return 1;
     }
 
-    update_mode_info_border(oci->mi, oci->mb_rows, oci->mb_cols);
+    update_mode_info_border(common->mi, common->mb_rows, common->mb_cols);
 
     return 0;
 }
@@ -110,74 +110,67 @@ int vp8_alloc_frame_buffers(VP8_COMMON *oci, int width, int height)
  * Initialize version specific parameters.
  * The VP8 "version" field is the equivalent of the mpeg "profile".
  */
-void vp8_setup_version(VP8_COMMON *cm)
+void vp8_setup_version(VP8_COMMON *common)
 {
-    switch (cm->version)
+    switch (common->version)
     {
     case 0:
-        cm->no_lpf = 0;
-        cm->filter_type = NORMAL_LOOPFILTER;
-        cm->use_bilinear_mc_filter = 0;
-        cm->full_pixel = 0;
+        common->no_lpf = 0;
+        common->filter_type = NORMAL_LOOPFILTER;
+        common->use_bilinear_mc_filter = 0;
+        common->full_pixel = 0;
         break;
     case 1:
-        cm->no_lpf = 0;
-        cm->filter_type = SIMPLE_LOOPFILTER;
-        cm->use_bilinear_mc_filter = 1;
-        cm->full_pixel = 0;
+        common->no_lpf = 0;
+        common->filter_type = SIMPLE_LOOPFILTER;
+        common->use_bilinear_mc_filter = 1;
+        common->full_pixel = 0;
         break;
     case 2:
-        cm->no_lpf = 1;
-        cm->filter_type = NORMAL_LOOPFILTER;
-        cm->use_bilinear_mc_filter = 1;
-        cm->full_pixel = 0;
+        common->no_lpf = 1;
+        common->filter_type = NORMAL_LOOPFILTER;
+        common->use_bilinear_mc_filter = 1;
+        common->full_pixel = 0;
         break;
     case 3:
-        cm->no_lpf = 1;
-        cm->filter_type = SIMPLE_LOOPFILTER;
-        cm->use_bilinear_mc_filter = 1;
-        cm->full_pixel = 1;
+        common->no_lpf = 1;
+        common->filter_type = SIMPLE_LOOPFILTER;
+        common->use_bilinear_mc_filter = 1;
+        common->full_pixel = 1;
         break;
     default:
         /* 4,5,6,7 are reserved for future use */
-        cm->no_lpf = 0;
-        cm->filter_type = NORMAL_LOOPFILTER;
-        cm->use_bilinear_mc_filter = 0;
-        cm->full_pixel = 0;
+        common->no_lpf = 0;
+        common->filter_type = NORMAL_LOOPFILTER;
+        common->use_bilinear_mc_filter = 0;
+        common->full_pixel = 0;
         break;
     }
 }
 
-void vp8_create_common(VP8_COMMON *oci)
+void vp8_initialize_common(VP8_COMMON *common)
 {
-    vp8_default_coef_probs(oci);
-    vp8_init_mbmode_probs(oci);
-    vp8_default_bmode_probs(oci->fc.bmode_prob);
+    vp8_default_coef_probs(common);
+    vp8_init_mbmode_probs(common);
+    vp8_default_bmode_probs(common->fc.bmode_prob);
 
-    oci->mb_no_coeff_skip = 1;
-    oci->no_lpf = 0;
-    oci->filter_type = NORMAL_LOOPFILTER;
-    oci->use_bilinear_mc_filter = 0;
-    oci->full_pixel = 0;
-    oci->multi_token_partition = ONE_PARTITION;
-    oci->clr_type = REG_YUV;
-    oci->clamp_type = RECON_CLAMP_REQUIRED;
+    common->mb_no_coeff_skip = 1;
+    common->no_lpf = 0;
+    common->filter_type = NORMAL_LOOPFILTER;
+    common->use_bilinear_mc_filter = 0;
+    common->full_pixel = 0;
+    common->multi_token_partition = ONE_PARTITION;
+    common->clr_type = REG_YUV;
+    common->clamp_type = RECON_CLAMP_REQUIRED;
 
     /* Initialise reference frame sign bias structure to defaults */
-    memset(oci->ref_frame_sign_bias, 0, sizeof(oci->ref_frame_sign_bias));
+    memset(common->ref_frame_sign_bias, 0, sizeof(common->ref_frame_sign_bias));
 
     /* Default disable buffer to buffer copying */
-    oci->copy_buffer_to_gf = 0;
-    oci->copy_buffer_to_arf = 0;
-}
+    common->copy_buffer_to_gf = 0;
+    common->copy_buffer_to_arf = 0;
 
-void vp8_remove_common(VP8_COMMON *oci)
-{
-    vp8_de_alloc_frame_buffers(oci);
-}
-
-void vp8_initialize_common()
-{
+    /*  */
     vp8_coef_tree_initialize();
     vp8_entropy_mode_init();
     vp8_init_scan_order_mask();

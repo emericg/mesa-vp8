@@ -128,7 +128,7 @@ void vp8_init_scan_order_mask()
     }
 }
 
-void vp8_default_coef_probs(VP8_COMMON *pc)
+void vp8_default_coef_probs(VP8_COMMON *common)
 {
     int h = 0;
     do
@@ -143,7 +143,7 @@ void vp8_default_coef_probs(VP8_COMMON *pc)
                 vp8_tree_probs_from_distribution(MAX_ENTROPY_TOKENS,
                                                  vp8_coef_encodings,
                                                  vp8_coef_tree,
-                                                 pc->fc.coef_probs[h][i][k],
+                                                 common->fc.coef_probs[h][i][k],
                                                  branch_ct,
                                                  vp8_default_coef_counts[h][i][k],
                                                  256,

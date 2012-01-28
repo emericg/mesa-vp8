@@ -79,7 +79,7 @@ struct vl_vp8_decoder
    struct vl_vp8_buffer *dec_buffers[4];
 
    // VP8 decoder context
-   VP8D_COMP *vp8_dec;
+   VP8_COMMON *vp8_dec;
    YV12_BUFFER_CONFIG img_yv12;
 
    unsigned startcode;

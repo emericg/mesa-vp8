@@ -83,6 +83,14 @@ typedef struct VP8Common
 {
     struct vpx_internal_error_info error;
 
+    /* Bitstream data */
+    const unsigned char *data;
+    unsigned int         data_size;
+
+    /* Boolean decoder */
+    BOOL_DECODER *mbd;
+    BOOL_DECODER bd, bd2;
+
     /* Header content */
     FRAME_TYPE frame_type;
     int version;
@@ -108,17 +116,6 @@ typedef struct VP8Common
     int refresh_alt_ref_frame; /**< Two state 0 = NO, 1 = YES */
     int refresh_entropy_probs; /**< Two state 0 = NO, 1 = YES */
 
-    /* Frame buffers */
-    YV12_BUFFER_CONFIG *frame_to_show;
-    YV12_BUFFER_CONFIG yv12_fb[NUM_YV12_BUFFERS];
-    int fb_idx_ref_cnt[NUM_YV12_BUFFERS];
-    int new_fb_idx, lst_fb_idx, gld_fb_idx, alt_fb_idx;
-
-    int frame_flags;
-    int MBs;
-    int mb_rows;
-    int mb_cols;
-    int mode_info_stride;
 
     /* Profile settings */
     int mb_no_coeff_skip;
@@ -140,6 +137,20 @@ typedef struct VP8Common
     int uvdc_delta_q;
     int uvac_delta_q;
 
+    /* Macroblock */
+    DECLARE_ALIGNED(16, MACROBLOCKD, mb);
+
+    int MBs;
+    int mb_rows;
+    int mb_cols;
+    int mode_info_stride;
+
+    /* Frame buffers */
+    YV12_BUFFER_CONFIG *frame_to_show;
+    YV12_BUFFER_CONFIG yv12_fb[NUM_YV12_BUFFERS];
+    int fb_idx_ref_cnt[NUM_YV12_BUFFERS];
+    int new_fb_idx, lst_fb_idx, gld_fb_idx, alt_fb_idx;
+
     /* We allocate a MODE_INFO struct for each macroblock, together with
        an extra row on top and column on the left to simplify prediction. */
 
@@ -151,52 +162,41 @@ typedef struct VP8Common
 
     int ref_frame_sign_bias[MAX_REF_FRAMES]; /**< Two state 0, 1 */
 
-    ENTROPY_CONTEXT_PLANES *above_context; /**< Row of context for each plane */
-    ENTROPY_CONTEXT_PLANES left_context;   /**< (up to) 4 contexts */
-
     /* keyframe block modes are predicted by their above, left neighbors */
 
-    vp8_prob kf_bmode_prob[VP8_BINTRAMODES][VP8_BINTRAMODES][VP8_BINTRAMODES - 1];
-    vp8_prob kf_ymode_prob[VP8_YMODES - 1];  /**< keyframe */
-    vp8_prob kf_uv_mode_prob[VP8_UV_MODES - 1];
-
-    FRAME_CONTEXT lfc; /**< Last frame entropy */
-    FRAME_CONTEXT fc;  /**< Current frame entropy */
-
-    TOKEN_PARTITION multi_token_partition;
-
-} VP8_COMMON;
-
-typedef struct
-{
-    DECLARE_ALIGNED(16, MACROBLOCKD, mb);
-    DECLARE_ALIGNED(16, VP8_COMMON, common);
-
-    BOOL_DECODER bd, bd2;
-    BOOL_DECODER *mbd;
-
-    const unsigned char *data;
-    unsigned int         data_size;
+    ENTROPY_CONTEXT_PLANES *above_context; /**< Row of context for each plane */
+    ENTROPY_CONTEXT_PLANES left_context;   /**< (up to) 4 contexts */
 
     vp8_prob prob_intra;
     vp8_prob prob_last;
     vp8_prob prob_gf;
     vp8_prob prob_skip_false;
 
-} VP8D_COMP;
+    vp8_prob kf_bmode_prob[VP8_BINTRAMODES][VP8_BINTRAMODES][VP8_BINTRAMODES - 1];
+    vp8_prob kf_ymode_prob[VP8_YMODES - 1];  /**< keyframe */
+    vp8_prob kf_uv_mode_prob[VP8_UV_MODES - 1];
+
+    FRAME_CONTEXT lfc;  /**< Last frame entropy */
+    FRAME_CONTEXT fc;   /**< Current frame entropy */
+
+    TOKEN_PARTITION multi_token_partition;
+
+} VP8_COMMON;
 
 /* ************************************************************************** */
 
-VP8D_COMP *vp8_decoder_create();
+VP8_COMMON *vp8_decoder_create();
 
-int vp8_decoder_start(VP8D_COMP *pbi, struct pipe_vp8_picture_desc *frame_header,
+int vp8_decoder_start(VP8_COMMON *common,
+                      struct pipe_vp8_picture_desc *frame_header,
                       const unsigned char *data, unsigned data_size);
 
-int vp8_decoder_getframe(VP8D_COMP *pbi, YV12_BUFFER_CONFIG *sd);
+int vp8_decoder_getframe(VP8_COMMON *common, YV12_BUFFER_CONFIG *sd);
 
-void vp8_decoder_remove(VP8D_COMP *pbi);
+void vp8_decoder_remove(VP8_COMMON *common);
 
-int vp8_frame_decode(VP8D_COMP *pbi, struct pipe_vp8_picture_desc *frame_header);
+int vp8_frame_decode(VP8_COMMON *common,
+                     struct pipe_vp8_picture_desc *frame_header);
 
 #ifdef __cplusplus
 }

@@ -19,15 +19,15 @@
 #include "dequantize_common.h"
 #include "detokenize.h"
 
-static int get_free_fb(VP8_COMMON *cm)
+static int get_free_fb(VP8_COMMON *common)
 {
     int i;
     for (i = 0; i < NUM_YV12_BUFFERS; i++)
-        if (cm->fb_idx_ref_cnt[i] == 0)
+        if (common->fb_idx_ref_cnt[i] == 0)
             break;
 
     assert(i < NUM_YV12_BUFFERS);
-    cm->fb_idx_ref_cnt[i] = 1;
+    common->fb_idx_ref_cnt[i] = 1;
 
     return i;
 }
@@ -45,7 +45,7 @@ static void ref_cnt_fb(int *buf, int *idx, int new_idx)
 /**
  * If any buffer copy / swapping is signalled it should be done here.
  */
-static int swap_frame_buffers(VP8_COMMON *cm)
+static int swap_frame_buffers(VP8_COMMON *common)
 {
     int err = 0;
 
@@ -53,50 +53,50 @@ static int swap_frame_buffers(VP8_COMMON *cm)
      * new, last, or golden/alt ref frame. If it is updated using the newly
      * decoded frame it is a refresh. An update using the last or golden/alt
      * ref frame is a copy. */
-    if (cm->copy_buffer_to_arf)
+    if (common->copy_buffer_to_arf)
     {
         int new_fb = 0;
 
-        if (cm->copy_buffer_to_arf == 1)
-            new_fb = cm->lst_fb_idx;
-        else if (cm->copy_buffer_to_arf == 2)
-            new_fb = cm->gld_fb_idx;
+        if (common->copy_buffer_to_arf == 1)
+            new_fb = common->lst_fb_idx;
+        else if (common->copy_buffer_to_arf == 2)
+            new_fb = common->gld_fb_idx;
         else
             err = -1;
 
-        ref_cnt_fb(cm->fb_idx_ref_cnt, &cm->alt_fb_idx, new_fb);
+        ref_cnt_fb(common->fb_idx_ref_cnt, &common->alt_fb_idx, new_fb);
     }
 
-    if (cm->copy_buffer_to_gf)
+    if (common->copy_buffer_to_gf)
     {
         int new_fb = 0;
 
-        if (cm->copy_buffer_to_gf == 1)
-            new_fb = cm->lst_fb_idx;
-        else if (cm->copy_buffer_to_gf == 2)
-            new_fb = cm->alt_fb_idx;
+        if (common->copy_buffer_to_gf == 1)
+            new_fb = common->lst_fb_idx;
+        else if (common->copy_buffer_to_gf == 2)
+            new_fb = common->alt_fb_idx;
         else
             err = -1;
 
-        ref_cnt_fb(cm->fb_idx_ref_cnt, &cm->gld_fb_idx, new_fb);
+        ref_cnt_fb(common->fb_idx_ref_cnt, &common->gld_fb_idx, new_fb);
     }
 
-    if (cm->refresh_golden_frame)
-        ref_cnt_fb(cm->fb_idx_ref_cnt, &cm->gld_fb_idx, cm->new_fb_idx);
+    if (common->refresh_golden_frame)
+        ref_cnt_fb(common->fb_idx_ref_cnt, &common->gld_fb_idx, common->new_fb_idx);
 
-    if (cm->refresh_alt_ref_frame)
-        ref_cnt_fb(cm->fb_idx_ref_cnt, &cm->alt_fb_idx, cm->new_fb_idx);
+    if (common->refresh_alt_ref_frame)
+        ref_cnt_fb(common->fb_idx_ref_cnt, &common->alt_fb_idx, common->new_fb_idx);
 
-    if (cm->refresh_last_frame)
+    if (common->refresh_last_frame)
     {
-        ref_cnt_fb(cm->fb_idx_ref_cnt, &cm->lst_fb_idx, cm->new_fb_idx);
+        ref_cnt_fb(common->fb_idx_ref_cnt, &common->lst_fb_idx, common->new_fb_idx);
 
-        cm->frame_to_show = &cm->yv12_fb[cm->lst_fb_idx];
+        common->frame_to_show = &common->yv12_fb[common->lst_fb_idx];
     }
     else
-        cm->frame_to_show = &cm->yv12_fb[cm->new_fb_idx];
+        common->frame_to_show = &common->yv12_fb[common->new_fb_idx];
 
-    cm->fb_idx_ref_cnt[cm->new_fb_idx]--;
+    common->fb_idx_ref_cnt[common->new_fb_idx]--;
 
     return err;
 }
@@ -104,87 +104,86 @@ static int swap_frame_buffers(VP8_COMMON *cm)
 /**
  * Create a VP8 decoder instance.
  */
-VP8D_COMP *vp8_decoder_create()
+VP8_COMMON *vp8_decoder_create()
 {
-    VP8D_COMP *pbi = vpx_memalign(32, sizeof(VP8D_COMP));
+    VP8_COMMON *common = vpx_memalign(32, sizeof(VP8_COMMON));
 
-    if (!pbi)
+    if (!common)
         return NULL;
 
-    memset(pbi, 0, sizeof(VP8D_COMP));
+    memset(common, 0, sizeof(VP8_COMMON));
 
-    if (setjmp(pbi->common.error.jmp))
+    if (setjmp(common->error.jmp))
     {
-        pbi->common.error.setjmp = 0;
-        vp8_decoder_remove(pbi);
+        common->error.setjmp = 0;
+        vp8_decoder_remove(common);
         return 0;
     }
 
-    pbi->common.error.setjmp = 1;
-    pbi->common.show_frame = 0;
+    common->error.setjmp = 1;
+    common->show_frame = 0;
 
-    vp8_initialize_common();
-    vp8_create_common(&pbi->common);
-    vp8_initialize_dequantizer(&pbi->common);
-    // vp8_loop_filter_init(&pbi->common);
+    vp8_initialize_common(common);
+    vp8_initialize_dequantizer(common);
+    //vp8_initialize_loopfilter(common);
 
-    pbi->common.error.setjmp = 0;
+    common->error.setjmp = 0;
 
-    return pbi;
+    return common;
 }
 
 /**
  * Decode one VP8 frame.
  */
-int vp8_decoder_start(VP8D_COMP *pbi, struct pipe_vp8_picture_desc *frame_header,
+int vp8_decoder_start(VP8_COMMON *common,
+                      struct pipe_vp8_picture_desc *frame_header,
                       const unsigned char *data, unsigned data_size)
 {
-    VP8_COMMON *cm = &pbi->common;
     int retcode = 0;
 
-    pbi->common.error.error_code = VPX_CODEC_OK;
+    common->error.error_code = VPX_CODEC_OK;
 
     {
-        pbi->data = data;
-        pbi->data_size = data_size;
+        common->data = data;
+        common->data_size = data_size;
 
-        cm->new_fb_idx = get_free_fb(cm);
+        common->new_fb_idx = get_free_fb(common);
 
-        if (setjmp(pbi->common.error.jmp))
+        if (setjmp(common->error.jmp))
         {
-            pbi->common.error.setjmp = 0;
+            common->error.setjmp = 0;
 
            /* We do not know if the missing frame(s) was supposed to update
             * any of the reference buffers, but we act conservative and
             * mark only the last buffer as corrupted. */
-            cm->yv12_fb[cm->lst_fb_idx].corrupted = 1;
+            common->yv12_fb[common->lst_fb_idx].corrupted = 1;
 
-            if (cm->fb_idx_ref_cnt[cm->new_fb_idx] > 0)
-                cm->fb_idx_ref_cnt[cm->new_fb_idx]--;
+            if (common->fb_idx_ref_cnt[common->new_fb_idx] > 0)
+                common->fb_idx_ref_cnt[common->new_fb_idx]--;
 
             return -1;
         }
 
-        pbi->common.error.setjmp = 1;
+        common->error.setjmp = 1;
     }
 
-    retcode = vp8_frame_decode(pbi, frame_header);
+    retcode = vp8_frame_decode(common, frame_header);
 
     if (retcode < 0)
     {
-        pbi->common.error.error_code = VPX_CODEC_ERROR;
-        pbi->common.error.setjmp = 0;
-        if (cm->fb_idx_ref_cnt[cm->new_fb_idx] > 0)
-            cm->fb_idx_ref_cnt[cm->new_fb_idx]--;
+        common->error.error_code = VPX_CODEC_ERROR;
+        common->error.setjmp = 0;
+        if (common->fb_idx_ref_cnt[common->new_fb_idx] > 0)
+            common->fb_idx_ref_cnt[common->new_fb_idx]--;
 
         return retcode;
     }
 
     {
-        if (swap_frame_buffers(cm))
+        if (swap_frame_buffers(common))
         {
-            pbi->common.error.error_code = VPX_CODEC_ERROR;
-            pbi->common.error.setjmp = 0;
+            common->error.error_code = VPX_CODEC_ERROR;
+            common->error.setjmp = 0;
 
             return -1;
         }
@@ -192,16 +191,16 @@ int vp8_decoder_start(VP8D_COMP *pbi, struct pipe_vp8_picture_desc *frame_header
         if (cm->filter_level)
         {
             // Apply the loop filter if appropriate.
-            vp8_loop_filter_frame(cm, &pbi->mb);
+            vp8_loop_filter_frame(common, &mb);
         }
 */
-        vp8_yv12_extend_frame_borders(cm->frame_to_show);
+        vp8_yv12_extend_frame_borders(common->frame_to_show);
     }
 
     /* from libvpx : vp8_print_modes_and_motion_vectors(cm->mi, cm->mb_rows, cm->mb_cols, current_video_frame); */
 
-    pbi->data_size = 0;
-    pbi->common.error.setjmp = 0;
+    common->data_size = 0;
+    common->error.setjmp = 0;
 
     return retcode;
 }
@@ -209,22 +208,22 @@ int vp8_decoder_start(VP8D_COMP *pbi, struct pipe_vp8_picture_desc *frame_header
 /**
  * Return a decoded VP8 frame in a YV12 framebuffer.
  */
-int vp8_decoder_getframe(VP8D_COMP *pbi,
+int vp8_decoder_getframe(VP8_COMMON *common,
                          YV12_BUFFER_CONFIG *sd)
 {
     int ret = -1;
 
     /* ie no raw frame to show!!! */
-    if (pbi->common.show_frame == 0)
+    if (common->show_frame == 0)
         return ret;
 
-    if (pbi->common.frame_to_show)
+    if (common->frame_to_show)
     {
-        *sd = *pbi->common.frame_to_show;
-        sd->clrtype = pbi->common.clr_type;
-        sd->y_width = pbi->common.width;
-        sd->y_height = pbi->common.height;
-        sd->uv_height = pbi->common.height / 2;
+        *sd = *common->frame_to_show;
+        sd->clrtype = common->clr_type;
+        sd->y_width = common->width;
+        sd->y_height = common->height;
+        sd->uv_height = common->height / 2;
 
         ret = 0;
     }
@@ -235,12 +234,12 @@ int vp8_decoder_getframe(VP8D_COMP *pbi,
 /**
  * Destroy a VP8 decoder instance.
  */
-void vp8_decoder_remove(VP8D_COMP *pbi)
+void vp8_decoder_remove(VP8_COMMON *common)
 {
-    if (!pbi)
+    if (!common)
         return;
 
-    vp8_remove_common(&pbi->common);
-    vpx_free(pbi->mbd);
-    vpx_free(pbi);
+    vp8_dealloc_frame_buffers(common);
+    vpx_free(common->mbd);
+    vpx_free(common);
 }

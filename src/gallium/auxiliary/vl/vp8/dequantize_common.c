@@ -135,25 +135,25 @@ static int vp8_ac_uv_quant(int QIndex, int Delta)
     return retval;
 }
 
-void vp8_initialize_dequantizer(VP8_COMMON *pc)
+void vp8_initialize_dequantizer(VP8_COMMON *common)
 {
     int i;
     int Q;
 
     for (Q = 0; Q < QINDEX_RANGE; Q++)
     {
-        pc->Y1dequant[Q][0] = (short)vp8_dc_quant(Q, pc->y1dc_delta_q);
-        pc->Y2dequant[Q][0] = (short)vp8_dc2quant(Q, pc->y2dc_delta_q);
-        pc->UVdequant[Q][0] = (short)vp8_dc_uv_quant(Q, pc->uvdc_delta_q);
+        common->Y1dequant[Q][0] = (short)vp8_dc_quant(Q, common->y1dc_delta_q);
+        common->Y2dequant[Q][0] = (short)vp8_dc2quant(Q, common->y2dc_delta_q);
+        common->UVdequant[Q][0] = (short)vp8_dc_uv_quant(Q, common->uvdc_delta_q);
 
         /* All the ac values = ; */
         for (i = 1; i < 16; i++)
         {
             int rc = vp8_default_zig_zag1d[i];
 
-            pc->Y1dequant[Q][rc] = (short)vp8_ac_yquant(Q);
-            pc->Y2dequant[Q][rc] = (short)vp8_ac2quant(Q, pc->y2ac_delta_q);
-            pc->UVdequant[Q][rc] = (short)vp8_ac_uv_quant(Q, pc->uvac_delta_q);
+            common->Y1dequant[Q][rc] = (short)vp8_ac_yquant(Q);
+            common->Y2dequant[Q][rc] = (short)vp8_ac2quant(Q, common->y2ac_delta_q);
+            common->UVdequant[Q][rc] = (short)vp8_ac_uv_quant(Q, common->uvac_delta_q);
         }
     }
 }
