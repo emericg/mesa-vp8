@@ -36,8 +36,6 @@ extern "C"
 
 #define NUM_YV12_BUFFERS 4
 
-#define RTCD_VTABLE(x) NULL
-
 typedef struct
 {
     vp8_prob bmode_prob[VP8_BINTRAMODES - 1];
@@ -51,8 +49,8 @@ typedef struct
 typedef struct
 {
     int16_t min_val;
-    int16_t Length;
-    uint8_t Probs[12];
+    int16_t length;
+    uint8_t probs[12];
 } TOKEN_EXTRABITS;
 
 typedef enum
@@ -85,10 +83,6 @@ typedef struct VP8Common
 {
     struct vpx_internal_error_info error;
 
-    DECLARE_ALIGNED(16, short, Y1dequant[QINDEX_RANGE][16]);
-    DECLARE_ALIGNED(16, short, Y2dequant[QINDEX_RANGE][16]);
-    DECLARE_ALIGNED(16, short, UVdequant[QINDEX_RANGE][16]);
-
     /* Header content */
     FRAME_TYPE frame_type;
     int version;
@@ -112,6 +106,7 @@ typedef struct VP8Common
     int refresh_last_frame;    /**< Two state 0 = NO, 1 = YES */
     int refresh_golden_frame;  /**< Two state 0 = NO, 1 = YES */
     int refresh_alt_ref_frame; /**< Two state 0 = NO, 1 = YES */
+    int refresh_entropy_probs; /**< Two state 0 = NO, 1 = YES */
 
     /* Frame buffers */
     YV12_BUFFER_CONFIG *frame_to_show;
@@ -131,6 +126,11 @@ typedef struct VP8Common
     int use_bilinear_mc_filter;
     int full_pixel;
 
+    /* Quantization */
+    DECLARE_ALIGNED(16, short, Y1dequant[QINDEX_RANGE][16]);
+    DECLARE_ALIGNED(16, short, Y2dequant[QINDEX_RANGE][16]);
+    DECLARE_ALIGNED(16, short, UVdequant[QINDEX_RANGE][16]);
+
     int base_qindex;
     int last_kf_gf_q;  /**< Q used on the last GF or KF */
 
@@ -140,9 +140,6 @@ typedef struct VP8Common
     int uvdc_delta_q;
     int uvac_delta_q;
 
-    unsigned int frames_since_golden;
-    unsigned int frames_till_alt_ref_frame;
-
     /* We allocate a MODE_INFO struct for each macroblock, together with
        an extra row on top and column on the left to simplify prediction. */
 
@@ -151,8 +148,6 @@ typedef struct VP8Common
 
     int copy_buffer_to_gf;     /**< 0 none, 1 Last to GF, 2 ARF to GF */
     int copy_buffer_to_arf;    /**< 0 none, 1 Last to ARF, 2 GF to ARF */
-
-    int refresh_entropy_probs; /**< Two state 0 = NO, 1 = YES */
 
     int ref_frame_sign_bias[MAX_REF_FRAMES]; /**< Two state 0, 1 */
 
@@ -168,13 +163,9 @@ typedef struct VP8Common
     FRAME_CONTEXT lfc; /**< Last frame entropy */
     FRAME_CONTEXT fc;  /**< Current frame entropy */
 
-    unsigned int current_video_frame;
-
     TOKEN_PARTITION multi_token_partition;
 
 } VP8_COMMON;
-
-typedef void* VP8D_PTR;
 
 typedef struct
 {
@@ -196,16 +187,16 @@ typedef struct
 
 /* ************************************************************************** */
 
-VP8D_PTR vp8_decoder_create();
+VP8D_COMP *vp8_decoder_create();
 
-int vp8_decoder_start(VP8D_PTR comp, struct pipe_vp8_picture_desc *frame_header,
+int vp8_decoder_start(VP8D_COMP *pbi, struct pipe_vp8_picture_desc *frame_header,
                       const unsigned char *data, unsigned data_size);
 
-int vp8_decoder_getframe(VP8D_PTR comp, YV12_BUFFER_CONFIG *sd);
+int vp8_decoder_getframe(VP8D_COMP *pbi, YV12_BUFFER_CONFIG *sd);
 
-void vp8_decoder_remove(VP8D_PTR comp);
+void vp8_decoder_remove(VP8D_COMP *pbi);
 
-int vp8_frame_decode(VP8D_COMP *cpi, struct pipe_vp8_picture_desc *frame_header);
+int vp8_frame_decode(VP8D_COMP *pbi, struct pipe_vp8_picture_desc *frame_header);
 
 #ifdef __cplusplus
 }

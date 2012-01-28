@@ -27,12 +27,13 @@
 #include <assert.h>
 #include <stdio.h>
 
-void mb_init_dequantizer(VP8D_COMP *pbi, MACROBLOCKD *mb)
+#define RTCD_VTABLE(x) NULL
+
+void mb_init_dequantizer(VP8_COMMON *common, MACROBLOCKD *mb)
 {
     int i;
     int QIndex;
     MB_MODE_INFO *mbmi = &mb->mode_info_context->mbmi;
-    VP8_COMMON *const pc = &pbi->common;
 
     /* Decide whether to use the default or alternate baseline Q value. */
     if (mb->segmentation_enabled)
@@ -45,27 +46,27 @@ void mb_init_dequantizer(VP8D_COMP *pbi, MACROBLOCKD *mb)
         else
         {
             /* Delta Value */
-            QIndex = pc->base_qindex + mb->segment_feature_data[MB_LVL_ALT_Q][mbmi->segment_id];
+            QIndex = common->base_qindex + mb->segment_feature_data[MB_LVL_ALT_Q][mbmi->segment_id];
             QIndex = (QIndex >= 0) ? ((QIndex <= MAXQ) ? QIndex : MAXQ) : 0; /* Clamp to valid range */
         }
     }
     else
     {
-        QIndex = pc->base_qindex;
+        QIndex = common->base_qindex;
     }
 
     /* Set up the block level dequant pointers */
     for (i = 0; i < 16; i++)
     {
-        mb->block[i].dequant = pc->Y1dequant[QIndex];
+        mb->block[i].dequant = common->Y1dequant[QIndex];
     }
 
     for (i = 16; i < 24; i++)
     {
-        mb->block[i].dequant = pc->UVdequant[QIndex];
+        mb->block[i].dequant = common->UVdequant[QIndex];
     }
 
-    mb->block[24].dequant = pc->Y2dequant[QIndex];
+    mb->block[24].dequant = common->Y2dequant[QIndex];
 }
 
 /**
@@ -73,12 +74,12 @@ void mb_init_dequantizer(VP8D_COMP *pbi, MACROBLOCKD *mb)
  * buffer and then copying it to dst buffer, we can write the result directly
  * to dst buffer. This eliminates unnecessary copy.
  */
-static void skip_recon_mb(VP8D_COMP *pbi, MACROBLOCKD *mb)
+static void skip_recon_mb(VP8_COMMON *common, MACROBLOCKD *mb)
 {
     if (mb->mode_info_context->mbmi.ref_frame == INTRA_FRAME)
     {
-        RECON_INVOKE(&pbi->common.rtcd.recon, build_intra_predictors_mbuv_s)(mb);
-        RECON_INVOKE(&pbi->common.rtcd.recon, build_intra_predictors_mby_s)(mb);
+        RECON_INVOKE(&common->rtcd.recon, build_intra_predictors_mbuv_s)(mb);
+        RECON_INVOKE(&common->rtcd.recon, build_intra_predictors_mby_s)(mb);
     }
     else
     {
@@ -206,7 +207,7 @@ static void decode_macroblock(VP8D_COMP *pbi, MACROBLOCKD *mb, unsigned int mb_i
     }
     else
     {
-        eobtotal = vp8_decode_mb_tokens(pbi, mb);
+        eobtotal = vp8_decode_mb_tokens(&pbi->common, mb);
     }
 
     /* Perform temporary clamping of the MV to be used for prediction */
@@ -223,12 +224,12 @@ static void decode_macroblock(VP8D_COMP *pbi, MACROBLOCKD *mb, unsigned int mb_i
          * mb_skip_coeff are zero. */
         mb->mode_info_context->mbmi.mb_skip_coeff = 1;
 
-        skip_recon_mb(pbi, mb);
+        skip_recon_mb(&pbi->common, mb);
         return;
     }
 
     if (mb->segmentation_enabled)
-        mb_init_dequantizer(pbi, mb);
+        mb_init_dequantizer(&pbi->common, mb);
 
     /* do prediction */
     if (mb->mode_info_context->mbmi.ref_frame == INTRA_FRAME)
@@ -713,7 +714,7 @@ int vp8_frame_decode(VP8D_COMP *pbi, struct pipe_vp8_picture_desc *frame_header)
             vp8_initialize_dequantizer(&pbi->common);
 
         /* MB level dequantizer setup */
-        mb_init_dequantizer(pbi, &pbi->mb);
+        mb_init_dequantizer(&pbi->common, &pbi->mb);
     }
 
     /* Determine if the golden frame or ARF buffer should be updated and how.

@@ -166,7 +166,7 @@ DECLARE_ALIGNED(16, extern const unsigned char, vp8_norm[256]);
 
 #define DECODE_EXTRABIT_AND_ADJUST_VAL(t, bits_count) \
     { \
-        split = 1 + (((range - 1) * vp8d_token_extra_bits2[t].Probs[bits_count]) >> 8); \
+        split = 1 + (((range - 1) * vp8d_token_extra_bits2[t].probs[bits_count]) >> 8); \
         bigsplit = (VP8_BD_VALUE)split << (VP8_BD_VALUE_SIZE - 8); \
         FILL \
         if(value >= bigsplit) { \
@@ -184,11 +184,11 @@ DECLARE_ALIGNED(16, extern const unsigned char, vp8_norm[256]);
     Dest = ((A) != 0) + ((B) != 0);
 
 
-int vp8_decode_mb_tokens(VP8D_COMP *dx, MACROBLOCKD *mb)
+int vp8_decode_mb_tokens(VP8_COMMON *common, MACROBLOCKD *mb)
 {
     ENTROPY_CONTEXT *A = (ENTROPY_CONTEXT *)mb->above_context;
     ENTROPY_CONTEXT *L = (ENTROPY_CONTEXT *)mb->left_context;
-    const FRAME_CONTEXT * const fc = &dx->common.fc;
+    const FRAME_CONTEXT * const fc = &common->fc;
 
     BOOL_DECODER *bd = mb->current_bd;
 
@@ -206,11 +206,11 @@ int vp8_decode_mb_tokens(VP8D_COMP *dx, MACROBLOCKD *mb)
     const uint8_t *bufend;
     register unsigned int range;
     VP8_BD_VALUE value;
-    const int *scan;
+    const int *scan = vp8_default_zig_zag1d;
     register unsigned int shift;
     uint32_t split;
     VP8_BD_VALUE bigsplit;
-    int16_t *qcoeff_ptr;
+    int16_t *qcoeff_ptr = &mb->qcoeff[0];
 
     int type = 3;
     int stop = 16;
@@ -219,9 +219,6 @@ int vp8_decode_mb_tokens(VP8D_COMP *dx, MACROBLOCKD *mb)
     int16_t v;
     const vp8_prob *Prob;
     const vp8_prob *coef_probs;
-
-    scan = vp8_default_zig_zag1d;
-    qcoeff_ptr = &mb->qcoeff[0];
 
     if (mb->mode_info_context->mbmi.mode != B_PRED &&
         mb->mode_info_context->mbmi.mode != SPLITMV)
@@ -264,7 +261,7 @@ CHECK_0_:
     DECODE_AND_BRANCH_IF_ZERO(Prob[CAT_THREEFOUR_CONTEXT_NODE], CAT_THREEFOUR_CONTEXT_NODE_0_);
     DECODE_AND_BRANCH_IF_ZERO(Prob[CAT_FIVE_CONTEXT_NODE], CAT_FIVE_CONTEXT_NODE_0_);
     val = vp8d_token_extra_bits2[DCT_VAL_CATEGORY6].min_val;
-    bits_count = vp8d_token_extra_bits2[DCT_VAL_CATEGORY6].Length;
+    bits_count = vp8d_token_extra_bits2[DCT_VAL_CATEGORY6].length;
 
     do
     {
@@ -302,7 +299,6 @@ CAT_THREE_CONTEXT_NODE_0_:
 
 HIGH_LOW_CONTEXT_NODE_0_:
     DECODE_AND_BRANCH_IF_ZERO(Prob[CAT_ONE_CONTEXT_NODE], CAT_ONE_CONTEXT_NODE_0_);
-
     val = vp8d_token_extra_bits2[DCT_VAL_CATEGORY2].min_val;
     DECODE_EXTRABIT_AND_ADJUST_VAL(DCT_VAL_CATEGORY2, 1);
     DECODE_EXTRABIT_AND_ADJUST_VAL(DCT_VAL_CATEGORY2, 0);

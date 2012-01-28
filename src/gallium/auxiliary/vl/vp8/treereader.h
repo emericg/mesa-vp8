@@ -15,19 +15,6 @@
 #include "treereader_common.h"
 #include "vp8_mem.h"
 
-#define vp8_read vp8dx_decode_bool
-#define vp8_read_literal vp8_decode_value
-#define vp8_read_bit( R) vp8_read( R, vp8_prob_half)
-
-/**
- * This is meant to be a large, positive constant that can still be efficiently
- * loaded as an immediate (on platforms like ARM, for example).
- * Even relatively modest values like 100 would work fine.
- */
-#define VP8_LOTS_OF_BITS (0x40000000)
-
-#define VP8_BD_VALUE_SIZE ((int)sizeof(VP8_BD_VALUE)*CHAR_BIT)
-
 typedef size_t VP8_BD_VALUE;
 
 typedef struct
@@ -38,6 +25,19 @@ typedef struct
     int                  count;
     unsigned int         range;
 } BOOL_DECODER;
+
+/**
+ * This is meant to be a large, positive constant that can still be efficiently
+ * loaded as an immediate (on platforms like ARM, for example).
+ * Even relatively modest values like 100 would work fine.
+ */
+#define VP8_LOTS_OF_BITS (0x40000000)
+
+#define VP8_BD_VALUE_SIZE ((int)sizeof(VP8_BD_VALUE)*CHAR_BIT)
+
+#define vp8_read vp8dx_decode_bool
+#define vp8_read_literal vp8_decode_value
+#define vp8_read_bit( R) vp8_read( R, vp8_prob_half)
 
 DECLARE_ALIGNED(16, extern const unsigned char, vp8_norm[256]);
 
@@ -61,15 +61,14 @@ int vp8_treed_read(BOOL_DECODER *const bd, vp8_tree t, const vp8_prob *const p);
  * enough to eliminate the stores to those fields and the subsequent reloads
  * from them when inlining the function.
  */
-#define VP8DX_BOOL_DECODER_FILL(_count,_value,_bufptr,_bufend) \
+#define VP8DX_BOOL_DECODER_FILL(_count, _value, _bufptr, _bufend) \
     do \
     { \
-        int shift = VP8_BD_VALUE_SIZE - 8 - ((_count) + 8); \
-        int loop_end, x; \
         size_t bits_left = ((_bufend)-(_bufptr))*CHAR_BIT; \
+        int shift = VP8_BD_VALUE_SIZE - 8 - ((_count) + 8); \
+        int loop_end = 0; \
+        int x = shift + CHAR_BIT - bits_left; \
         \
-        x = shift + CHAR_BIT - bits_left; \
-        loop_end = 0; \
         if (x >= 0) \
         { \
             (_count) += VP8_LOTS_OF_BITS; \

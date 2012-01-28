@@ -104,7 +104,7 @@ static int swap_frame_buffers(VP8_COMMON *cm)
 /**
  * Create a VP8 decoder instance.
  */
-VP8D_PTR vp8_decoder_create()
+VP8D_COMP *vp8_decoder_create()
 {
     VP8D_COMP *pbi = vpx_memalign(32, sizeof(VP8D_COMP));
 
@@ -121,7 +121,6 @@ VP8D_PTR vp8_decoder_create()
     }
 
     pbi->common.error.setjmp = 1;
-    pbi->common.current_video_frame = 0;
     pbi->common.show_frame = 0;
 
     vp8_initialize_common();
@@ -131,16 +130,15 @@ VP8D_PTR vp8_decoder_create()
 
     pbi->common.error.setjmp = 0;
 
-    return (VP8D_PTR)pbi;
+    return pbi;
 }
 
 /**
  * Decode one VP8 frame.
  */
-int vp8_decoder_start(VP8D_PTR ptr, struct pipe_vp8_picture_desc *frame_header,
+int vp8_decoder_start(VP8D_COMP *pbi, struct pipe_vp8_picture_desc *frame_header,
                       const unsigned char *data, unsigned data_size)
 {
-    VP8D_COMP *pbi = (VP8D_COMP *)ptr;
     VP8_COMMON *cm = &pbi->common;
     int retcode = 0;
 
@@ -200,7 +198,7 @@ int vp8_decoder_start(VP8D_PTR ptr, struct pipe_vp8_picture_desc *frame_header,
         vp8_yv12_extend_frame_borders(cm->frame_to_show);
     }
 
-    /* from libvpx : vp8_print_modes_and_motion_vectors(cm->mi, cm->mb_rows, cm->mb_cols, cm->current_video_frame); */
+    /* from libvpx : vp8_print_modes_and_motion_vectors(cm->mi, cm->mb_rows, cm->mb_cols, current_video_frame); */
 
     pbi->data_size = 0;
     pbi->common.error.setjmp = 0;
@@ -211,11 +209,10 @@ int vp8_decoder_start(VP8D_PTR ptr, struct pipe_vp8_picture_desc *frame_header,
 /**
  * Return a decoded VP8 frame in a YV12 framebuffer.
  */
-int vp8_decoder_getframe(VP8D_PTR ptr,
+int vp8_decoder_getframe(VP8D_COMP *pbi,
                          YV12_BUFFER_CONFIG *sd)
 {
     int ret = -1;
-    VP8D_COMP *pbi = (VP8D_COMP *)ptr;
 
     /* ie no raw frame to show!!! */
     if (pbi->common.show_frame == 0)
@@ -238,10 +235,8 @@ int vp8_decoder_getframe(VP8D_PTR ptr,
 /**
  * Destroy a VP8 decoder instance.
  */
-void vp8_decoder_remove(VP8D_PTR ptr)
+void vp8_decoder_remove(VP8D_COMP *pbi)
 {
-    VP8D_COMP *pbi = (VP8D_COMP *)ptr;
-
     if (!pbi)
         return;
 

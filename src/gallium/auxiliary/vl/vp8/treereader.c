@@ -40,8 +40,8 @@ void vp8dx_bool_decoder_fill(BOOL_DECODER *bd)
 {
     const unsigned char *bufptr;
     const unsigned char *bufend;
-    VP8_BD_VALUE         value;
-    int                  count;
+    VP8_BD_VALUE value;
+    int count;
     bufend = bd->user_buffer_end;
     bufptr = bd->user_buffer;
     value = bd->value;

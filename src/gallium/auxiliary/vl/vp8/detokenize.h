@@ -15,6 +15,6 @@
 #include "vp8_decoder.h"
 
 void vp8_reset_mb_tokens_context(MACROBLOCKD *mb);
-int vp8_decode_mb_tokens(VP8D_COMP *dx, MACROBLOCKD *mb);
+int vp8_decode_mb_tokens(VP8_COMMON *common, MACROBLOCKD *mb);
 
 #endif /* DETOKENIZE_H */

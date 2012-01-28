@@ -22,7 +22,7 @@ typedef const int vp8_mbsplit[16];
 
 extern vp8_mbsplit vp8_mbsplits[VP8_NUMMBSPLITS];
 
-extern const int vp8_mbsplit_count[VP8_NUMMBSPLITS];    /* # of subsets */
+extern const int vp8_mbsplit_count[VP8_NUMMBSPLITS];   /* # of subsets */
 
 extern const vp8_prob vp8_mbsplit_probs[VP8_NUMMBSPLITS - 1];
 
@@ -57,9 +57,10 @@ extern struct vp8_token_struct vp8_small_mvencodings[8];
 
 void vp8_entropy_mode_init();
 
-void vp8_init_mbmode_probs(VP8_COMMON *x);
+void vp8_init_mbmode_probs(VP8_COMMON *common);
 
 void vp8_default_bmode_probs(vp8_prob dest[VP8_BINTRAMODES - 1]);
+
 void vp8_kf_default_bmode_probs(vp8_prob dest[VP8_BINTRAMODES][VP8_BINTRAMODES][VP8_BINTRAMODES - 1]);
 
 #endif /* ENTROPYMODE_H */

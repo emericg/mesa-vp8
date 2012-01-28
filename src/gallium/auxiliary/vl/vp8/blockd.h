@@ -225,8 +225,6 @@ typedef struct
     int mb_to_top_edge;
     int mb_to_bottom_edge;
 
-    unsigned int frames_since_golden;
-    unsigned int frames_till_alt_ref_frame;
     vp8_filter_fn_t filter_predict4x4;
     vp8_filter_fn_t filter_predict8x4;
     vp8_filter_fn_t filter_predict8x8;
