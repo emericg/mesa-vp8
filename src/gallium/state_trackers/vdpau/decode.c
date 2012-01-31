@@ -415,7 +415,6 @@ vlVdpDecoderRenderVP8(struct pipe_vp8_picture_desc *picture,
                       VdpPictureInfoVP8 *picture_info)
 {
    VdpStatus r;
-   unsigned i, j, k, l;
 
    VDPAU_MSG(VDPAU_TRACE, "[VDPAU] Decoding VP8\n");
 
@@ -436,63 +435,11 @@ vlVdpDecoderRenderVP8(struct pipe_vp8_picture_desc *picture,
    /* Get back picture parameters */
    picture->key_frame = picture_info->key_frame;
    picture->show_frame = picture_info->show_frame;
-   picture->first_partition_size = picture_info->first_partition_size;
+   picture->first_partition_size = picture_info->first_part_size;
    picture->horizontal_scale = picture_info->horizontal_scale;
    picture->width = picture_info->width;
    picture->vertical_scale = picture_info->vertical_scale;
    picture->height = picture_info->height;
-   picture->color_space = picture_info->color_space;
-   picture->clamping_type = picture_info->clamping_type;
-   picture->segmentation_enable = picture_info->segmentation_enable;
-   picture->segment_map_update = picture_info->segment_map_update;
-   picture->segment_data_update = picture_info->segment_data_update;
-   picture->segment_data_mode = picture_info->segment_data_mode;
-   for (i = 0; i < 4; i++) {
-      picture->segment_base_quant[i] = picture_info->segment_base_quant[i];
-      picture->segment_filter_level[i] = picture_info->segment_filter_level[i];
-   }
-   for (i = 0; i < 3; i++) {
-      picture->segment_id[i] = picture_info->segment_id[i];
-   }
-   picture->filter_type = picture_info->filter_type;
-   picture->filter_level = picture_info->filter_level;
-   picture->filter_sharpness_level = picture_info->filter_sharpness_level;
-   picture->filter_update = picture_info->filter_update;
-   for (i = 0; i < 4; i++) {
-      picture->filter_update_value[i] = picture_info->filter_update_value[i];
-      picture->filter_update_sign[i] = picture_info->filter_update_sign[i];
-   }
-   picture->num_coeff_partitions = picture_info->num_coeff_partitions;
-   for (i = 0; i < 4; i++) {
-       for (j = 0; j < 2; j++) {
-           picture->dquant[i].luma_qi[j] = picture_info->dquant[i].luma_qi[j];
-           picture->dquant[i].luma_dc_qi[j] = picture_info->dquant[i].luma_dc_qi[j];
-           picture->dquant[i].chroma_qi[j] = picture_info->dquant[i].chroma_qi[j];
-       }
-   }
-   picture->refresh_golden = picture_info->refresh_golden;
-   picture->refresh_altref = picture_info->refresh_altref;
-   picture->sign_bias_flag[0] = picture_info->sign_bias_flag[0];
-   picture->sign_bias_flag[1] = picture_info->sign_bias_flag[1];
-   picture->refresh_probabilities = picture_info->refresh_probabilities;
-   picture->refresh_last = picture_info->refresh_last;
-   for (i = 0; i < 4; i++)
-      for (j = 0; j < 8; j++)
-         for (k = 0; k < 3; k++)
-            for (l = 0; l < 11; l++)
-               picture->token_prob[i][j][k][l] = picture_info->token_prob[i][j][k][l];
-   picture->mb_no_coeff_skip = picture_info->mb_no_coeff_skip;
-   picture->prob_skip_false = picture_info->prob_skip_false;
-   picture->prob_intra = picture_info->prob_intra;
-   picture->prob_last = picture_info->prob_last;
-   picture->prob_golden = picture_info->prob_golden;
-   for (i = 0; i < 4; i++)
-       picture->intra_16x16_prob[i] = picture_info->intra_16x16_prob[i];
-   for (i = 0; i < 3; i++)
-       picture->intra_chroma_prob[i] = picture_info->intra_chroma_prob[i];
-   for (i = 0; i < 2; i++)
-      for (j = 0; j < 19; j++)
-         picture->mv_prob[i][j] = picture_info->mv_prob[i][j];
 
    return VDP_STATUS_OK;
 }
