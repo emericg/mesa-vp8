@@ -435,7 +435,7 @@ vlVdpDecoderRenderVP8(struct pipe_vp8_picture_desc *picture,
    /* Get back picture parameters */
    picture->key_frame = picture_info->key_frame;
    picture->show_frame = picture_info->show_frame;
-   picture->first_partition_size = picture_info->first_part_size;
+   picture->first_part_size = picture_info->first_part_size;
    picture->horizontal_scale = picture_info->horizontal_scale;
    picture->width = picture_info->width;
    picture->vertical_scale = picture_info->vertical_scale;

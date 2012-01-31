@@ -291,7 +291,7 @@ struct pipe_vp8_picture_desc
 
    unsigned key_frame;
    unsigned show_frame;
-   unsigned first_partition_size;
+   unsigned first_part_size;
 
    unsigned horizontal_scale;
    unsigned width;
