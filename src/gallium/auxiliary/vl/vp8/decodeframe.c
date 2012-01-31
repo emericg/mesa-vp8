@@ -550,7 +550,7 @@ int vp8_frame_decode(VP8_COMMON *common, struct pipe_vp8_picture_desc *frame_hea
     MACROBLOCKD *const mb = &common->mb;
     const unsigned char *data = common->data;
     const unsigned char *data_end = data + common->data_size;
-    ptrdiff_t first_partition_length_in_bytes = (ptrdiff_t)frame_header->first_partition_size;
+    ptrdiff_t first_partition_length_in_bytes = (ptrdiff_t)frame_header->first_part_size;
 
     int mb_row;
     int i, j, k, l;
