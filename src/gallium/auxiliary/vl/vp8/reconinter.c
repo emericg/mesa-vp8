@@ -11,7 +11,6 @@
 
 #include "recon_dispatch.h"
 #include "filter_dispatch.h"
-#include "blockd.h"
 #include "reconinter.h"
 #include "vp8_mem.h"
 
@@ -122,15 +121,15 @@ void vp8_build_inter_predictors_b(BLOCKD *d, int pitch, vp8_filter_fn_t sppf)
         for (r = 0; r < 4; r++)
         {
 #ifdef MUST_BE_ALIGNED
-            pred_ptr[0]  = ptr[0];
-            pred_ptr[1]  = ptr[1];
-            pred_ptr[2]  = ptr[2];
-            pred_ptr[3]  = ptr[3];
+            pred_ptr[0] = ptr[0];
+            pred_ptr[1] = ptr[1];
+            pred_ptr[2] = ptr[2];
+            pred_ptr[3] = ptr[3];
 #else
             *(int *)pred_ptr = *(int *)ptr;
 #endif /* MUST_BE_ALIGNED */
-            pred_ptr    += pitch;
-            ptr         += d->pre_stride;
+            pred_ptr += pitch;
+            ptr      += d->pre_stride;
         }
     }
 }
@@ -299,7 +298,7 @@ void vp8_build_uvmvs(MACROBLOCKD *mb, int fullpixel)
                 if (fullpixel)
                     mb->block[uoffset].bmi.mv.as_mv.row = (temp / 8) & 0xfffffff8;
 
-                temp = mb->block[yoffset  ].bmi.mv.as_mv.col
+                temp = mb->block[yoffset].bmi.mv.as_mv.col
                        + mb->block[yoffset+1].bmi.mv.as_mv.col
                        + mb->block[yoffset+4].bmi.mv.as_mv.col
                        + mb->block[yoffset+5].bmi.mv.as_mv.col;

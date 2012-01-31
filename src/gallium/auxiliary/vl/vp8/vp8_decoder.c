@@ -53,13 +53,13 @@ static int swap_frame_buffers(VP8_COMMON *common)
      * new, last, or golden/alt ref frame. If it is updated using the newly
      * decoded frame it is a refresh. An update using the last or golden/alt
      * ref frame is a copy. */
-    if (common->copy_buffer_to_arf)
+    if (common->copy_buffer_to_alternate)
     {
         int new_fb = 0;
 
-        if (common->copy_buffer_to_arf == 1)
+        if (common->copy_buffer_to_alternate == 1)
             new_fb = common->lst_fb_idx;
-        else if (common->copy_buffer_to_arf == 2)
+        else if (common->copy_buffer_to_alternate == 2)
             new_fb = common->gld_fb_idx;
         else
             err = -1;
@@ -67,13 +67,13 @@ static int swap_frame_buffers(VP8_COMMON *common)
         ref_cnt_fb(common->fb_idx_ref_cnt, &common->alt_fb_idx, new_fb);
     }
 
-    if (common->copy_buffer_to_gf)
+    if (common->copy_buffer_to_golden)
     {
         int new_fb = 0;
 
-        if (common->copy_buffer_to_gf == 1)
+        if (common->copy_buffer_to_golden == 1)
             new_fb = common->lst_fb_idx;
-        else if (common->copy_buffer_to_gf == 2)
+        else if (common->copy_buffer_to_golden == 2)
             new_fb = common->alt_fb_idx;
         else
             err = -1;
@@ -84,7 +84,7 @@ static int swap_frame_buffers(VP8_COMMON *common)
     if (common->refresh_golden_frame)
         ref_cnt_fb(common->fb_idx_ref_cnt, &common->gld_fb_idx, common->new_fb_idx);
 
-    if (common->refresh_alt_ref_frame)
+    if (common->refresh_alternate_frame)
         ref_cnt_fb(common->fb_idx_ref_cnt, &common->alt_fb_idx, common->new_fb_idx);
 
     if (common->refresh_last_frame)
@@ -208,8 +208,7 @@ int vp8_decoder_start(VP8_COMMON *common,
 /**
  * Return a decoded VP8 frame in a YV12 framebuffer.
  */
-int vp8_decoder_getframe(VP8_COMMON *common,
-                         YV12_BUFFER_CONFIG *sd)
+int vp8_decoder_getframe(VP8_COMMON *common, YV12_BUFFER_CONFIG *sd)
 {
     int ret = -1;
 
@@ -220,7 +219,7 @@ int vp8_decoder_getframe(VP8_COMMON *common,
     if (common->frame_to_show)
     {
         *sd = *common->frame_to_show;
-        sd->clrtype = common->clr_type;
+        sd->clrtype = common->color_space;
         sd->y_width = common->width;
         sd->y_height = common->height;
         sd->uv_height = common->height / 2;

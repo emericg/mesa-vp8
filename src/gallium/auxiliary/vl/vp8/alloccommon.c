@@ -154,21 +154,21 @@ void vp8_initialize_common(VP8_COMMON *common)
     vp8_init_mbmode_probs(common);
     vp8_default_bmode_probs(common->fc.bmode_prob);
 
-    common->mb_no_coeff_skip = 1;
+    common->mb_no_skip_coeff = 1;
     common->no_lpf = 0;
     common->filter_type = NORMAL_LOOPFILTER;
     common->use_bilinear_mc_filter = 0;
     common->full_pixel = 0;
     common->multi_token_partition = ONE_PARTITION;
-    common->clr_type = REG_YUV;
-    common->clamp_type = RECON_CLAMP_REQUIRED;
+    common->color_space = REG_YUV;
+    common->clamping_type = RECON_CLAMP_REQUIRED;
 
     /* Initialise reference frame sign bias structure to defaults */
     memset(common->ref_frame_sign_bias, 0, sizeof(common->ref_frame_sign_bias));
 
     /* Default disable buffer to buffer copying */
-    common->copy_buffer_to_gf = 0;
-    common->copy_buffer_to_arf = 0;
+    common->copy_buffer_to_golden = 0;
+    common->copy_buffer_to_alternate = 0;
 
     /*  */
     vp8_coef_tree_initialize();

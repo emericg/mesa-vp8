@@ -137,8 +137,7 @@ static int vp8_ac_uv_quant(int QIndex, int Delta)
 
 void vp8_initialize_dequantizer(VP8_COMMON *common)
 {
-    int i;
-    int Q;
+    int Q, i;
 
     for (Q = 0; Q < QINDEX_RANGE; Q++)
     {

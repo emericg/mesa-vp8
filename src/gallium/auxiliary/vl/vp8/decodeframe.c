@@ -507,9 +507,9 @@ static void vp8_frame_init(VP8_COMMON *common)
 
         /* All buffers are implicitly updated on key frames. */
         common->refresh_golden_frame = 1;
-        common->refresh_alt_ref_frame = 1;
-        common->copy_buffer_to_gf = 0;
-        common->copy_buffer_to_arf = 0;
+        common->refresh_alternate_frame = 1;
+        common->copy_buffer_to_golden = 0;
+        common->copy_buffer_to_alternate = 0;
 
         /* Note that Golden and Altref modes cannot be used on a key frame so
          * ref_frame_sign_bias[] is undefined and meaningless. */
@@ -520,19 +520,19 @@ static void vp8_frame_init(VP8_COMMON *common)
     {
         if (common->use_bilinear_mc_filter)
         {
-            common->mcomp_filter_type   = BILINEAR;
-            mb->filter_predict4x4   = FILTER_INVOKE(RTCD_VTABLE(filter), bilinear4x4);
-            mb->filter_predict8x4   = FILTER_INVOKE(RTCD_VTABLE(filter), bilinear8x4);
-            mb->filter_predict8x8   = FILTER_INVOKE(RTCD_VTABLE(filter), bilinear8x8);
-            mb->filter_predict16x16 = FILTER_INVOKE(RTCD_VTABLE(filter), bilinear16x16);
+            common->mcomp_filter_type = BILINEAR;
+            mb->filter_predict4x4     = FILTER_INVOKE(RTCD_VTABLE(filter), bilinear4x4);
+            mb->filter_predict8x4     = FILTER_INVOKE(RTCD_VTABLE(filter), bilinear8x4);
+            mb->filter_predict8x8     = FILTER_INVOKE(RTCD_VTABLE(filter), bilinear8x8);
+            mb->filter_predict16x16   = FILTER_INVOKE(RTCD_VTABLE(filter), bilinear16x16);
         }
         else
         {
-            common->mcomp_filter_type   = SIXTAP;
-            mb->filter_predict4x4   = FILTER_INVOKE(RTCD_VTABLE(filter), sixtap4x4);
-            mb->filter_predict8x4   = FILTER_INVOKE(RTCD_VTABLE(filter), sixtap8x4);
-            mb->filter_predict8x8   = FILTER_INVOKE(RTCD_VTABLE(filter), sixtap8x8);
-            mb->filter_predict16x16 = FILTER_INVOKE(RTCD_VTABLE(filter), sixtap16x16);
+            common->mcomp_filter_type = SIXTAP;
+            mb->filter_predict4x4     = FILTER_INVOKE(RTCD_VTABLE(filter), sixtap4x4);
+            mb->filter_predict8x4     = FILTER_INVOKE(RTCD_VTABLE(filter), sixtap8x4);
+            mb->filter_predict8x8     = FILTER_INVOKE(RTCD_VTABLE(filter), sixtap8x8);
+            mb->filter_predict16x16   = FILTER_INVOKE(RTCD_VTABLE(filter), sixtap16x16);
         }
     }
 
@@ -578,9 +578,9 @@ int vp8_frame_decode(VP8_COMMON *common, struct pipe_vp8_picture_desc *frame_hea
         }
 
         common->width = frame_header->width;
-        common->horiz_scale = frame_header->horizontal_scale;
+        common->horizontal_scale = frame_header->horizontal_scale;
         common->height = frame_header->height;
-        common->vert_scale = frame_header->vertical_scale;
+        common->vertical_scale = frame_header->vertical_scale;
     }
 
     vp8_frame_init(common);
@@ -593,8 +593,8 @@ int vp8_frame_decode(VP8_COMMON *common, struct pipe_vp8_picture_desc *frame_hea
 
     if (common->frame_type == KEY_FRAME)
     {
-        common->clr_type   = (YUV_TYPE)vp8_read_bit(bd);
-        common->clamp_type = (CLAMP_TYPE)vp8_read_bit(bd);
+        common->color_space   = (YUV_TYPE)vp8_read_bit(bd);
+        common->clamping_type = (CLAMP_TYPE)vp8_read_bit(bd);
     }
 
     /* Is segmentation enabled */
@@ -718,17 +718,17 @@ int vp8_frame_decode(VP8_COMMON *common, struct pipe_vp8_picture_desc *frame_hea
     {
         /* Should the GF or ARF be updated from the current frame. */
         common->refresh_golden_frame = vp8_read_bit(bd);
-        common->refresh_alt_ref_frame = vp8_read_bit(bd);
+        common->refresh_alternate_frame = vp8_read_bit(bd);
 
         /* Buffer to buffer copy flags. */
-        common->copy_buffer_to_gf = 0;
-        common->copy_buffer_to_arf = 0;
+        common->copy_buffer_to_golden = 0;
+        common->copy_buffer_to_alternate = 0;
 
         if (!common->refresh_golden_frame)
-            common->copy_buffer_to_gf = vp8_read_literal(bd, 2);
+            common->copy_buffer_to_golden = vp8_read_literal(bd, 2);
 
-        if (!common->refresh_alt_ref_frame)
-            common->copy_buffer_to_arf = vp8_read_literal(bd, 2);
+        if (!common->refresh_alternate_frame)
+            common->copy_buffer_to_alternate = vp8_read_literal(bd, 2);
 
         common->ref_frame_sign_bias[GOLDEN_FRAME] = vp8_read_bit(bd);
         common->ref_frame_sign_bias[ALTREF_FRAME] = vp8_read_bit(bd);
@@ -770,7 +770,7 @@ int vp8_frame_decode(VP8_COMMON *common, struct pipe_vp8_picture_desc *frame_hea
     memset(mb->qcoeff, 0, sizeof(mb->qcoeff));
 
     /* Read the mb_no_coeff_skip flag */
-    common->mb_no_coeff_skip = vp8_read_bit(bd);
+    common->mb_no_skip_coeff = vp8_read_bit(bd);
 
     vp8_decode_mode_mvs(common);
 
@@ -810,7 +810,7 @@ int vp8_frame_decode(VP8_COMMON *common, struct pipe_vp8_picture_desc *frame_hea
     /* If this was a kf or Gf note the Q used */
     if (common->frame_type == KEY_FRAME ||
         common->refresh_golden_frame ||
-        common->refresh_alt_ref_frame)
+        common->refresh_alternate_frame)
     {
         common->last_kf_gf_q = common->base_qindex;
     }

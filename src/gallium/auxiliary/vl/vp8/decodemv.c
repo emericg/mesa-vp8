@@ -159,7 +159,7 @@ static void vp8_kfread_modes(VP8_COMMON *common, MODE_INFO *mi, int mb_row, int 
         vp8_read_mb_features(bd, &mi->mbmi, &common->mb);
 
     /* Read the macroblock coeff skip flag if this feature is in use, else default to 0 */
-    if (common->mb_no_coeff_skip)
+    if (common->mb_no_skip_coeff)
         mi->mbmi.mb_skip_coeff = vp8_read(bd, common->prob_skip_false);
     else
         mi->mbmi.mb_skip_coeff = 0;
@@ -300,7 +300,7 @@ static void mb_mode_mv_init(VP8_COMMON *common)
     MV_CONTEXT *const mvc = common->fc.mvc;
 
     common->prob_skip_false = 0;
-    if (common->mb_no_coeff_skip)
+    if (common->mb_no_skip_coeff)
         common->prob_skip_false = (vp8_prob)vp8_read_literal(bd, 8);
 
     if (common->frame_type != KEY_FRAME)
@@ -368,7 +368,7 @@ static void read_mb_modes_mv(VP8_COMMON *common,
         vp8_read_mb_features(bd, mbmi, &common->mb);
 
     /* Read the macroblock coeff skip flag if this feature is in use, else default to 0 */
-    if (common->mb_no_coeff_skip)
+    if (common->mb_no_skip_coeff)
         mbmi->mb_skip_coeff = vp8_read(bd, common->prob_skip_false);
     else
         mbmi->mb_skip_coeff = 0;

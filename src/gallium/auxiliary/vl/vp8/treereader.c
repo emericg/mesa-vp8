@@ -19,7 +19,7 @@
  */
 int vp8dx_start_decode(BOOL_DECODER *bd,
                        const unsigned char *data,
-                       unsigned int data_size)
+                       const unsigned int data_size)
 {
     bd->user_buffer_end = data + data_size;
     bd->user_buffer     = data;
@@ -30,22 +30,20 @@ int vp8dx_start_decode(BOOL_DECODER *bd,
     if (data_size && !data)
         return 1;
 
-    /* Populate the buffer */
     vp8dx_bool_decoder_fill(bd);
 
     return 0;
 }
 
+/**
+ * Populate the buffer.
+ */
 void vp8dx_bool_decoder_fill(BOOL_DECODER *bd)
 {
-    const unsigned char *bufptr;
-    const unsigned char *bufend;
-    VP8_BD_VALUE value;
-    int count;
-    bufend = bd->user_buffer_end;
-    bufptr = bd->user_buffer;
-    value = bd->value;
-    count = bd->count;
+    const unsigned char *bufptr = bd->user_buffer;
+    const unsigned char *bufend = bd->user_buffer_end;
+    VP8_BD_VALUE value = bd->value;
+    int count = bd->count;
 
     VP8DX_BOOL_DECODER_FILL(count, value, bufptr, bufend);
 
@@ -58,12 +56,10 @@ int vp8dx_decode_bool(BOOL_DECODER *bd, int probability)
 {
     unsigned int bit = 0;
     VP8_BD_VALUE value;
-    unsigned int split;
+    unsigned int split = 1 + (((bd->range - 1) * probability) >> 8);
     VP8_BD_VALUE bigsplit;
     int count;
     unsigned int range;
-
-    split = 1 + (((bd->range - 1) * probability) >> 8);
 
     if (bd->count < 0)
         vp8dx_bool_decoder_fill(bd);

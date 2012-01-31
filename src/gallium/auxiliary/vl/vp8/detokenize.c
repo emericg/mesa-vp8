@@ -210,7 +210,7 @@ int vp8_decode_mb_tokens(VP8_COMMON *common, MACROBLOCKD *mb)
     register unsigned int shift;
     uint32_t split;
     VP8_BD_VALUE bigsplit;
-    int16_t *qcoeff_ptr = &mb->qcoeff[0];
+    int16_t *qcoeff_ptr = &mb->qcoeff[0]; // tokens for this block
 
     int type = 3;
     int stop = 16;
@@ -218,7 +218,7 @@ int vp8_decode_mb_tokens(VP8_COMMON *common, MACROBLOCKD *mb)
     int16_t c;
     int16_t v;
     const vp8_prob *Prob;
-    const vp8_prob *coef_probs;
+    const vp8_prob *coef_probs; // probabilities for this block type
 
     if (mb->mode_info_context->mbmi.mode != B_PRED &&
         mb->mode_info_context->mbmi.mode != SPLITMV)

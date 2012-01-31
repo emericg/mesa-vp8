@@ -41,7 +41,8 @@ typedef struct
 
 DECLARE_ALIGNED(16, extern const unsigned char, vp8_norm[256]);
 
-int vp8dx_start_decode(BOOL_DECODER *bd, const unsigned char *data, unsigned int data_size);
+int vp8dx_start_decode(BOOL_DECODER *bd, const unsigned char *data,
+                       const unsigned int data_size);
 
 void vp8dx_bool_decoder_fill(BOOL_DECODER *bd);
 

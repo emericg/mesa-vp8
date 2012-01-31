@@ -83,47 +83,48 @@ typedef struct VP8Common
 {
     struct vpx_internal_error_info error;
 
-    /* Bitstream data */
+    /* Bitstream buffer */
     const unsigned char *data;
     unsigned int         data_size;
 
-    /* Boolean decoder */
+    /* Boolean decoders */
     BOOL_DECODER *mbd;
     BOOL_DECODER bd, bd2;
 
-    /* Header content */
+    /* Frame header content */
     FRAME_TYPE frame_type;
     int version;
     int show_frame;
 
+    int horizontal_scale;
     int width;
+    int vertical_scale;
     int height;
-    int horiz_scale;
-    int vert_scale;
 
-    YUV_TYPE clr_type;
-    CLAMP_TYPE clamp_type;
+    YUV_TYPE color_space;
+    CLAMP_TYPE clamping_type;
 
-    INTERPOLATIONFILTER_TYPE mcomp_filter_type;
-    LOOPFILTER_TYPE filter_type;
-
+    INTERPOLATIONFILTER_TYPE mcomp_filter_type;  /**< Motion compensation filter type. Not from the bitstream. */
+    LOOPFILTER_TYPE filter_type;                 /**< Loop filter type */
     int filter_level;
-    int last_sharpness_level;
     int sharpness_level;
 
-    int refresh_last_frame;    /**< Two state 0 = NO, 1 = YES */
-    int refresh_golden_frame;  /**< Two state 0 = NO, 1 = YES */
-    int refresh_alt_ref_frame; /**< Two state 0 = NO, 1 = YES */
-    int refresh_entropy_probs; /**< Two state 0 = NO, 1 = YES */
+    int refresh_last_frame;       /**< Two state 0 = NO, 1 = YES */
+    int refresh_golden_frame;     /**< Two state 0 = NO, 1 = YES */
+    int refresh_alternate_frame;  /**< Two state 0 = NO, 1 = YES */
+    int refresh_entropy_probs;    /**< Two state 0 = NO, 1 = YES */
 
+    int copy_buffer_to_golden;    /**< 0 = none, 1 = LAST to GOLDEN, 2 = ALTERNATE to GOLDEN */
+    int copy_buffer_to_alternate; /**< 0 = none, 1 = LAST to ALTERNATE, 2 = GOLDEN to ALTERNATE */
 
-    /* Profile settings */
-    int mb_no_coeff_skip;
+    int mb_no_skip_coeff;
+
+    /* Profile/Level settings */
     int no_lpf;
     int use_bilinear_mc_filter;
     int full_pixel;
 
-    /* Quantization */
+    /* Quantization parameters */
     DECLARE_ALIGNED(16, short, Y1dequant[QINDEX_RANGE][16]);
     DECLARE_ALIGNED(16, short, Y2dequant[QINDEX_RANGE][16]);
     DECLARE_ALIGNED(16, short, UVdequant[QINDEX_RANGE][16]);
@@ -157,8 +158,6 @@ typedef struct VP8Common
     MODE_INFO *mip; /**< Base of allocated array */
     MODE_INFO *mi;  /**< Corresponds to upper left visible macroblock */
 
-    int copy_buffer_to_gf;     /**< 0 none, 1 Last to GF, 2 ARF to GF */
-    int copy_buffer_to_arf;    /**< 0 none, 1 Last to ARF, 2 GF to ARF */
 
     int ref_frame_sign_bias[MAX_REF_FRAMES]; /**< Two state 0, 1 */
 

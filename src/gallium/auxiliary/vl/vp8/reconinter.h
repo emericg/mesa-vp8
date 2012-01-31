@@ -12,6 +12,8 @@
 #ifndef RECONINTER_H
 #define RECONINTER_H
 
+#include "blockd.h"
+
 extern void vp8_build_inter_predictors_mb(MACROBLOCKD *mb);
 
 extern void vp8_build_inter16x16_predictors_mb(MACROBLOCKD *mb,
