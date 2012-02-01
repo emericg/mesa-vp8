@@ -29,7 +29,7 @@
 
 #define RTCD_VTABLE(x) NULL
 
-void mb_init_dequantizer(VP8_COMMON *common, MACROBLOCKD *mb)
+static void mb_init_dequantizer(VP8_COMMON *common, MACROBLOCKD *mb)
 {
     int i;
     int QIndex;
