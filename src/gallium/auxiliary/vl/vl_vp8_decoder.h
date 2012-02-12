@@ -100,7 +100,7 @@ struct vl_vp8_buffer
    struct pipe_transfer *tex_transfer;
    short *texels;
 
-   struct vl_ycbcr_block *ycbcr_stream[VL_MAX_PLANES];
+   struct vl_ycbcr_block *ycbcr_stream[VL_NUM_COMPONENTS];
    struct vl_motionvector *mv_stream[VL_MAX_REF_FRAMES];
 };
 

@@ -41,7 +41,7 @@
 
 struct format_config {
     enum pipe_format mc_source_format;
-    enum pipe_format loopfilter_source_format;
+    enum pipe_format lf_source_format;
 
     float mc_scale;
 };
@@ -64,13 +64,13 @@ static const struct format_config mc_format_config[] = {
 static const unsigned num_mc_format_configs =
    sizeof(mc_format_config) / sizeof(struct format_config);
 
-static const struct format_config loopfilter_format_config[] = {
+static const struct format_config lf_format_config[] = {
     //{ PIPE_FORMAT_R16G16B16A16_SSCALED, PIPE_FORMAT_R16G16B16A16_SSCALED, SCALE_FACTOR_SSCALED },
     { PIPE_FORMAT_R16G16B16A16_SNORM, PIPE_FORMAT_R16G16B16A16_SNORM, SCALE_FACTOR_SNORM }
 };
 
-static const unsigned num_loopfilter_format_configs =
-   sizeof(loopfilter_format_config) / sizeof(struct format_config);
+static const unsigned num_lf_format_configs =
+   sizeof(lf_format_config) / sizeof(struct format_config);
 
 static void
 vl_vp8_destroy_buffer(void *buffer)
@@ -132,8 +132,8 @@ vl_vp8_get_decode_buffer(struct vl_vp8_decoder *dec, struct pipe_video_buffer *t
       return NULL;
 
    if (!vl_vb_init(&buffer->vertex_stream, dec->base.context,
-                   dec->base.width / MACROBLOCK_WIDTH,
-                   dec->base.height / MACROBLOCK_HEIGHT))
+                   dec->base.width / VL_MACROBLOCK_WIDTH,
+                   dec->base.height / VL_MACROBLOCK_HEIGHT))
       goto error_vertex_buffer;
 
    if (dec->base.entrypoint == PIPE_VIDEO_ENTRYPOINT_BITSTREAM)
@@ -242,6 +242,74 @@ vl_vp8_decode_bitstream(struct pipe_video_decoder *decoder,
       else
       {
          dec->img_ready = 1;
+
+         struct pipe_sampler_view **sampler_views;
+         struct pipe_context *pipe;
+         int i = 0, j = 0;
+
+         // VP8 bypass transfert frame
+         pipe = buf->bs.decoder->context;
+         if (!pipe) {
+            printf("[end_frame] No pipe\n");
+            return;
+         }
+
+         sampler_views = target->get_sampler_view_planes(target);
+         if (!sampler_views) {
+            printf("[end_frame] No sampler_views\n");
+            return;
+         }
+
+         // Get the decoded frame
+         if (vp8_decoder_getframe(dec->vp8_dec, &dec->img_yv12)) {
+            printf("[end_frame] No image to output !\n");
+            return;
+         }
+
+         // Load YCbCr planes into a GPU texture
+         for (i = 0; i < 3; ++i)
+         {
+            struct pipe_sampler_view *sv = sampler_views[i];
+
+            if (!sv)
+               continue;
+
+            for (j = 0; j < sv->texture->depth0; ++j)
+            {
+               struct pipe_box dst_box = {
+                  0, 0, j,
+                  sv->texture->width0, sv->texture->height0, 1
+               };
+
+               struct pipe_transfer *dst_transfer = pipe->get_transfer(pipe, sv->texture, 0, PIPE_TRANSFER_WRITE, &dst_box);;
+
+               if (!dst_transfer) {
+                  printf("[end_frame] No dst_transfer\n");
+                  return;
+               }
+
+               ubyte *src = dec->img_yv12.y_buffer;
+               if (i == 1)
+                  src = dec->img_yv12.v_buffer;
+               else if (i == 2)
+                  src = dec->img_yv12.u_buffer;
+
+               void *dst = pipe->transfer_map(pipe, dst_transfer);
+               if (dst) {
+                  util_copy_rect(dst,
+                                 sv->texture->format,
+                                 dst_transfer->stride,
+                                 dst_box.x, dst_box.y,
+                                 dst_box.width, dst_box.height,
+                                 src,
+                                 (i ? dec->img_yv12.uv_stride : dec->img_yv12.y_stride),
+                                 0, 0);
+               }
+
+               pipe->transfer_unmap(pipe, dst_transfer);
+               pipe->transfer_destroy(pipe, dst_transfer);
+            }
+         }
       }
    }
    else
@@ -259,7 +327,7 @@ vl_vp8_end_frame(struct pipe_video_decoder *decoder,
    struct vl_vp8_buffer *buf;
    struct pipe_vp8_picture_desc *desc = (struct pipe_vp8_picture_desc *)picture;
    struct pipe_sampler_view **ref_frames[VL_MAX_REF_FRAMES];
-   struct pipe_sampler_view **mc_source_sv;
+   struct pipe_sampler_view **lf_source_sv;
    struct pipe_surface **target_surfaces;
    struct pipe_vertex_buffer vb[3];
 
@@ -267,10 +335,8 @@ vl_vp8_end_frame(struct pipe_video_decoder *decoder,
    unsigned i, j, component;
    unsigned nr_components;
 
-   struct pipe_sampler_view **sampler_views;
-   struct pipe_context *pipe;
-
    assert(dec && target && picture);
+   assert(!target->interlaced);
 
    buf = vl_vp8_get_decode_buffer(dec, target);
    assert(buf);
@@ -287,91 +353,6 @@ vl_vp8_end_frame(struct pipe_video_decoder *decoder,
          ref_frames[i] = desc->ref[i]->get_sampler_view_planes(desc->ref[i]);
       else
          ref_frames[i] = NULL;
-   }
-
-   // VP8 bypass transfert frame
-   pipe = buf->bs.decoder->context;
-   if (!pipe) {
-      printf("[end_frame] No pipe\n");
-      return;
-   }
-/*
-   if (target->buffer_format != PIPE_FORMAT_YV12) {
-      printf("[end_frame] bad format ? current is %i\n", target->buffer_format);
-
-      // destroy the old one
-      if (target)
-         target->destroy(target);
-
-      // adjust the template parameters
-      struct pipe_video_buffer templat;
-      memset(&templat, 0, sizeof(templat));
-      templat.chroma_format = PIPE_VIDEO_CHROMA_FORMAT_420;
-      templat.width = target->width;
-      templat.height = target->height;
-      templat.buffer_format = PIPE_FORMAT_YV12;
-      templat.interlaced = false;
-
-      // and try to create the video buffer with the new format
-      target = pipe->create_video_buffer(pipe, &templat);
-
-      // stil no luck? ok forget it we don't support it
-      if (!target)
-         return;
-
-      if (target->buffer_format != PIPE_FORMAT_YV12) {
-         printf("[end_frame] bad format ? current is %i\n", target->buffer_format);
-      } else {
-          printf("[end_frame] bad format ? nope, allright than\n");
-      }
-   }
-*/
-   sampler_views = target->get_sampler_view_planes(target);
-   if (!sampler_views) {
-      printf("[end_frame] No sampler_views\n");
-      return;
-   }
-
-   // Get the decoded frame
-   if (vp8_decoder_getframe(dec->vp8_dec, &dec->img_yv12)) {
-      printf("[end_frame] No image to output !\n");
-      return;
-   }
-
-   // Load YCbCr planes into a GPU texture
-   for (i = 0; i < 3; ++i)
-   {
-      struct pipe_sampler_view *sv = sampler_views[i];
-      struct pipe_box dst_box = { 0, 0, 0, sv->texture->width0, sv->texture->height0, 1 };
-      struct pipe_transfer *dst_transfer = pipe->get_transfer(pipe, sv->texture, 0, PIPE_TRANSFER_WRITE, &dst_box);;
-
-      if (!dst_transfer) {
-         printf("[end_frame] No transfer\n");
-         return;
-      }
-
-      void *dst = pipe->transfer_map(pipe, dst_transfer);
-      ubyte *src = dec->img_yv12.y_buffer;
-
-      if (i == 1)
-         src = dec->img_yv12.v_buffer;
-      else if (i == 2)
-         src = dec->img_yv12.u_buffer;
-
-      if (dst) {
-         util_copy_rect(dst,
-                        sv->texture->format,
-                        dst_transfer->stride,
-                        dst_box.x, dst_box.y,
-                        dst_box.width, dst_box.height,
-                        src,
-                        (i ? dec->img_yv12.uv_stride : dec->img_yv12.y_stride),
-                        0, 0);
-
-         pipe->transfer_unmap(pipe, dst_transfer);
-      }
-
-      pipe->transfer_destroy(pipe, dst_transfer);
    }
 }
 
@@ -443,9 +424,8 @@ find_format_config(struct vl_vp8_decoder *dec, const struct format_config config
                                        1, PIPE_BIND_SAMPLER_VIEW | PIPE_BIND_RENDER_TARGET))
          continue;
 
-      if (!screen->is_format_supported(screen,
-                                       configs[i].loopfilter_source_format, PIPE_TEXTURE_2D,
-                                       1, PIPE_BIND_SAMPLER_VIEW))
+      if (!screen->is_format_supported(screen, configs[i].lf_source_format, PIPE_TEXTURE_2D,
+                                       1, PIPE_BIND_SAMPLER_VIEW | PIPE_BIND_RENDER_TARGET))
          continue;
 
       return &configs[i];
@@ -493,7 +473,7 @@ vl_create_vp8_decoder(struct pipe_context *context,
 
    dec->blocks_per_line = MAX2(util_next_power_of_two(dec->base.width) / block_size_pixels, 4);
    dec->num_blocks = ((dec->base.width * dec->base.height) / block_size_pixels) * 2;
-   dec->width_in_macroblocks = align(dec->base.width, MACROBLOCK_WIDTH) / MACROBLOCK_WIDTH;
+   dec->width_in_macroblocks = align(dec->base.width, VL_MACROBLOCK_WIDTH) / VL_MACROBLOCK_WIDTH;
    dec->expect_chunked_decode = expect_chunked_decode;
 
    // VP8 only support 4:2:0 chroma subsampling
@@ -503,8 +483,8 @@ vl_create_vp8_decoder(struct pipe_context *context,
 
    dec->quads = vl_vb_upload_quads(dec->base.context);
    dec->pos = vl_vb_upload_pos(dec->base.context,
-                               dec->base.width / MACROBLOCK_WIDTH,
-                               dec->base.height / MACROBLOCK_HEIGHT);
+                               dec->base.width / VL_MACROBLOCK_WIDTH,
+                               dec->base.height / VL_MACROBLOCK_HEIGHT);
 
    dec->ves_ycbcr = vl_vb_get_ves_ycbcr(dec->base.context);
    dec->ves_mv = vl_vb_get_ves_mv(dec->base.context);
@@ -519,7 +499,7 @@ vl_create_vp8_decoder(struct pipe_context *context,
       break;
 
    case PIPE_VIDEO_ENTRYPOINT_LOOPFILTER:
-      format_config = find_format_config(dec, loopfilter_format_config, num_loopfilter_format_configs);
+      format_config = find_format_config(dec, lf_format_config, num_lf_format_configs);
       break;
 
    default:
