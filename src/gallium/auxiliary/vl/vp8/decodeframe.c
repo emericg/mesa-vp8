@@ -257,19 +257,19 @@ static void decode_macroblock(VP8_COMMON *common, MACROBLOCKD *mb, unsigned int 
         {
             BLOCKD *b = &mb->block[i];
             RECON_INVOKE(RTCD_VTABLE(recon), intra4x4_predict)
-                        (b, b->bmi.as_mode, b->predictor);
+                         (b, b->bmi.as_mode, b->predictor);
 
             if (mb->eobs[i] > 1)
             {
                 DEQUANT_INVOKE(&common->dequant, idct_add)
-                              (b->qcoeff, b->dequant, b->predictor,
-                             *(b->base_dst) + b->dst, 16, b->dst_stride);
+                               (b->qcoeff, b->dequant, b->predictor,
+                                *(b->base_dst) + b->dst, 16, b->dst_stride);
             }
             else
             {
                 IDCT_INVOKE(RTCD_VTABLE(idct), idct1_scalar_add)
-                           (b->qcoeff[0] * b->dequant[0], b->predictor,
-                          *(b->base_dst) + b->dst, 16, b->dst_stride);
+                            (b->qcoeff[0] * b->dequant[0], b->predictor,
+                             *(b->base_dst) + b->dst, 16, b->dst_stride);
 
                 ((int *)b->qcoeff)[0] = 0;
             }
@@ -279,9 +279,9 @@ static void decode_macroblock(VP8_COMMON *common, MACROBLOCKD *mb, unsigned int 
     else if (mode == SPLITMV)
     {
         DEQUANT_INVOKE(&common->dequant, idct_add_y_block)
-                      (mb->qcoeff, mb->block[0].dequant,
-                       mb->predictor, mb->dst.y_buffer,
-                       mb->dst.y_stride, mb->eobs);
+                       (mb->qcoeff, mb->block[0].dequant,
+                        mb->predictor, mb->dst.y_buffer,
+                        mb->dst.y_stride, mb->eobs);
     }
     else
     {
@@ -309,15 +309,15 @@ static void decode_macroblock(VP8_COMMON *common, MACROBLOCKD *mb, unsigned int 
         }
 
         DEQUANT_INVOKE (&common->dequant, dc_idct_add_y_block)
-                       (mb->qcoeff, mb->block[0].dequant,
-                        mb->predictor, mb->dst.y_buffer,
-                        mb->dst.y_stride, mb->eobs, mb->block[24].diff);
+                        (mb->qcoeff, mb->block[0].dequant,
+                         mb->predictor, mb->dst.y_buffer,
+                         mb->dst.y_stride, mb->eobs, mb->block[24].diff);
     }
 
     DEQUANT_INVOKE (&common->dequant, idct_add_uv_block)
-                   (mb->qcoeff+16*16, mb->block[16].dequant,
-                    mb->predictor+16*16, mb->dst.u_buffer, mb->dst.v_buffer,
-                    mb->dst.uv_stride, mb->eobs+16);
+                    (mb->qcoeff+16*16, mb->block[16].dequant,
+                     mb->predictor+16*16, mb->dst.u_buffer, mb->dst.v_buffer,
+                     mb->dst.uv_stride, mb->eobs+16);
 }
 
 static void
@@ -402,8 +402,7 @@ decode_macroblock_row(VP8_COMMON *common, int mb_row, MACROBLOCKD *mb)
 
 static unsigned int token_decoder_readpartitionsize(const unsigned char *cx_size)
 {
-    const unsigned int size = cx_size[0] + (cx_size[1] << 8) + (cx_size[2] << 16);
-    return size;
+    return (cx_size[0] + (cx_size[1] << 8) + (cx_size[2] << 16));
 }
 
 static void token_decoder_setup(VP8_COMMON *common,
