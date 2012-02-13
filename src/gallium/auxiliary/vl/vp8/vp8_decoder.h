@@ -190,7 +190,7 @@ int vp8_decoder_start(VP8_COMMON *common,
                       struct pipe_vp8_picture_desc *frame_header,
                       const unsigned char *data, unsigned data_size);
 
-int vp8_decoder_getframe(VP8_COMMON *common, YV12_BUFFER_CONFIG *sd);
+int vp8_decoder_get_frame_decoded(VP8_COMMON *common, YV12_BUFFER_CONFIG *sd);
 
 void vp8_decoder_remove(VP8_COMMON *common);
 

@@ -173,7 +173,6 @@ vl_vp8_begin_frame(struct pipe_video_decoder *decoder,
    }
 
    dec->current_buffer = 0;
-   dec->img_ready = 0;
 }
 
 static void
@@ -208,113 +207,62 @@ vl_vp8_decode_bitstream(struct pipe_video_decoder *decoder,
    struct vl_vp8_buffer *buf;
 
    assert(dec && target && picture);
+   assert(num_buffers == 1);
 
    buf = vl_vp8_get_decode_buffer(dec, target);
    assert(buf);
 
-   // Try and detect start_code from the first data buffer
-   const uint8_t *datab = (const uint8_t *)buffers[dec->current_buffer];
+   // Start bitstream decoding
+   //vl_vp8_bs_decode(&buf->bs, target, desc, num_buffers, buffers, sizes);
 
-   if (datab[0] == 0x9D &&
-       datab[1] == 0x01 &&
-       datab[2] == 0x2A)
+   // Start bitstream decoding
+   if (vp8_decoder_start(dec->vp8_dec, desc, (const uint8_t *)buffers[dec->current_buffer], sizes[dec->current_buffer]))
    {
-      if (sizes[dec->current_buffer] == 3)
-      {
-         // The start_code [0x9D012A] is present in a dedicated buffer
-         ++dec->current_buffer;
-         dec->current_buffer %= 4;
-      }
-      else if (num_buffers == 1)
-      {
-         // The start_code [0x9D012A] is present in the same buffer as the bistream data
-         //buffers[dec->current_buffer] += 3;
-      }
-
-      // Start bitstream decoding
-      //vl_vp8_bs_decode(&buf->bs, target, desc, num_buffers, buffers, sizes);
-
-      if (vp8_decoder_start(dec->vp8_dec, desc, (const uint8_t *)buffers[dec->current_buffer], sizes[dec->current_buffer]))
-      {
-         printf("[G3DVL] Error : decoding error, not a valid VP8 VDPAU frame !\n");
-         dec->img_ready = 0;
-      }
-      else
-      {
-         dec->img_ready = 1;
-
-         struct pipe_sampler_view **sampler_views;
-         struct pipe_context *pipe;
-         int i = 0, j = 0;
-
-         // VP8 bypass transfert frame
-         pipe = buf->bs.decoder->context;
-         if (!pipe) {
-            printf("[end_frame] No pipe\n");
-            return;
-         }
-
-         sampler_views = target->get_sampler_view_planes(target);
-         if (!sampler_views) {
-            printf("[end_frame] No sampler_views\n");
-            return;
-         }
-
-         // Get the decoded frame
-         if (vp8_decoder_getframe(dec->vp8_dec, &dec->img_yv12)) {
-            printf("[end_frame] No image to output !\n");
-            return;
-         }
-
-         // Load YCbCr planes into a GPU texture
-         for (i = 0; i < 3; ++i)
-         {
-            struct pipe_sampler_view *sv = sampler_views[i];
-
-            if (!sv)
-               continue;
-
-            for (j = 0; j < sv->texture->depth0; ++j)
-            {
-               struct pipe_box dst_box = {
-                  0, 0, j,
-                  sv->texture->width0, sv->texture->height0, 1
-               };
-
-               struct pipe_transfer *dst_transfer = pipe->get_transfer(pipe, sv->texture, 0, PIPE_TRANSFER_WRITE, &dst_box);;
-
-               if (!dst_transfer) {
-                  printf("[end_frame] No dst_transfer\n");
-                  return;
-               }
-
-               ubyte *src = dec->img_yv12.y_buffer;
-               if (i == 1)
-                  src = dec->img_yv12.v_buffer;
-               else if (i == 2)
-                  src = dec->img_yv12.u_buffer;
-
-               void *dst = pipe->transfer_map(pipe, dst_transfer);
-               if (dst) {
-                  util_copy_rect(dst,
-                                 sv->texture->format,
-                                 dst_transfer->stride,
-                                 dst_box.x, dst_box.y,
-                                 dst_box.width, dst_box.height,
-                                 src,
-                                 (i ? dec->img_yv12.uv_stride : dec->img_yv12.y_stride),
-                                 0, 0);
-               }
-
-               pipe->transfer_unmap(pipe, dst_transfer);
-               pipe->transfer_destroy(pipe, dst_transfer);
-            }
-         }
-      }
+      printf("[G3DVL] Error : VP8 frame decoding error !\n");
    }
    else
    {
-      printf("[G3DVL] Error : the first data buffer does not contain the mandatory start_code [0x9D012A] !\n");
+      struct pipe_sampler_view **sampler_views;
+      struct pipe_context *pipe;
+      int i = 0;
+
+      // Get the current decoded frame from the software decoder
+      if (vp8_decoder_get_frame_decoded(dec->vp8_dec, &dec->img_yv12)) {
+         printf("[end_frame] No valid VP8 frame to output !\n");
+         return;
+      }
+
+      // VP8 bypass transfert frame
+      pipe = buf->bs.decoder->context;
+      if (!pipe) {
+         return;
+      }
+
+      sampler_views = target->get_sampler_view_planes(target);
+      if (!sampler_views) {
+         return;
+      }
+
+      // Load YCbCr planes into a GPU texture
+      for (i = 0; i < 3; ++i) {
+         struct pipe_sampler_view *sv = sampler_views[i];
+
+         if (!sv)
+            continue;
+
+         struct pipe_box dst_box = {0, 0, 0, sv->texture->width0, sv->texture->height0, 1};
+
+         ubyte *src = dec->img_yv12.y_buffer;
+         if (i == 1)
+            src = dec->img_yv12.v_buffer;
+         else if (i == 2)
+            src = dec->img_yv12.u_buffer;
+
+         pipe->transfer_inline_write(pipe, sv->texture, 0, PIPE_TRANSFER_WRITE,
+                                     &dst_box, src,
+                                     (i ? dec->img_yv12.uv_stride : dec->img_yv12.y_stride),
+                                     0);
+      }
    }
 }
 

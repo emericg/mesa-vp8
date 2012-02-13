@@ -208,7 +208,7 @@ int vp8_decoder_start(VP8_COMMON *common,
 /**
  * Return a decoded VP8 frame in a YV12 framebuffer.
  */
-int vp8_decoder_getframe(VP8_COMMON *common, YV12_BUFFER_CONFIG *sd)
+int vp8_decoder_get_frame_decoded(VP8_COMMON *common, YV12_BUFFER_CONFIG *sd)
 {
     int ret = -1;
 
