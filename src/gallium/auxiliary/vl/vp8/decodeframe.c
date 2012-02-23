@@ -195,7 +195,8 @@ static void vp8_extend_mb_row(YV12_BUFFER_CONFIG *ybf,
     }
 }
 
-static void decode_macroblock(VP8_COMMON *common, MACROBLOCKD *mb, unsigned int mb_idx)
+static void decode_macroblock(VP8_COMMON *common,
+                              MACROBLOCKD *mb, unsigned int mb_idx)
 {
     int i;
     int eobtotal = 0;
@@ -321,7 +322,7 @@ static void decode_macroblock(VP8_COMMON *common, MACROBLOCKD *mb, unsigned int 
 }
 
 static void
-decode_macroblock_row(VP8_COMMON *common, int mb_row, MACROBLOCKD *mb)
+decode_macroblock_row(VP8_COMMON *common, MACROBLOCKD *mb, int mb_row)
 {
     int recon_yoffset, recon_uvoffset;
     int mb_col;
@@ -400,13 +401,12 @@ decode_macroblock_row(VP8_COMMON *common, int mb_row, MACROBLOCKD *mb)
     ++mb->mode_info_context;
 }
 
-static unsigned int token_decoder_readpartitionsize(const unsigned char *cx_size)
+static unsigned int token_decoder_readpartitionsize(const unsigned char *partitions_size)
 {
-    return (cx_size[0] + (cx_size[1] << 8) + (cx_size[2] << 16));
+    return (partitions_size[0] + (partitions_size[1] << 8) + (partitions_size[2] << 16));
 }
 
-static void token_decoder_setup(VP8_COMMON *common,
-                                const unsigned char *cx_data)
+static void token_decoder_setup(VP8_COMMON *common, const unsigned char *data)
 {
     int num_part;
     int i;
@@ -414,7 +414,7 @@ static void token_decoder_setup(VP8_COMMON *common,
 
     /* Set up pointers to the first partition */
     BOOL_DECODER        *bool_decoder = &common->bd2;
-    const unsigned char *partition = cx_data;
+    const unsigned char *partition = data;
 
     /* Parse number of token partitions to use */
     const TOKEN_PARTITION multi_token_partition = (TOKEN_PARTITION)vp8_read_literal(&common->bd, 2);
@@ -440,7 +440,7 @@ static void token_decoder_setup(VP8_COMMON *common,
 
     for (i = 0; i < num_part; i++)
     {
-        const unsigned char *partition_size_ptr = cx_data + i * 3;
+        const unsigned char *partition_size_ptr = data + i * 3;
         ptrdiff_t            partition_size;
 
         /* Calculate the length of this partition. The last partition size is implicit. */
@@ -551,7 +551,6 @@ int vp8_frame_decode(VP8_COMMON *common, struct pipe_vp8_picture_desc *frame_hea
     const unsigned char *data_end = data + common->data_size;
     ptrdiff_t first_partition_length_in_bytes = (ptrdiff_t)frame_header->first_part_size;
 
-    int mb_row;
     int i, j, k, l;
 
     /* Start with no corruption of current frame */
@@ -632,7 +631,7 @@ int vp8_frame_decode(VP8_COMMON *common, struct pipe_vp8_picture_desc *frame_hea
 
         if (mb->update_mb_segmentation_map)
         {
-            /* Which macro block level features are enabled */
+            /* Which macro block level features are enabled. */
             memset(mb->mb_segment_tree_probs, 255, sizeof(mb->mb_segment_tree_probs));
 
             /* Read the probs used to decode the segment id for each macro block. */
@@ -777,6 +776,7 @@ int vp8_frame_decode(VP8_COMMON *common, struct pipe_vp8_picture_desc *frame_hea
 
     {
         int ibc = 0;
+        int mb_row = 0;
         int num_part = 1 << common->multi_token_partition;
 
         /* Decode the individual macro block */
@@ -791,22 +791,21 @@ int vp8_frame_decode(VP8_COMMON *common, struct pipe_vp8_picture_desc *frame_hea
                     ibc = 0;
             }
 
-            decode_macroblock_row(common, mb_row, mb);
+            decode_macroblock_row(common, mb, mb_row);
         }
     }
 
     token_decoder_stop(common);
 
     /* Collect information about decoder corruption. */
+
     /* 1. Check first boolean decoder for errors. */
     common->yv12_fb[common->new_fb_idx].corrupted = vp8dx_bool_error(bd);
 
-    /* 2. Check the macroblock information */
+    /* 2. Check the macroblock information. */
     common->yv12_fb[common->new_fb_idx].corrupted |= mb->corrupted;
 
-    /* printf("Decoder: Frame Decoded, Size Roughly:%d bytes \n", bc->pos+pbi->bc2.pos); */
-
-    /* If this was a kf or Gf note the Q used */
+    /* If this was a kf or Gf note the Q used. */
     if (common->frame_type == KEY_FRAME ||
         common->refresh_golden_frame ||
         common->refresh_alternate_frame)

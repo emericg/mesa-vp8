@@ -14,10 +14,10 @@
 
 #include "vp8_decoder.h"
 
-void vp8_initialize_common(VP8_COMMON *common);
-
 int vp8_alloc_frame_buffers(VP8_COMMON *common, int width, int height);
 void vp8_dealloc_frame_buffers(VP8_COMMON *common);
+
+void vp8_initialize_common(VP8_COMMON *common);
 void vp8_setup_version(VP8_COMMON *common);
 
 #endif /* ALLOCCOMMON_H */

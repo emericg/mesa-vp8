@@ -31,20 +31,6 @@ static void update_mode_info_border(MODE_INFO *mi, int rows, int cols)
     }
 }
 
-void vp8_dealloc_frame_buffers(VP8_COMMON *common)
-{
-    int i;
-
-    for (i = 0; i < NUM_YV12_BUFFERS; i++)
-        vp8_yv12_de_alloc_frame_buffer(&common->yv12_fb[i]);
-
-    vpx_free(common->above_context);
-    vpx_free(common->mip);
-
-    common->above_context = 0;
-    common->mip = 0;
-}
-
 int vp8_alloc_frame_buffers(VP8_COMMON *common, int width, int height)
 {
     int i;
@@ -61,7 +47,6 @@ int vp8_alloc_frame_buffers(VP8_COMMON *common, int width, int height)
     for (i = 0; i < NUM_YV12_BUFFERS; i++)
     {
         common->fb_idx_ref_cnt[i] = 0;
-        common->yv12_fb[i].flags = 0;
         if (vp8_yv12_alloc_frame_buffer(&common->yv12_fb[i], width, height, VP8BORDERINPIXELS) < 0)
         {
             vp8_dealloc_frame_buffers(common);
@@ -104,6 +89,20 @@ int vp8_alloc_frame_buffers(VP8_COMMON *common, int width, int height)
     update_mode_info_border(common->mi, common->mb_rows, common->mb_cols);
 
     return 0;
+}
+
+void vp8_dealloc_frame_buffers(VP8_COMMON *common)
+{
+    int i;
+
+    for (i = 0; i < NUM_YV12_BUFFERS; i++)
+        vp8_yv12_de_alloc_frame_buffer(&common->yv12_fb[i]);
+
+    vpx_free(common->above_context);
+    vpx_free(common->mip);
+
+    common->above_context = 0;
+    common->mip = 0;
 }
 
 /**

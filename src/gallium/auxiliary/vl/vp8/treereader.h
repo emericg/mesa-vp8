@@ -65,7 +65,7 @@ int vp8_treed_read(BOOL_DECODER *const bd, vp8_tree t, const vp8_prob *const p);
 #define VP8DX_BOOL_DECODER_FILL(_count, _value, _bufptr, _bufend) \
     do \
     { \
-        size_t bits_left = ((_bufend)-(_bufptr))*CHAR_BIT; \
+        size_t bits_left = ((_bufend) - (_bufptr))*CHAR_BIT; \
         int shift = VP8_BD_VALUE_SIZE - 8 - ((_count) + 8); \
         int loop_end = 0; \
         int x = shift + CHAR_BIT - bits_left; \

@@ -36,19 +36,6 @@ static void tree2tok(struct vp8_token_struct *const p, vp8_tree t, int i, int v,
     while (++v & 1);
 }
 
-/**
- * Construct encoding array from tree.
- */
-void vp8_tokens_from_tree(struct vp8_token_struct *p, vp8_tree t)
-{
-    tree2tok(p, t, 0, 0, 0);
-}
-
-void vp8_tokens_from_tree_offset(struct vp8_token_struct *p, vp8_tree t, int offset)
-{
-    tree2tok(p - offset, t, 0, 0, 0);
-}
-
 static void branch_counts(int n, /* n = size of alphabet */
                           vp8_token tok[/* n */],
                           vp8_tree tree,
@@ -83,7 +70,7 @@ static void branch_counts(int n, /* n = size of alphabet */
             const int b = (enc >> --L) & 1;
             const int j = i >> 1;
 #if ENABLE_DEBUG
-            assert(j < tree_len  &&  0 <= L);
+            assert(j < tree_len && 0 <= L);
 #endif
             branch_ct[j][b] += ct;
             i = tree[i + b];
@@ -95,6 +82,19 @@ static void branch_counts(int n, /* n = size of alphabet */
 #endif
     }
     while (++t < n);
+}
+
+/**
+ * Construct encoding array from tree.
+ */
+void vp8_tokens_from_tree(struct vp8_token_struct *p, vp8_tree t)
+{
+    tree2tok(p, t, 0, 0, 0);
+}
+
+void vp8_tokens_from_tree_offset(struct vp8_token_struct *p, vp8_tree t, int offset)
+{
+    tree2tok(p - offset, t, 0, 0, 0);
 }
 
 /**

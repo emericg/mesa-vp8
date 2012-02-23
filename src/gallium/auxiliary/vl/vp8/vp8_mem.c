@@ -15,7 +15,7 @@
 #define DEFAULT_ALIGNMENT 32 /**< Must be superior or equal to 1 ! */
 
 /** Returns an addr aligned to the byte boundary specified by align */
-#define align_addr(addr,align) (void*)(((size_t)(addr) + ((align) - 1)) & (size_t)-(align))
+#define align_addr(addr, align) (void*)(((size_t)(addr) + ((align) - 1)) & (size_t) - (align))
 
 void *vpx_memalign(size_t align, size_t size)
 {
