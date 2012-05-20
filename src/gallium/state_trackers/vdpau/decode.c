@@ -462,7 +462,7 @@ vlVdpDecoderRender(VdpDecoder decoder,
    struct pipe_screen *screen;
    struct pipe_video_decoder *dec;
    bool buffer_support[2];
-   unsigned i, j;
+   unsigned i;
    union {
       struct pipe_picture_desc base;
       struct pipe_mpeg12_picture_desc mpeg12;
@@ -555,43 +555,6 @@ vlVdpDecoderRender(VdpDecoder decoder,
    if (ret != VDP_STATUS_OK) {
       pipe_mutex_unlock(vlsurf->device->mutex);
       return ret;
-   }
-
-   // Cleanup start_code (mandatory for some codec) from bitstream buffers
-   if (u_reduce_video_profile(dec->profile) == PIPE_VIDEO_CODEC_MPEG4_AVC ||
-       u_reduce_video_profile(dec->profile) == PIPE_VIDEO_CODEC_VP8) {
-      int start_code_found = 0;
-
-      for (i = 0, j = 0; i < bitstream_buffer_count; ++i) {
-         if (!start_code_found) {
-            const uint8_t *datab = (const uint8_t *)bitstream_buffers[i].bitstream;
-
-            if ((datab[0] == 0x9D && datab[1] == 0x01 && datab[2] == 0x2A) ||
-                (datab[0] == 0x00 && datab[1] == 0x00 && datab[2] == 0x01)) {
-               start_code_found = 1;
-
-               if (bitstream_buffers[i].bitstream_bytes != 3) {
-                  buffers[j] = bitstream_buffers[i].bitstream + 3;
-                  sizes[j] = bitstream_buffers[i].bitstream_bytes - 3;
-                  j++;
-               }
-            } else {
-               VDPAU_MSG(VDPAU_TRACE, "[VDPAU] Error : the first data buffer does not contain the mandatory start_code [0x9D012A]\n");
-               return VDP_STATUS_ERROR;
-            }
-         } else {
-            buffers[j] = bitstream_buffers[i].bitstream;
-            sizes[j] = bitstream_buffers[i].bitstream_bytes;
-            j++;
-         }
-      }
-
-      bitstream_buffer_count = j;
-   } else {
-      for (i = 0; i < bitstream_buffer_count; ++i) {
-         buffers[i] = bitstream_buffers[i].bitstream;
-         sizes[i] = bitstream_buffers[i].bitstream_bytes;
-      }
    }
 
    dec->begin_frame(dec, vlsurf->video_buffer, &desc.base);

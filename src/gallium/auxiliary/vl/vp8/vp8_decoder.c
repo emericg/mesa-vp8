@@ -140,33 +140,37 @@ int vp8_decoder_start(VP8_COMMON *common,
                       const unsigned char *data, unsigned data_size)
 {
     int retcode = 0;
+    int bitstreambuffer_offset = 0;
+
+    if (frame_header->key_frame == 0)
+        bitstreambuffer_offset = 10;
+    else
+        bitstreambuffer_offset = 3;
+
+    common->data = data + bitstreambuffer_offset;
+    common->data_size = data_size - bitstreambuffer_offset;
+    common->new_fb_idx = get_free_fb(common);
 
     common->error.error_code = VPX_CODEC_OK;
 
+    if (setjmp(common->error.jmp))
     {
-        common->data = data;
-        common->data_size = data_size;
+        common->error.setjmp = 0;
 
-        common->new_fb_idx = get_free_fb(common);
+       /* We do not know if the missing frame(s) was supposed to update
+        * any of the reference buffers, but we act conservative and
+        * mark only the last buffer as corrupted. */
+        common->yv12_fb[common->lst_fb_idx].corrupted = 1;
 
-        if (setjmp(common->error.jmp))
-        {
-            common->error.setjmp = 0;
+        if (common->fb_idx_ref_cnt[common->new_fb_idx] > 0)
+            common->fb_idx_ref_cnt[common->new_fb_idx]--;
 
-           /* We do not know if the missing frame(s) was supposed to update
-            * any of the reference buffers, but we act conservative and
-            * mark only the last buffer as corrupted. */
-            common->yv12_fb[common->lst_fb_idx].corrupted = 1;
-
-            if (common->fb_idx_ref_cnt[common->new_fb_idx] > 0)
-                common->fb_idx_ref_cnt[common->new_fb_idx]--;
-
-            return -1;
-        }
-
-        common->error.setjmp = 1;
+        return -1;
     }
 
+    common->error.setjmp = 1;
+
+    // Frame decoding
     retcode = vp8_frame_decode(common, frame_header);
 
     if (retcode < 0)
@@ -179,6 +183,7 @@ int vp8_decoder_start(VP8_COMMON *common,
         return retcode;
     }
 
+    // Software frame buffer handling
     {
         if (swap_frame_buffers(common))
         {

@@ -207,10 +207,29 @@ vl_vp8_decode_bitstream(struct pipe_video_decoder *decoder,
    struct vl_vp8_buffer *buf;
 
    assert(dec && target && picture);
-   assert(num_buffers == 1);
+   assert(num_buffers < 3);
 
    buf = vl_vp8_get_decode_buffer(dec, target);
    assert(buf);
+
+   // Try and detect start_code from the first data buffer
+   if (num_buffers > 1)
+   {
+       const uint8_t *datab = (const uint8_t *)buffers[dec->current_buffer];
+
+       if ((sizes[dec->current_buffer] == 3) &&
+           (datab[0] == 0x9D && datab[1] == 0x01 && datab[2] == 0x2A))
+       {
+          // The start_code [0x9D012A] is present in a dedicated buffer
+          ++dec->current_buffer;
+          dec->current_buffer %= 4;
+       }
+       else
+       {
+          printf("[G3DVL] Error : First VP8 VDPAU bitstream buffer is invalid !\n");
+          return;
+       }
+   }
 
    // Start bitstream decoding
    //vl_vp8_bs_decode(&buf->bs, target, desc, num_buffers, buffers, sizes);
